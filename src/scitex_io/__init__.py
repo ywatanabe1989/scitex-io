@@ -14,6 +14,26 @@ Supports 30+ formats out of the box. Register custom handlers via::
 """
 
 # Registry API (must be imported before _builtin_handlers)
+# Trigger built-in handler registration
+from . import _builtin_handlers  # noqa: F401
+from ._cache import cache
+from ._flush import flush
+from ._glob import glob, parse_glob
+from ._load import load
+from ._load_cache import (
+    clear_cache as clear_load_cache,
+)
+
+# Cache control
+from ._load_cache import (
+    configure_cache,
+    get_cache_info,
+)
+from ._load_configs import load_configs
+
+# Explorers
+from ._load_modules._H5Explorer import H5Explorer, explore_h5, has_h5_key
+from ._load_modules._ZarrExplorer import ZarrExplorer, explore_zarr, has_zarr_key
 from ._registry import (
     get_loader,
     get_saver,
@@ -23,38 +43,19 @@ from ._registry import (
     unregister_loader,
     unregister_saver,
 )
-
-# Trigger built-in handler registration
-from . import _builtin_handlers  # noqa: F401
+from ._reload import reload
 
 # Core I/O
 from ._save import save
-from ._load import load
-from ._load_configs import load_configs
-from ._glob import glob, parse_glob
-from ._reload import reload
-from ._flush import flush
-from ._cache import cache
-
-# Explorers
-from ._load_modules._H5Explorer import H5Explorer, explore_h5, has_h5_key
-from ._load_modules._ZarrExplorer import ZarrExplorer, explore_zarr, has_zarr_key
-
-# Cache control
-from ._load_cache import (
-    get_cache_info,
-    configure_cache,
-    clear_cache as clear_load_cache,
-)
 
 # Save utilities
 from ._save_modules import (
     save_image,
-    save_text,
-    save_mp4,
     save_listed_dfs_as_csv,
     save_listed_scalars_as_csv,
+    save_mp4,
     save_optuna_study_as_csv_and_pngs,
+    save_text,
 )
 
 # Optional modules
@@ -79,7 +80,7 @@ except ImportError:
     migrate_h5_to_zarr = None
     migrate_h5_to_zarr_batch = None
 
-__version__ = "0.2.0"
+__version__ = "0.1.0"
 
 __all__ = [
     # Registry API
