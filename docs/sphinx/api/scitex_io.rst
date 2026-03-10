@@ -1,11 +1,21 @@
-API Reference
-=============
+scitex_io
+=========
+
+.. automodule:: scitex_io
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
 Core I/O
 --------
 
 .. autofunction:: scitex_io.save
 .. autofunction:: scitex_io.load
+.. autofunction:: scitex_io.load_configs
+.. autofunction:: scitex_io.glob
+.. autofunction:: scitex_io.reload
+.. autofunction:: scitex_io.flush
+.. autofunction:: scitex_io.cache
 
 Registry
 --------
@@ -17,6 +27,13 @@ Registry
 .. autofunction:: scitex_io.list_formats
 .. autofunction:: scitex_io.unregister_saver
 .. autofunction:: scitex_io.unregister_loader
+
+Cache Control
+-------------
+
+.. autofunction:: scitex_io.get_cache_info
+.. autofunction:: scitex_io.configure_cache
+.. autofunction:: scitex_io.clear_load_cache
 
 Explorers
 ---------
