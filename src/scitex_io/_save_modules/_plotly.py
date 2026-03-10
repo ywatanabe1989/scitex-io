@@ -3,7 +3,10 @@
 # Timestamp: "2025-05-16 12:30:15 (ywatanabe)"
 # File: /data/gpfs/projects/punim2354/ywatanabe/scitex_repo/src/scitex/io/_save_modules/_plotly.py
 
-import plotly
+try:
+    import plotly
+except ImportError:
+    plotly = None
 
 
 def _save_plotly_html(obj, spath):

@@ -4,7 +4,10 @@
 
 This module is imported by __init__.py to populate the registry
 with all supported formats. User registrations override these.
+Handlers that are None (missing optional dependency) are silently skipped.
 """
+
+import warnings as _warnings
 
 from ._registry import register_loader, register_saver
 
@@ -31,7 +34,11 @@ from ._save_modules import (
     save_yaml,
     save_zarr,
 )
-from ._save_modules._bibtex import save_bibtex
+
+try:
+    from ._save_modules._bibtex import save_bibtex
+except ImportError:
+    save_bibtex = None
 
 _SAVER_MAP = {
     # Spreadsheet
@@ -81,32 +88,120 @@ _SAVER_MAP = {
     ".pdf": save_image,
 }
 
-for ext, fn in _SAVER_MAP.items():
-    register_saver(ext, fn, builtin=True)
+for _ext, _fn in _SAVER_MAP.items():
+    if _fn is not None:
+        register_saver(_ext, _fn, builtin=True)
+    else:
+        _warnings.warn(
+            f"scitex_io: saver for '{_ext}' not registered (missing optional dependency)",
+            ImportWarning,
+            stacklevel=1,
+        )
 
 
 # === LOAD HANDLERS ===
 
-from ._load_modules._bibtex import _load_bibtex
-from ._load_modules._con import _load_con
-from ._load_modules._docx import _load_docx
-from ._load_modules._eeg import _load_eeg_data
-from ._load_modules._hdf5 import _load_hdf5
-from ._load_modules._image import _load_image
-from ._load_modules._joblib import _load_joblib
-from ._load_modules._json import _load_json
-from ._load_modules._markdown import _load_markdown
-from ._load_modules._matlab import _load_matlab
-from ._load_modules._numpy import _load_npy
-from ._load_modules._pandas import _load_csv, _load_excel, _load_tsv
-from ._load_modules._pdf import _load_pdf
-from ._load_modules._pickle import _load_pickle
-from ._load_modules._sqlite3 import _load_db_sqlite3
-from ._load_modules._torch import _load_torch
-from ._load_modules._txt import _load_txt
-from ._load_modules._xml import _load_xml
-from ._load_modules._yaml import _load_yaml
-from ._load_modules._zarr import _load_zarr
+try:
+    from ._load_modules._bibtex import _load_bibtex
+except ImportError:
+    _load_bibtex = None
+
+try:
+    from ._load_modules._con import _load_con
+except ImportError:
+    _load_con = None
+
+try:
+    from ._load_modules._docx import _load_docx
+except ImportError:
+    _load_docx = None
+
+try:
+    from ._load_modules._eeg import _load_eeg_data
+except ImportError:
+    _load_eeg_data = None
+
+try:
+    from ._load_modules._hdf5 import _load_hdf5
+except ImportError:
+    _load_hdf5 = None
+
+try:
+    from ._load_modules._image import _load_image
+except ImportError:
+    _load_image = None
+
+try:
+    from ._load_modules._joblib import _load_joblib
+except ImportError:
+    _load_joblib = None
+
+try:
+    from ._load_modules._json import _load_json
+except ImportError:
+    _load_json = None
+
+try:
+    from ._load_modules._markdown import _load_markdown
+except ImportError:
+    _load_markdown = None
+
+try:
+    from ._load_modules._matlab import _load_matlab
+except ImportError:
+    _load_matlab = None
+
+try:
+    from ._load_modules._numpy import _load_npy
+except ImportError:
+    _load_npy = None
+
+try:
+    from ._load_modules._pandas import _load_csv, _load_excel, _load_tsv
+except ImportError:
+    _load_csv = None
+    _load_excel = None
+    _load_tsv = None
+
+try:
+    from ._load_modules._pdf import _load_pdf
+except ImportError:
+    _load_pdf = None
+
+try:
+    from ._load_modules._pickle import _load_pickle
+except ImportError:
+    _load_pickle = None
+
+try:
+    from ._load_modules._sqlite3 import _load_db_sqlite3
+except ImportError:
+    _load_db_sqlite3 = None
+
+try:
+    from ._load_modules._torch import _load_torch
+except ImportError:
+    _load_torch = None
+
+try:
+    from ._load_modules._txt import _load_txt
+except ImportError:
+    _load_txt = None
+
+try:
+    from ._load_modules._xml import _load_xml
+except ImportError:
+    _load_xml = None
+
+try:
+    from ._load_modules._yaml import _load_yaml
+except ImportError:
+    _load_yaml = None
+
+try:
+    from ._load_modules._zarr import _load_zarr
+except ImportError:
+    _load_zarr = None
 
 _LOADER_MAP = {
     # Default
@@ -168,5 +263,12 @@ _LOADER_MAP = {
     ".set": _load_eeg_data,
 }
 
-for ext, fn in _LOADER_MAP.items():
-    register_loader(ext, fn, builtin=True)
+for _ext, _fn in _LOADER_MAP.items():
+    if _fn is not None:
+        register_loader(_ext, _fn, builtin=True)
+    else:
+        _warnings.warn(
+            f"scitex_io: loader for '{_ext}' not registered (missing optional dependency)",
+            ImportWarning,
+            stacklevel=1,
+        )

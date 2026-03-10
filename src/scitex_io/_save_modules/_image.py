@@ -10,8 +10,15 @@ __DIR__ = os.path.dirname(__FILE__)
 
 import io as _io
 
-import plotly
-from PIL import Image
+try:
+    import plotly
+except ImportError:
+    plotly = None
+
+try:
+    from PIL import Image
+except ImportError:
+    Image = None
 
 
 def save_image(obj, spath, **kwargs):

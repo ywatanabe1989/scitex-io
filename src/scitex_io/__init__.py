@@ -31,9 +31,16 @@ from ._load_cache import (
 )
 from ._load_configs import load_configs
 
-# Explorers
-from ._load_modules._H5Explorer import H5Explorer, explore_h5, has_h5_key
-from ._load_modules._ZarrExplorer import ZarrExplorer, explore_zarr, has_zarr_key
+# Explorers (optional: require h5py/zarr)
+try:
+    from ._load_modules._H5Explorer import H5Explorer, explore_h5, has_h5_key
+except ImportError:
+    H5Explorer = explore_h5 = has_h5_key = None
+
+try:
+    from ._load_modules._ZarrExplorer import ZarrExplorer, explore_zarr, has_zarr_key
+except ImportError:
+    ZarrExplorer = explore_zarr = has_zarr_key = None
 from ._registry import (
     get_loader,
     get_saver,
@@ -49,14 +56,18 @@ from ._reload import reload
 from ._save import save
 
 # Save utilities
-from ._save_modules import (
-    save_image,
-    save_listed_dfs_as_csv,
-    save_listed_scalars_as_csv,
-    save_mp4,
-    save_optuna_study_as_csv_and_pngs,
-    save_text,
-)
+try:
+    from ._save_modules import (
+        save_image,
+        save_listed_dfs_as_csv,
+        save_listed_scalars_as_csv,
+        save_mp4,
+        save_optuna_study_as_csv_and_pngs,
+        save_text,
+    )
+except ImportError:
+    save_image = save_listed_dfs_as_csv = save_listed_scalars_as_csv = None
+    save_mp4 = save_optuna_study_as_csv_and_pngs = save_text = None
 
 # Optional modules
 try:

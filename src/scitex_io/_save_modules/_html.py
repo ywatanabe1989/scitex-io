@@ -13,7 +13,10 @@ __DIR__ = os.path.dirname(__FILE__)
 HTML saving functionality for scitex.io.save
 """
 
-import plotly
+try:
+    import plotly
+except ImportError:
+    plotly = None
 
 
 def save_html(obj, spath, **kwargs):
