@@ -1,0 +1,105 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "scitex-io"
+version = "0.2.0"
+description = "Universal scientific data I/O with plugin registry"
+readme = "README.md"
+license = "AGPL-3.0"
+requires-python = ">=3.9"
+authors = [
+    { name = "SciTeX Team" },
+]
+keywords = [
+    "scientific-data",
+    "io",
+    "hdf5",
+    "zarr",
+    "csv",
+    "numpy",
+    "pandas",
+    "registry",
+    "plugin",
+    "scitex",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: GNU Affero General Public License v3",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering",
+]
+dependencies = [
+    "numpy",
+    "pandas",
+    "click>=8.0.0",
+    "rich>=13.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov",
+]
+scientific = [
+    "scipy",
+    "h5py",
+    "zarr",
+    "numcodecs",
+    "matplotlib",
+]
+mcp = [
+    "fastmcp>=2.0",
+]
+all = [
+    "scipy",
+    "h5py",
+    "zarr",
+    "numcodecs",
+    "matplotlib",
+    "Pillow",
+    "PyYAML",
+    "joblib",
+    "openpyxl",
+    "xlrd",
+    "PyPDF2",
+    "pdfplumber",
+    "python-docx",
+    "bibtexparser",
+    "fastmcp>=2.0",
+]
+
+[project.scripts]
+scitex-io = "scitex_io._cli:main"
+
+[project.urls]
+Homepage = "https://github.com/ywatanabe1989/scitex-io"
+Documentation = "https://scitex-io.readthedocs.io/"
+Repository = "https://github.com/ywatanabe1989/scitex-io.git"
+Issues = "https://github.com/ywatanabe1989/scitex-io/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/scitex_io"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = "-v --tb=short"
+
+[tool.ruff]
+line-length = 88
+target-version = "py39"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+ignore = ["E501"]
+
+[tool.ruff.lint.per-file-ignores]
+"src/scitex_io/__init__.py" = ["E402"]
