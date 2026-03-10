@@ -1,38 +1,56 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# Time-stamp: "2024-11-14 07:41:25 (ywatanabe)"
+# Timestamp: "2025-06-12 13:05:00 (ywatanabe)"
 # File: ./scitex_repo/src/scitex/io/_load_modules/__init__.py
+
+"""
+Load modules for scitex.io.load functionality.
+
+Each handler is imported with a try/except so that missing optional
+dependencies only disable the relevant format rather than crashing the
+entire package.
+"""
 
 import importlib as __importlib
 import inspect as __inspect
 import os as __os
+import warnings as __warnings
 
-# Get the current directory
-current_dir = __os.path.dirname(__file__)
+_current_dir = __os.path.dirname(__file__)
+_pkg = __name__
 
-# Iterate through all Python files in the current directory
-for filename in __os.listdir(current_dir):
-    if filename.endswith(".py") and not filename.startswith("__"):
-        module_name = filename[:-3]  # Remove .py extension
-        module = __importlib.import_module(f".{module_name}", package=__name__)
+for _filename in __os.listdir(_current_dir):
+    if not _filename.endswith(".py") or _filename.startswith("__"):
+        continue
+    _module_name = _filename[:-3]
+    try:
+        _module = __importlib.import_module(f".{_module_name}", package=_pkg)
+    except ImportError as _exc:
+        __warnings.warn(
+            f"scitex_io: optional dependency missing, skipping load module "
+            f"'{_module_name}': {_exc}",
+            ImportWarning,
+            stacklevel=2,
+        )
+        continue
 
-        # Import only functions and classes from the module
-        for name, obj in __inspect.getmembers(module):
-            if __inspect.isfunction(obj) or __inspect.isclass(obj):
-                if not name.startswith("_"):
-                    globals()[name] = obj
+    for _name, _obj in __inspect.getmembers(_module):
+        if (__inspect.isfunction(_obj) or __inspect.isclass(_obj)) and not _name.startswith("_"):
+            globals()[_name] = _obj
 
-# Clean up temporary variables
+# Clean up loop variables
 del (
     __os,
     __importlib,
     __inspect,
-    current_dir,
-    filename,
-    module_name,
-    module,
-    name,
-    obj,
+    __warnings,
+    _current_dir,
+    _pkg,
+    _filename,
+    _module_name,
+    _module,
+    _name,
+    _obj,
 )
 
 # EOF
