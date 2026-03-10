@@ -3,7 +3,17 @@
 import os
 import numpy as np
 import pandas as pd
-from scitex_io import save, load
+import pytest
+from scitex_io import save, load, list_formats
+
+
+def _has_handler(ext):
+    """Check if both save and load handlers are registered for ext."""
+    fmt = list_formats()
+    all_save = fmt["save"]["builtin"] + fmt["save"]["user"]
+    all_load = fmt["load"]["builtin"] + fmt["load"]["user"]
+    return ext in all_save and ext in all_load
+
 
 class TestRoundTrip:
     def test_json(self, tmp_dir):
@@ -19,6 +29,7 @@ class TestRoundTrip:
         loaded = load(path, cache=False)
         assert list(loaded.columns) == ["x", "y"]
 
+    @pytest.mark.skipif(not _has_handler(".yaml"), reason="yaml handler not available")
     def test_yaml(self, tmp_dir):
         data = {"key": "value"}
         path = os.path.join(tmp_dir, "test.yaml")

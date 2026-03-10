@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 """Main CLI entry point for scitex-io."""
 
+import os
+
 import click
 
 from .. import __version__
@@ -15,7 +17,7 @@ CONTEXT_SETTINGS = {"help_option_names": ["-h", "--help"]}
 COMMAND_CATEGORIES = [
     ("Core I/O", ["info"]),
     ("Integration", ["mcp", "list-python-apis"]),
-    ("Utility", ["version"]),
+    ("Utility", ["version", "shell-completion"]),
 ]
 
 
@@ -85,10 +87,10 @@ def _print_help_recursive(ctx):
                         click.echo(sub_cmd.get_help(sub2_ctx))
 
 
-@click.group(cls=CategorizedGroup, context_settings=CONTEXT_SETTINGS, invoke_without_command=True)
-@click.option(
-    "--help-recursive", is_flag=True, help="Show help for all subcommands"
+@click.group(
+    cls=CategorizedGroup, context_settings=CONTEXT_SETTINGS, invoke_without_command=True
 )
+@click.option("--help-recursive", is_flag=True, help="Show help for all subcommands")
 @click.version_option(__version__, "--version", "-V")
 @click.pass_context
 def main(ctx, help_recursive):
@@ -98,6 +100,27 @@ def main(ctx, help_recursive):
         ctx.exit(0)
     elif ctx.invoked_subcommand is None:
         click.echo(ctx.get_help())
+
+
+@main.command("shell-completion")
+@click.argument("shell", type=click.Choice(["bash", "zsh", "fish"]))
+def shell_completion(shell):
+    """Generate shell completion script."""
+    import subprocess
+
+    env_var = "_SCITEX_IO_COMPLETE"
+    shell_map = {
+        "bash": "bash_source",
+        "zsh": "zsh_source",
+        "fish": "fish_source",
+    }
+    result = subprocess.run(
+        ["scitex-io"],
+        env={**os.environ, env_var: shell_map[shell]},
+        capture_output=True,
+        text=True,
+    )
+    click.echo(result.stdout)
 
 
 main.add_command(info)

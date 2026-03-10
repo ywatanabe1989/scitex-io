@@ -10,7 +10,7 @@ readme = "README.md"
 license = "AGPL-3.0"
 requires-python = ">=3.9"
 authors = [
-    { name = "SciTeX Team" },
+    { name = "Yusuke Watanabe", email = "ywatanabe@scitex.ai" },
 ]
 keywords = [
     "scientific-data",
