@@ -305,8 +305,4 @@ scitex.io/
 - [Examples](../../../examples/01_scitex_io.ipynb) - I/O tutorial notebook
 - Documentation: https://scitex.readthedocs.io/io
 
-## Contact
-
-Yusuke Watanabe (ywatanabe@scitex.ai)
-
 <!-- EOF -->

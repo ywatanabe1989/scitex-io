@@ -657,5 +657,9 @@ flycheck_*.el
 !.gitkeep
 !**/.gitkeep
 
+# Track example output artifacts
+!examples/*_out/
+!examples/*_out/**
+
 ### Source: /home/ywatanabe/.git-templates/.gitignore-templates/Custom/SLURM.gitignore ###
 slurm_logs
