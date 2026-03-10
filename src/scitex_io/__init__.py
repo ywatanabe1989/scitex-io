@@ -91,7 +91,7 @@ except ImportError:
     migrate_h5_to_zarr = None
     migrate_h5_to_zarr_batch = None
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 __all__ = [
     # Registry API
