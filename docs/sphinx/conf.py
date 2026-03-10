@@ -10,7 +10,7 @@ sys.path.insert(0, os.path.abspath("../../src"))
 project = "scitex-io"
 copyright = "2026, SciTeX Team"
 author = "SciTeX Team"
-release = "0.2.0"
+release = "0.1.0"
 
 # -- General configuration ---------------------------------------------------
 
