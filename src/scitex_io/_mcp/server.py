@@ -125,6 +125,46 @@ def io_save(
 
 
 @mcp.tool()
+def io_load_configs(
+    config_dir: str = "./config",
+    is_debug: Optional[bool] = None,
+) -> Dict[str, Any]:
+    """Load YAML configuration files from a directory.
+
+    Loads all *.yaml files from config_dir, namespaced by filename.
+    Also loads from config_dir/categories/ if it exists.
+    Debug values (keys starting with DEBUG_) are promoted when is_debug=True.
+
+    Parameters
+    ----------
+    config_dir : str
+        Directory containing YAML config files. Default "./config".
+    is_debug : bool, optional
+        Force debug mode. If None, reads from IS_DEBUG.yaml or CI env var.
+
+    Returns
+    -------
+    dict
+        Merged configuration namespaced by filename.
+    """
+    from scitex_io import load_configs
+
+    try:
+        configs = load_configs(
+            IS_DEBUG=is_debug,
+            config_dir=config_dir,
+        )
+        return {
+            "success": True,
+            "config_dir": os.path.abspath(config_dir),
+            "namespaces": list(configs.keys()),
+            "configs": configs.to_dict(),
+        }
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
+@mcp.tool()
 def io_register_info() -> Dict[str, str]:
     """Show how to register custom format handlers.
 
@@ -136,18 +176,18 @@ def io_register_info() -> Dict[str, str]:
     return {
         "description": "Register custom save/load handlers for any file extension.",
         "save_example": (
-            'from scitex_io import register_saver\n\n'
+            "from scitex_io import register_saver\n\n"
             '@register_saver(".myformat")\n'
-            'def save_myformat(obj, path, **kwargs):\n'
+            "def save_myformat(obj, path, **kwargs):\n"
             '    with open(path, "w") as f:\n'
-            '        f.write(str(obj))\n'
+            "        f.write(str(obj))\n"
         ),
         "load_example": (
-            'from scitex_io import register_loader\n\n'
+            "from scitex_io import register_loader\n\n"
             '@register_loader(".myformat")\n'
-            'def load_myformat(path, **kwargs):\n'
-            '    with open(path) as f:\n'
-            '        return f.read()\n'
+            "def load_myformat(path, **kwargs):\n"
+            "    with open(path) as f:\n"
+            "        return f.read()\n"
         ),
         "note": "User-registered handlers override built-in ones for the same extension.",
     }

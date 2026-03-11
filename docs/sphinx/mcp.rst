@@ -37,7 +37,7 @@ Add to your MCP client configuration (e.g., Claude Desktop, Cursor):
 Available Tools
 ---------------
 
-.. list-table:: **Table 3.** Four MCP tools for AI-assisted file I/O. All tools accept JSON parameters and return JSON results.
+.. list-table:: **Table 3.** MCP tools for AI-assisted file I/O. All tools accept JSON parameters and return JSON results.
    :header-rows: 1
    :widths: 25 75
 
@@ -49,6 +49,8 @@ Available Tools
      - Load data from any supported file format. Returns type, shape, and preview.
    * - ``io_save``
      - Save data (as JSON string) to any supported format
+   * - ``io_load_configs``
+     - Load YAML project configurations from a directory. Returns namespaced config dict.
    * - ``io_register_info``
      - Show how to register custom format handlers with examples
 

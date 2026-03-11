@@ -20,6 +20,9 @@ Commands
    * - **Core I/O**
      - ``scitex-io info``
      - Show all registered save/load formats
+   * - **Core I/O**
+     - ``scitex-io configs``
+     - Load and display project YAML configurations
    * - **Integration**
      - ``scitex-io mcp``
      - MCP server management (start, doctor, list-tools)
@@ -46,6 +49,23 @@ Format Inspection
    #     .csv, .json, .npy, .npz, .pkl, .yaml, ...
    #   Load formats (29 built-in):
    #     .csv, .json, .npy, .npz, .pkl, .yaml, ...
+
+Configuration Inspection
+------------------------
+
+.. code-block:: bash
+
+   # Load and display configs from default ./config/ directory
+   scitex-io configs
+
+   # Custom config directory
+   scitex-io configs -d /path/to/project/config
+
+   # Output as JSON (machine-readable)
+   scitex-io configs --json
+
+   # Force debug mode (promotes DEBUG_* keys)
+   scitex-io configs --debug
 
 API Introspection
 -----------------
