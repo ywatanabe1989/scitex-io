@@ -30,6 +30,7 @@ from ._load_cache import (
     get_cache_info,
 )
 from ._load_configs import load_configs
+from ._utils import DotDict
 
 # Explorers (optional: require h5py/zarr)
 try:
@@ -91,7 +92,13 @@ except ImportError:
     migrate_h5_to_zarr = None
     migrate_h5_to_zarr_batch = None
 
-__version__ = "0.1.2"
+# Metadata embedding/extraction (optional: requires Pillow/pypdf)
+try:
+    from ._metadata import embed_metadata, has_metadata, read_metadata
+except ImportError:
+    embed_metadata = has_metadata = read_metadata = None
+
+__version__ = "0.2.0"
 
 __all__ = [
     # Registry API
@@ -129,6 +136,12 @@ __all__ = [
     "save_listed_dfs_as_csv",
     "save_listed_scalars_as_csv",
     "save_optuna_study_as_csv_and_pngs",
+    # Dict utilities
+    "DotDict",
+    # Metadata
+    "embed_metadata",
+    "read_metadata",
+    "has_metadata",
     # Optional
     "path",
     "mv_to_tmp",

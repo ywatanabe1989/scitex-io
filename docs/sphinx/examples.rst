@@ -83,6 +83,131 @@ Register and use a custom format handler.
 Output saved to ``examples/02_custom_format_out/custom.tsv3``.
 
 
+Example 3: Project Configuration
+----------------------------------
+
+Centralize hard-coded parameters (magic numbers) in YAML config files.
+Convention: use **UPPER_CASE** for config keys to signal user-defined constants.
+
+.. code-block:: text
+
+   project/
+     config/
+       PATHS.yaml          # DATA_DIR: /data/experiment_01
+       PREPROCESS.yaml     # SAMPLE_RATE: 1000, BANDPASS: [0.5, 40]
+       MODEL.yaml          # HIDDEN_DIM: 256, DEBUG_HIDDEN_DIM: 32
+       IS_DEBUG.yaml       # IS_DEBUG: false
+
+.. code-block:: python
+
+   from scitex_io import load_configs
+
+   # Load all YAML files at once — namespaced by filename
+   CONFIG = load_configs(config_dir="./config")
+
+   CONFIG.PATHS.DATA_DIR            # "/data/experiment_01"
+   CONFIG.PREPROCESS.SAMPLE_RATE    # 1000
+   CONFIG.MODEL.HIDDEN_DIM          # 256
+
+   # Debug mode promotes DEBUG_ prefixed keys
+   CONFIG = load_configs(config_dir="./config", IS_DEBUG=True)
+   CONFIG.MODEL.HIDDEN_DIM          # 32
+
+   # Export merged config for reproducibility
+   save(CONFIG.to_dict(), "merged_config.json")
+
+Run the full example:
+
+.. code-block:: bash
+
+   python3 examples/03_load_configs.py
+
+
+Example 4: DotDict
+--------------------
+
+``DotDict`` is the return type of ``load_configs()``. It wraps nested dictionaries
+with dot-notation access:
+
+.. code-block:: python
+
+   from scitex_io import DotDict
+
+   PARAMS = DotDict({
+       "MODEL": {"HIDDEN_DIM": 256, "DROPOUT": 0.3},
+       "TRAINING": {"BATCH_SIZE": 64, "EPOCHS": 100},
+   })
+
+   PARAMS.MODEL.HIDDEN_DIM       # 256
+   PARAMS.TRAINING.BATCH_SIZE    # 64
+
+   list(PARAMS.keys())           # ["MODEL", "TRAINING"]
+   PARAMS.to_dict()              # plain dict for serialization
+
+Run:
+
+.. code-block:: bash
+
+   python3 examples/04_dotdict.py
+
+
+Example 5: Metadata Embedding
+------------------------------
+
+Embed provenance into figures so they carry their own history. Months later, you can
+read metadata from the file alone — no external tracking needed.
+
+.. code-block:: python
+
+   from scitex_io import embed_metadata, read_metadata, has_metadata
+
+   # Create a simple figure
+   import matplotlib.pyplot as plt
+   fig, ax = plt.subplots()
+   ax.plot([1, 2, 3], [4, 5, 6])
+   fig.savefig("figure.png")
+   plt.close()
+
+   # Embed experiment metadata into the PNG
+   embed_metadata("figure.png", {
+       "EXPERIMENT": "exp_042",
+       "MODEL": "resnet50",
+       "ACCURACY": 0.94,
+       "TIMESTAMP": "2026-03-11",
+   })
+
+   # Verify metadata was embedded
+   assert has_metadata("figure.png")
+
+   # Read it back
+   meta = read_metadata("figure.png")
+   assert meta["EXPERIMENT"] == "exp_042"
+   assert meta["ACCURACY"] == "0.94"   # stored as string in PNG tEXt
+
+Supported formats:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 40
+
+   * - Format
+     - Storage mechanism
+   * - PNG
+     - tEXt chunks
+   * - JPEG
+     - EXIF UserComment
+   * - SVG
+     - XML ``<metadata>`` element
+   * - PDF
+     - Info Dictionary
+
+Run:
+
+.. code-block:: bash
+
+   python3 examples/05_metadata_embedding.py
+
+
 Part of SciTeX
 --------------
 
