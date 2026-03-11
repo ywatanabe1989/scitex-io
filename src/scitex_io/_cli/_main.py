@@ -8,6 +8,7 @@ import click
 
 from .. import __version__
 from ._apis import list_python_apis
+from ._configs import configs  # noqa: F401
 from ._info import info
 from ._mcp import mcp
 from ._version import version as version_cmd
@@ -15,7 +16,7 @@ from ._version import version as version_cmd
 CONTEXT_SETTINGS = {"help_option_names": ["-h", "--help"]}
 
 COMMAND_CATEGORIES = [
-    ("Core I/O", ["info"]),
+    ("Core I/O", ["info", "configs"]),
     ("Integration", ["mcp", "list-python-apis"]),
     ("Utility", ["version", "shell-completion"]),
 ]
@@ -123,6 +124,7 @@ def shell_completion(shell):
     click.echo(result.stdout)
 
 
+main.add_command(configs)
 main.add_command(info)
 main.add_command(list_python_apis, "list-python-apis")
 main.add_command(mcp)
