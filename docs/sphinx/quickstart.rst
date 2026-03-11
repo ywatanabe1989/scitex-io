@@ -80,6 +80,92 @@ Register handlers for any file extension:
    the library.
 
 
+Project Configuration
+---------------------
+
+Most research projects have hard-coded parameters scattered across scripts — sample rates,
+thresholds, model hyperparameters, plot dimensions. ``load_configs`` centralizes them in
+YAML files under a ``config/`` directory:
+
+.. code-block:: text
+
+   project/
+     config/
+       PATHS.yaml          # DATA_DIR: /data/experiment_01
+       PREPROCESS.yaml     # SAMPLE_RATE: 1000, BANDPASS: [0.5, 40]
+       MODEL.yaml          # HIDDEN_DIM: 256, DROPOUT: 0.3
+       PLOT.yaml           # FIGSIZE: [180, 60], DPI: 300
+       IS_DEBUG.yaml       # IS_DEBUG: true
+
+.. code-block:: python
+
+   from scitex_io import load_configs
+
+   # One call loads all YAML files, namespaced by filename
+   CONFIG = load_configs()                            # ./config/*.yaml
+   CONFIG = load_configs(config_dir="./my_configs")   # custom path
+
+   CONFIG.PATHS.DATA_DIR            # "/data/experiment_01"
+   CONFIG.PREPROCESS.SAMPLE_RATE    # 1000
+   CONFIG.MODEL.HIDDEN_DIM          # 256
+
+   # Debug mode: keys prefixed with DEBUG_ override their counterparts
+   # In MODEL.yaml:  HIDDEN_DIM: 256, DEBUG_HIDDEN_DIM: 32
+   CONFIG = load_configs(IS_DEBUG=True)
+   CONFIG.MODEL.HIDDEN_DIM          # 32 (debug value promoted)
+
+Returns a ``DotDict`` — a nested dictionary with dot-notation access. Config keys should
+use **UPPER_CASE** to signal that they are user-defined constants, not runtime variables.
+
+
+DotDict
+-------
+
+``DotDict`` gives dot-notation access to nested dictionaries:
+
+.. code-block:: python
+
+   from scitex_io import DotDict
+
+   d = DotDict({"MODEL": {"HIDDEN_DIM": 256, "LAYERS": 4}})
+   d.MODEL.HIDDEN_DIM    # 256
+   d.MODEL.LAYERS        # 4
+
+   # Standard dict operations work too
+   d["MODEL"]["HIDDEN_DIM"]    # 256
+   d.MODEL.keys()              # dict_keys(["HIDDEN_DIM", "LAYERS"])
+   d.MODEL.to_dict()           # {"HIDDEN_DIM": 256, "LAYERS": 4}
+
+
+Metadata Embedding
+------------------
+
+A saved PNG has no record of the code, parameters, or session that produced it.
+``embed_metadata`` solves this by writing provenance directly into the file:
+
+.. code-block:: python
+
+   from scitex_io import embed_metadata, read_metadata, has_metadata
+
+   # Embed metadata into a figure
+   embed_metadata("figure.png", {
+       "experiment": "exp_042",
+       "model": "resnet50",
+       "accuracy": 0.94,
+       "timestamp": "2026-03-11",
+   })
+
+   # Read it back — months later, from the file alone
+   meta = read_metadata("figure.png")
+   meta["experiment"]    # "exp_042"
+
+   # Check if a file carries metadata
+   has_metadata("figure.png")   # True
+
+Supports PNG (tEXt chunks), JPEG (EXIF UserComment), SVG (XML metadata), and PDF
+(Info Dictionary). The figure carries its own history — no external database needed.
+
+
 Caching
 -------
 

@@ -23,11 +23,21 @@
 
 ## Problem
 
-Operating systems already solve this: double-click a `.csv` and it opens in a spreadsheet, double-click a `.pdf` and it opens in a reader — the OS dispatches to the right application based on the file extension. Yet in Python, there is no equivalent. Loading a CSV requires `pandas.read_csv()`, an HDF5 file requires `h5py.File()`, a NumPy array requires `numpy.load()`, and so on — each format demands its own library, its own API, and its own boilerplate. Adding a new format means touching save and load logic scattered throughout your codebase.
+Three problems recur in every scientific Python project:
+
+1. **Format fragmentation.** Loading a CSV requires `pandas.read_csv()`, an HDF5 file requires `h5py.File()`, a NumPy array requires `numpy.load()`. Each format demands its own library, its own API, and its own boilerplate. Operating systems solved this decades ago — double-click any file and the OS dispatches to the right application. Python has no equivalent.
+
+2. **Hard-coded parameters scattered across scripts.** Sample rates, thresholds, model hyperparameters, plot dimensions — magic numbers buried in code, duplicated across files, impossible to track or share. Changing one parameter means grepping through the entire project.
+
+3. **Figures without provenance.** A saved PNG has no record of the code, parameters, or session that produced it. Months later, reproducing a figure means reverse-engineering which script with which settings generated it.
 
 ## Solution
 
-scitex-io provides a single `save()`/`load()` interface for 30+ scientific formats with automatic format detection from file extensions. A two-tier plugin registry lets you register custom formats that work seamlessly with the same API — user handlers override built-ins, so you can extend or replace any format without modifying the library.
+scitex-io addresses all three:
+
+- **`save()`/`load()`** — One interface for 30+ formats with automatic extension-based dispatch. A plugin registry lets you add custom formats without modifying the library.
+- **`load_configs()`** — Loads all YAML files from a `config/` directory into a single `DotDict` with dot-notation access. Parameters are version-controlled, centralized, and separate from code.
+- **`embed_metadata()`/`read_metadata()`** — Embeds provenance (timestamps, session IDs, parameters) directly into image and PDF files. The figure carries its own history.
 
 <details>
 <summary><b>Supported Formats (30+)</b></summary>
@@ -67,6 +77,8 @@ pip install scitex-io[mcp]
 
 ## Quickstart
 
+### Save and Load
+
 ```python
 from scitex_io import save, load
 
@@ -82,6 +94,61 @@ save(np.array([1, 2, 3]), "data.npy")
 save({"key": "value"}, "config.yaml")
 save({"nested": [1, 2]}, "data.json")
 ```
+
+### Project Configuration
+
+Hard-coded parameters belong in config files, not in code. Use **UPPER_CASE** keys — Python's convention for constants — to signal that these are user-defined values:
+
+```
+project/
+  config/
+    PATHS.yaml          # DATA_DIR: /data/experiment_01
+    PREPROCESS.yaml     # SAMPLE_RATE: 1000, BANDPASS: [0.5, 40]
+    MODEL.yaml          # HIDDEN_DIM: 256, DROPOUT: 0.3
+    PLOT.yaml           # FIGSIZE: [180, 60], DPI: 300
+    IS_DEBUG.yaml       # IS_DEBUG: true
+```
+
+```python
+from scitex_io import load_configs
+
+CONFIG = load_configs()          # loads ./config/*.yaml
+CONFIG.PATHS.DATA_DIR            # "/data/experiment_01"
+CONFIG.PREPROCESS.SAMPLE_RATE    # 1000
+CONFIG.MODEL.HIDDEN_DIM          # 256
+
+# Debug mode: DEBUG_ prefixed keys override their counterparts
+# In MODEL.yaml: { HIDDEN_DIM: 256, DEBUG_HIDDEN_DIM: 32 }
+CONFIG = load_configs(IS_DEBUG=True)
+CONFIG.MODEL.HIDDEN_DIM          # 32 (debug value promoted)
+```
+
+Returns a `DotDict` — a nested dictionary with dot-notation access. Parameters become version-controlled, shareable, and separate from code.
+
+### Metadata Embedding
+
+Embed provenance into figures so they carry their own history:
+
+```python
+from scitex_io import embed_metadata, read_metadata, has_metadata
+
+# Embed metadata into an image
+embed_metadata("figure.png", {
+    "experiment": "exp_042",
+    "model": "resnet50",
+    "accuracy": 0.94,
+    "timestamp": "2026-03-11",
+})
+
+# Read it back — months later, from the file alone
+meta = read_metadata("figure.png")
+print(meta["experiment"])    # "exp_042"
+
+# Check if a file has embedded metadata
+has_metadata("figure.png")   # True
+```
+
+Supports PNG (tEXt chunks), JPEG (EXIF), SVG (XML metadata), and PDF (Info Dictionary).
 
 <details>
 <summary><b>Custom Format Registration</b></summary>
@@ -116,10 +183,14 @@ assert load("data.custom") == "hello"
 
 ```python
 from scitex_io import save, load, list_formats, register_saver, register_loader
+from scitex_io import load_configs, DotDict
+from scitex_io import embed_metadata, read_metadata, has_metadata
 
 save(obj, "path.ext")        # Save any object
 data = load("path.ext")      # Load any file
 fmts = list_formats()        # Show all registered formats
+cfg  = load_configs()        # Load ./config/*.yaml as DotDict
+embed_metadata("fig.png", d) # Embed provenance into figure
 ```
 
 > **[Full API reference](https://scitex-io.readthedocs.io/)**
@@ -134,6 +205,9 @@ fmts = list_formats()        # Show all registered formats
 ```bash
 scitex-io --help-recursive          # Show all commands
 scitex-io info                      # Show registered formats
+scitex-io configs                   # Load and display project configs
+scitex-io configs -d ./my_configs   # Custom config directory
+scitex-io configs --json            # Output as JSON
 scitex-io list-python-apis -vv      # List Python APIs with signatures
 scitex-io version                   # Show version
 scitex-io mcp start                 # Start MCP server
@@ -157,6 +231,7 @@ AI agents can save, load, and discover formats autonomously.
 | `io_list_formats` | List all registered save/load formats |
 | `io_load` | Load data from any supported format |
 | `io_save` | Save data to any supported format |
+| `io_load_configs` | Load YAML project configurations |
 | `io_register_info` | Show how to register custom formats |
 
 ```bash
@@ -166,6 +241,20 @@ scitex-io mcp start
 > **[Full MCP specification](https://scitex-io.readthedocs.io/)**
 
 </details>
+
+## Lint Rules
+
+Detected by [scitex-linter](https://github.com/ywatanabe1989/scitex-linter) when this package is installed.
+
+| Rule | Severity | Message |
+|------|----------|---------|
+| `STX-IO001` | warning | `np.save()` detected — use `stx.io.save()` for provenance tracking |
+| `STX-IO002` | warning | `np.load()` detected — use `stx.io.load()` for provenance tracking |
+| `STX-IO003` | warning | `pd.read_csv()` detected — use `stx.io.load()` for provenance tracking |
+| `STX-IO004` | warning | `.to_csv()` detected — use `stx.io.save()` for provenance tracking |
+| `STX-IO005` | warning | `pickle.dump()` detected — use `stx.io.save()` for provenance tracking |
+| `STX-IO006` | warning | `json.dump()` detected — use `stx.io.save()` for provenance tracking |
+| `STX-IO007` | warning | `.savefig()` detected — use `stx.io.save(fig, path)` for metadata embedding |
 
 ## Part of SciTeX
 

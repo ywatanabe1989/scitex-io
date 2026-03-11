@@ -79,6 +79,9 @@ all = [
 [project.scripts]
 scitex-io = "scitex_io._cli:main"
 
+[project.entry-points."scitex_linter.plugins"]
+io = "scitex_io._linter_plugin:get_plugin"
+
 [project.urls]
 Homepage = "https://github.com/ywatanabe1989/scitex-io"
 Documentation = "https://scitex-io.readthedocs.io/"
@@ -87,6 +90,9 @@ Issues = "https://github.com/ywatanabe1989/scitex-io/issues"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/scitex_io"]
+
+[tool.scitex-linter]
+library_dirs = ["src", "tests", "examples"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

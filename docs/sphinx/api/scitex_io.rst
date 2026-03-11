@@ -35,6 +35,19 @@ Cache Control
 .. autofunction:: scitex_io.configure_cache
 .. autofunction:: scitex_io.clear_load_cache
 
+Dict Utilities
+--------------
+
+.. autoclass:: scitex_io.DotDict
+   :members:
+
+Metadata
+--------
+
+.. autofunction:: scitex_io.embed_metadata
+.. autofunction:: scitex_io.read_metadata
+.. autofunction:: scitex_io.has_metadata
+
 Explorers
 ---------
 
