@@ -35,6 +35,8 @@ def _load_csv(lpath, **kwargs):
 
 def _load_tsv(lpath, **kwargs):
     """Load TSV files."""
+    import pandas as pd
+
     if not lpath.endswith(".tsv"):
         raise ValueError("File must have .tsv extension")
     return pd.read_csv(lpath, sep="\t", **kwargs)
@@ -42,6 +44,8 @@ def _load_tsv(lpath, **kwargs):
 
 def _load_excel(lpath, **kwargs):
     """Load Excel files."""
+    import pandas as pd
+
     if not lpath.endswith((".xls", ".xlsx", ".xlsm", ".xlsb")):
         raise ValueError("File must have Excel extension")
     return pd.read_excel(lpath, **kwargs)
@@ -49,6 +53,8 @@ def _load_excel(lpath, **kwargs):
 
 def _load_parquet(lpath, **kwargs):
     """Load Parquet files."""
+    import pandas as pd
+
     if not lpath.endswith(".parquet"):
         raise ValueError("File must have .parquet extension")
     return pd.read_parquet(lpath, **kwargs)

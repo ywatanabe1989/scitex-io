@@ -1,0 +1,7 @@
+{
+    "EXPERIMENT": "exp_042",
+    "MODEL": "resnet50",
+    "ACCURACY": 0.94,
+    "TIMESTAMP": "2026-03-11",
+    "NOTES": "Baseline run with default hyperparameters"
+}

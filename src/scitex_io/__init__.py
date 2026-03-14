@@ -98,7 +98,18 @@ try:
 except ImportError:
     embed_metadata = has_metadata = read_metadata = None
 
-__version__ = "0.2.0"
+# Apply @supports_return_as decorator to core API functions
+try:
+    from scitex_dev import supports_return_as as _supports_return_as
+
+    save = _supports_return_as(save)
+    load = _supports_return_as(load)
+    load_configs = _supports_return_as(load_configs)
+    list_formats = _supports_return_as(list_formats)
+except ImportError:
+    pass
+
+__version__ = "0.2.1"
 
 __all__ = [
     # Registry API
