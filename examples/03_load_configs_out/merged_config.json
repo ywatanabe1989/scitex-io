@@ -1,0 +1,30 @@
+{
+    "IS_DEBUG": {
+        "IS_DEBUG": false
+    },
+    "MODEL": {
+        "HIDDEN_DIM": 256,
+        "N_LAYERS": 4,
+        "DROPOUT": 0.3,
+        "LEARNING_RATE": 0.001,
+        "BATCH_SIZE": 64,
+        "DEBUG_HIDDEN_DIM": 32,
+        "DEBUG_BATCH_SIZE": 4
+    },
+    "PATHS": {
+        "DATA_DIR": "/data/experiment_01",
+        "OUTPUT_DIR": "./results",
+        "RAW_SUBDIR": "raw"
+    },
+    "PREPROCESS": {
+        "SAMPLE_RATE": 1000,
+        "BANDPASS": [
+            0.5,
+            40
+        ],
+        "NOTCH_FREQ": 50,
+        "N_CHANNELS": 64,
+        "DEBUG_SAMPLE_RATE": 100,
+        "DEBUG_N_CHANNELS": 4
+    }
+}

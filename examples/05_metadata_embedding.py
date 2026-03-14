@@ -5,7 +5,15 @@ Demonstrates embed_metadata, read_metadata, and has_metadata for PNG files.
 Supported formats: PNG (tEXt), JPEG (EXIF), SVG (XML), PDF (Info Dict).
 """
 
+import os
+
 from scitex_io import embed_metadata, has_metadata, read_metadata, save
+
+SCRIPT_DIR = os.path.dirname(__file__)
+OUT_DIR = os.path.join(SCRIPT_DIR, "05_metadata_embedding_out")
+os.makedirs(OUT_DIR, exist_ok=True)
+
+FIGURE_PATH = os.path.join(OUT_DIR, "figure.png")
 
 # --- Create a simple figure ---------------------------------------------------
 try:
@@ -17,7 +25,7 @@ try:
     fig, ax = plt.subplots()
     ax.plot([1, 2, 3], [4, 5, 6], marker="o")
     ax.set(xlabel="X", ylabel="Y", title="Demo Figure")
-    fig.savefig("figure.png", dpi=100)
+    fig.savefig(FIGURE_PATH, dpi=100)
     plt.close()
 except ImportError:
     # Fallback: create a minimal 1x1 PNG without matplotlib
@@ -42,7 +50,7 @@ except ImportError:
                 + struct.pack(">I", zlib.crc32(b"IEND") & 0xFFFFFFFF)
             )
 
-    _minimal_png("figure.png")
+    _minimal_png(FIGURE_PATH)
 
 # --- Embed metadata -----------------------------------------------------------
 METADATA = {
@@ -53,17 +61,17 @@ METADATA = {
     "NOTES": "Baseline run with default hyperparameters",
 }
 
-embed_metadata("figure.png", METADATA)
+embed_metadata(FIGURE_PATH, METADATA)
 print("Metadata embedded into figure.png")
 
 # --- Read it back -------------------------------------------------------------
-assert has_metadata("figure.png"), "Expected metadata in figure.png"
+assert has_metadata(FIGURE_PATH), "Expected metadata in figure.png"
 
-META = read_metadata("figure.png")
+META = read_metadata(FIGURE_PATH)
 print(f"EXPERIMENT : {META['EXPERIMENT']}")
 print(f"MODEL      : {META['MODEL']}")
 print(f"ACCURACY   : {META['ACCURACY']}")
 
 # --- Save metadata as sidecar for archival ------------------------------------
-save(META, "figure_metadata.json")
-print("Metadata also saved as figure_metadata.json")
+save(META, os.path.join(OUT_DIR, "figure_metadata.json"))
+print(f"Metadata also saved to {OUT_DIR}/figure_metadata.json")
