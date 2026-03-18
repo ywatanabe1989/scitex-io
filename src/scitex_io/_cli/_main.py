@@ -129,3 +129,10 @@ main.add_command(info)
 main.add_command(list_python_apis, "list-python-apis")
 main.add_command(mcp)
 main.add_command(version_cmd, "version")
+
+try:
+    from scitex_dev.cli import docs_click_group
+
+    main.add_command(docs_click_group(package="scitex-io"))
+except ImportError:
+    pass
