@@ -136,3 +136,10 @@ try:
     main.add_command(docs_click_group(package="scitex-io"))
 except ImportError:
     pass
+
+try:
+    from scitex_dev.cli import skills_click_group
+
+    main.add_command(skills_click_group(package="scitex-io"))
+except ImportError:
+    pass
