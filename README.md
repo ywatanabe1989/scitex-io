@@ -46,16 +46,19 @@ scitex-io addresses all three:
 
 | Category | Extensions |
 |----------|-----------|
-| Spreadsheet | `.csv`, `.tsv`, `.xlsx`, `.xls` |
+| Spreadsheet | `.csv`, `.tsv`, `.xlsx`, `.xls`, `.xlsm`, `.xlsb` |
 | Scientific | `.npy`, `.npz`, `.mat`, `.hdf5`, `.h5`, `.zarr` |
 | Serialization | `.pkl`, `.pickle`, `.pkl.gz`, `.joblib` |
 | ML/DL | `.pth`, `.pt`, `.cbm` |
-| Config | `.json`, `.yaml`, `.yml` |
-| Documents | `.txt`, `.md`, `.pdf`, `.docx`, `.tex` |
+| Config | `.json`, `.yaml`, `.yml`, `.xml` |
+| Database | `.db` (SQLite3) |
+| Documents | `.txt`, `.md`, `.pdf`, `.docx`, `.tex`, `.log` |
+| Code | `.py`, `.sh`, `.css`, `.js` |
 | Images | `.png`, `.jpg`, `.jpeg`, `.gif`, `.tiff`, `.tif`, `.svg` |
 | Media | `.mp4` |
 | Web | `.html` |
 | Bibliography | `.bib` |
+| EEG | `.vhdr`, `.vmrk`, `.edf`, `.bdf`, `.gdf`, `.cnt`, `.egi`, `.eeg`, `.set`, `.con` |
 
 </details>
 
@@ -148,7 +151,59 @@ print(meta["experiment"])    # "exp_042"
 has_metadata("figure.png")   # True
 ```
 
-Supports PNG (tEXt chunks), JPEG (EXIF), SVG (XML metadata), and PDF (Info Dictionary).
+Supports PNG (tEXt chunks), JPEG (EXIF), SVG (XML metadata), and PDF (XMP metadata).
+
+### Advanced Save Features
+
+`save()` auto-routes relative paths based on execution context and supports symlinks and dry runs:
+
+```python
+from scitex_io import save
+
+# Auto path routing — relative paths resolve based on context:
+#   Script analysis.py  → analysis_out/results.csv
+#   Notebook exp.ipynb  → exp_out/results.csv
+#   Interactive/IPython → /tmp/{USER}/results.csv
+#   Absolute paths      → used as-is
+save(df, "results.csv")
+
+# Create symlink from cwd to the auto-routed save location
+save(df, "results.csv", symlink_from_cwd=True)
+
+# Create symlink at a specific path
+save(fig, "fig1.png", symlink_to="/data/latest/fig1.png")
+
+# Skip auto CSV export for image saves
+save(fig, "plot.png", no_csv=True)
+
+# use_caller_path=True — resolve path from the calling script,
+# not the immediate caller. Essential when save() is wrapped by a library.
+save(df, "results.csv", use_caller_path=True)
+
+# Dry run — print resolved path without writing
+save(df, "results.csv", dry_run=True)
+```
+
+### Glob and Caching
+
+```python
+from scitex_io import glob, parse_glob, load
+
+# Natural-sorted file matching (1, 2, 10 — not 1, 10, 2)
+paths = glob("data/**/*.csv")
+paths = glob("results/{exp1,exp2}/*.npy")  # brace expansion
+
+# Parse named placeholders from paths
+paths, parsed = parse_glob("sub_{id}/ses_{session}/*.vhdr")
+# parsed = [{'id': '001', 'session': 'pre'}, ...]
+
+# Glob patterns work directly in load()
+dfs = load("results/*.csv")  # → list of DataFrames
+
+# Caching is automatic (by path + mtime)
+data = load("large.hdf5")        # disk read
+data = load("large.hdf5")        # cache hit (instant)
+```
 
 <details>
 <summary><b>Custom Format Registration</b></summary>
@@ -174,7 +229,7 @@ assert load("data.custom") == "hello"
 
 </details>
 
-## Three Interfaces
+## Four Interfaces
 
 <details>
 <summary><strong>Python API</strong></summary>
@@ -239,6 +294,35 @@ scitex-io mcp start
 ```
 
 > **[Full MCP specification](https://scitex-io.readthedocs.io/)**
+
+</details>
+
+<details>
+<summary><strong>Skills — for AI Agent Discovery</strong></summary>
+
+<br>
+
+Skills provide structured documentation that AI agents can query to discover package capabilities, API signatures, and usage patterns.
+
+```bash
+scitex-io skills list              # List available skill pages
+scitex-io skills get save-and-load # Get detailed save/load documentation
+scitex-io skills get glob          # Get glob/parse_glob patterns
+scitex-io skills get supported-formats  # Get all format tables
+```
+
+| Skill | Content |
+|-------|---------|
+| `save-and-load` | Core API, path routing, symlinks, `use_caller_path` |
+| `centralized-config` | `load_configs()`, DotDict, DEBUG_ override |
+| `metadata-embedding` | Provenance in PNG/JPEG/SVG/PDF |
+| `cache` | Load caching, reload, flush |
+| `glob` | Pattern matching with natural sort and parsing |
+| `linting-rules` | STX-IO001–007 lint rules |
+| `supported-formats` | All 30+ format tables |
+| `path-resolution` | Auto save-path routing, `scitex.path` utilities |
+
+Also available via MCP: `io_skills_list()` / `io_skills_get(name)`.
 
 </details>
 

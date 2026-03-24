@@ -162,23 +162,108 @@ A saved PNG has no record of the code, parameters, or session that produced it.
    # Check if a file carries metadata
    has_metadata("figure.png")   # True
 
-Supports PNG (tEXt chunks), JPEG (EXIF UserComment), SVG (XML metadata), and PDF
-(Info Dictionary). The figure carries its own history — no external database needed.
+Supports PNG (tEXt chunks), JPEG (EXIF), SVG (XML metadata), and PDF
+(XMP metadata). The figure carries its own history — no external database needed.
+
+
+Auto Path Routing
+-----------------
+
+When ``save()`` receives a relative path, the output directory is determined
+automatically from the execution context:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 25 40 35
+
+   * - Context
+     - Output directory
+     - Example
+   * - Script ``analysis.py``
+     - ``analysis_out/{path}``
+     - ``analysis_out/results.csv``
+   * - Notebook ``exp.ipynb``
+     - ``exp_out/{path}``
+     - ``exp_out/fig.png``
+   * - Interactive / IPython
+     - ``/tmp/{USER}/{path}``
+     - ``/tmp/ywatanabe/data.csv``
+   * - Absolute path
+     - Used as-is
+     - ``/data/output/results.csv``
+
+.. code-block:: python
+
+   # In ~/proj/scripts/analysis.py:
+   save(df, "results.csv")
+   # → ~/proj/scripts/analysis_out/results.csv
+
+   # Absolute path bypasses routing:
+   save(df, "/data/shared/results.csv")
+   # → /data/shared/results.csv
+
+
+Advanced Save Options
+---------------------
+
+.. code-block:: python
+
+   from scitex_io import save
+
+   # Symlink from cwd to saved file
+   save(df, "results.csv", symlink_from_cwd=True)
+
+   # Symlink at a specific path
+   save(fig, "fig1.png", symlink_to="/data/latest/fig1.png")
+
+   # Skip auto CSV export for image saves (default: images get .csv companion)
+   save(fig, "plot.png", no_csv=True)
+
+   # Resolve path from the calling script, not the immediate caller.
+   # Essential when save() is called through library wrappers.
+   save(df, "results.csv", use_caller_path=True)
+
+   # Dry run — print resolved path without writing
+   save(df, "results.csv", dry_run=True)
+
+
+Glob and Pattern Matching
+-------------------------
+
+Natural-sorted file matching with named placeholder parsing:
+
+.. code-block:: python
+
+   from scitex_io import glob, parse_glob, load
+
+   # Natural sort (1, 2, 10 — not 1, 10, 2)
+   paths = glob("data/**/*.csv")
+
+   # Brace expansion
+   paths = glob("results/{exp1,exp2}/*.npy")
+
+   # Parse named placeholders from paths
+   paths, parsed = parse_glob("sub_{id}/ses_{session}/*.vhdr")
+   # parsed = [{'id': '001', 'session': 'pre'}, ...]
+
+   # Glob works directly in load()
+   dfs = load("results/*.csv")  # → list of DataFrames
 
 
 Caching
 -------
 
-Repeated loads are cached automatically:
+Repeated loads are cached automatically by path + mtime:
 
 .. code-block:: python
 
-   from scitex_io import load, get_cache_info, clear_load_cache
+   from scitex_io import load, get_cache_info, configure_cache, clear_load_cache
 
    data1 = load("large_file.hdf5")   # reads from disk
    data2 = load("large_file.hdf5")   # returns cached copy (instant)
 
    info = get_cache_info()
-   print(f"Cache hits: {info['hits']}, misses: {info['misses']}")
+   print(f"Cache hits: {info['stats']['hits']}, misses: {info['stats']['misses']}")
 
-   clear_load_cache()  # free memory
+   configure_cache(max_size=64)  # increase cache size (default: 32)
+   clear_load_cache()            # free memory

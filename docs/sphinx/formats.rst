@@ -22,8 +22,8 @@ Format Table
      - Yes
      - pandas
    * - **Excel**
-     - ``.xlsx``, ``.xls``
-     - Yes
+     - ``.xlsx``, ``.xls``, ``.xlsm``, ``.xlsb``
+     - ``.xlsx``/``.xls`` only
      - Yes
      - openpyxl / xlrd
    * - **NumPy**
@@ -64,7 +64,7 @@ Format Table
    * - **CatBoost**
      - ``.cbm``
      - Yes
-     - Yes
+     - No
      - catboost
    * - **JSON**
      - ``.json``
@@ -77,20 +77,25 @@ Format Table
      - Yes
      - PyYAML
    * - **Text**
-     - ``.txt``, ``.md``
-     - Yes
+     - ``.txt``, ``.md``, ``.log``, ``.event``, ``.py``, ``.sh``
+     - Yes (``.txt``, ``.md``, ``.py``)
      - Yes
      - built-in open()
    * - **PDF**
      - ``.pdf``
-     - No
-     - Yes
-     - pdfplumber / PyPDF2
+     - Yes (figures)
+     - Yes (text extract)
+     - matplotlib / pdfplumber
    * - **Word**
      - ``.docx``
      - No
      - Yes
      - python-docx
+   * - **Code**
+     - ``.css``, ``.js``
+     - Yes
+     - No
+     - built-in open()
    * - **Images**
      - ``.png``, ``.jpg``, ``.jpeg``, ``.gif``, ``.tiff``, ``.tif``, ``.svg``
      - Yes
@@ -117,7 +122,7 @@ Format Table
      - Yes
      - bibtexparser
    * - **SQLite**
-     - ``.sqlite3``, ``.db``
+     - ``.db``
      - No
      - Yes
      - sqlite3 (stdlib)
@@ -132,7 +137,7 @@ Format Table
      - Yes
      - optuna
    * - **EEG**
-     - ``.con``
+     - ``.vhdr``, ``.vmrk``, ``.edf``, ``.bdf``, ``.gdf``, ``.cnt``, ``.egi``, ``.eeg``, ``.set``, ``.con``
      - No
      - Yes
      - mne
