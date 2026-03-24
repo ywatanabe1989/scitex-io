@@ -25,7 +25,7 @@ registry lets you register custom formats that work seamlessly with the same API
    loaded = load("data.csv")     # Auto-detected format
 
 
-.. list-table:: **Three interfaces, one API**
+.. list-table:: **Four interfaces, one API**
    :header-rows: 1
    :widths: 20 40 40
 
@@ -40,7 +40,10 @@ registry lets you register custom formats that work seamlessly with the same API
      - Terminal, shell scripts
    * - **MCP Server**
      - ``scitex-io mcp start``
-     - AI agents (Claude, Cursor, etc.)
+     - AI agents executing actions
+   * - **Skills**
+     - ``scitex-io skills list``
+     - AI agents discovering capabilities
 
 
 .. toctree::

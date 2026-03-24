@@ -191,3 +191,29 @@ def io_register_info() -> Dict[str, str]:
         ),
         "note": "User-registered handlers override built-in ones for the same extension.",
     }
+
+
+@mcp.tool()
+def io_skills_list() -> dict:
+    """List available skill pages for scitex-io."""
+    try:
+        from scitex_dev.skills import list_skills
+
+        result = list_skills(package="scitex-io")
+        return {"success": True, "skills": result.get("scitex-io", [])}
+    except ImportError:
+        return {"success": False, "error": "scitex-dev not installed"}
+
+
+@mcp.tool()
+def io_skills_get(name: str = None) -> dict:
+    """Get a skill page for scitex-io."""
+    try:
+        from scitex_dev.skills import get_skill
+
+        content = get_skill(package="scitex-io", name=name)
+        if content:
+            return {"success": True, "name": name, "content": content}
+        return {"success": False, "error": f"Skill '{name}' not found"}
+    except ImportError:
+        return {"success": False, "error": "scitex-dev not installed"}
