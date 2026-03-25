@@ -1,5 +1,4 @@
 ---
-name: cache
 description: Load caching with mtime invalidation, reload, flush, and configuration.
 ---
 

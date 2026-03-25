@@ -1,5 +1,4 @@
 ---
-name: save-and-load
 description: Core save/load API with two-tier format registry and custom format registration.
 ---
 

@@ -1,5 +1,4 @@
 ---
-name: supported-formats
 description: All 30+ supported file formats with extensions, load/save types, and notes.
 ---
 

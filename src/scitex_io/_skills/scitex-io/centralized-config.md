@@ -1,5 +1,4 @@
 ---
-name: centralized-config
 description: load_configs() loads YAML config directory into DotDict with dot-access and DEBUG_ override.
 ---
 

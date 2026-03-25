@@ -1,5 +1,4 @@
 ---
-name: metadata-embedding
 description: Embed and read provenance metadata in PNG/JPEG/SVG/PDF files.
 ---
 
