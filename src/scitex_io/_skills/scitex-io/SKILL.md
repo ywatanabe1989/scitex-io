@@ -1,5 +1,4 @@
 ---
-name: scitex-io
 description: Universal file I/O supporting 30+ formats (CSV, NumPy, pickle, YAML, JSON, HDF5, images, figures, etc.). Use when loading or saving data files in scientific workflows.
 allowed-tools: mcp__scitex__io_*
 ---
