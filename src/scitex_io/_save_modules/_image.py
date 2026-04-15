@@ -21,6 +21,40 @@ except ImportError:
     Image = None
 
 
+# Keys accepted by ``matplotlib.figure.Figure.savefig``. Any other kwargs
+# that reach ``save_image`` from ``stx.io.save`` (e.g. ``verbose``,
+# ``track``, ``no_csv``, internal scitex flags) must be filtered out
+# before being forwarded, otherwise matplotlib raises TypeError.
+#
+# ``metadata`` is deliberately EXCLUDED: stx.io.save auto-collects a
+# nested dict of scitex-specific metadata for the JSON sidecar, and
+# matplotlib's savefig ``metadata`` kwarg expects a flat dict[str, str]
+# that it writes into the PNG chunk headers. Forwarding the nested
+# scitex dict crashes matplotlib with ``'dict' object has no attribute
+# 'encode'``. The scitex metadata still reaches disk through the
+# separate ``_save_metadata_json`` path.
+_MPL_SAVEFIG_KEYS = frozenset(
+    {
+        "transparent",
+        "dpi",
+        "format",
+        "bbox_inches",
+        "pad_inches",
+        "facecolor",
+        "edgecolor",
+        "backend",
+        "orientation",
+        "papertype",
+        "bbox_extra_artists",
+        "pil_kwargs",
+    }
+)
+
+
+def _mpl_savefig_kwargs(kwargs):
+    return {k: v for k, v in kwargs.items() if k in _MPL_SAVEFIG_KEYS}
+
+
 def save_image(obj, spath, **kwargs):
     # png
     if spath.endswith(".png"):
@@ -32,10 +66,11 @@ def save_image(obj, spath, **kwargs):
             obj.save(spath)
         # matplotlib
         else:
+            savefig_kwargs = _mpl_savefig_kwargs(kwargs)
             try:
-                obj.savefig(spath)
-            except:
-                obj.figure.savefig(spath)
+                obj.savefig(spath, **savefig_kwargs)
+            except Exception:
+                obj.figure.savefig(spath, **savefig_kwargs)
         del obj
 
     # tiff
