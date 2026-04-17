@@ -7,7 +7,7 @@ name = "scitex-io"
 version = "0.2.5"
 description = "Universal scientific data I/O with plugin registry"
 readme = "README.md"
-license = "AGPL-3.0"
+license = "AGPL-3.0-only"
 requires-python = ">=3.9"
 authors = [
     { name = "Yusuke Watanabe", email = "ywatanabe@scitex.ai" },
