@@ -19,8 +19,8 @@ Supports multiple input types:
 - matplotlib figures → TikZ/PGFPlots (future enhancement)
 """
 
-from typing import Optional, Any
 import warnings
+from typing import Any, Optional
 
 
 def save_tex(
@@ -113,9 +113,12 @@ def save_tex(
         # Try to convert using stats module's convert_results
         try:
             try:
-                from scitex.stats.utils._normalizers import convert_results
+                from scitex_stats._utils._normalizers import convert_results
             except ImportError:
-                raise ImportError("scitex.stats not available")
+                try:
+                    from scitex.stats.utils._normalizers import convert_results
+                except ImportError:
+                    raise ImportError("scitex.stats / scitex_stats not available")
             tex_content = convert_results(obj, return_as="latex", **kwargs)
 
             # Add caption and label if provided
