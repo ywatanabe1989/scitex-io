@@ -7,10 +7,16 @@ import os
 import warnings
 from typing import Any
 
-import mne
+try:
+    import mne
+
+    MNE_AVAILABLE = True
+except ImportError:
+    mne = None  # type: ignore[assignment]
+    MNE_AVAILABLE = False
 
 
-def _load_eeg_data(path: str, **kwargs) -> Any:
+def _load_eeg_data(lpath: str, **kwargs) -> Any:
     """
     Load EEG data based on file extension and associated files using MNE-Python.
 

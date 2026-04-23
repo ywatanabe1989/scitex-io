@@ -61,9 +61,9 @@ class TestLoadEegData:
         # These should not raise extension validation errors
         # (they'll fail later due to missing MNE data, but extension should be OK)
         for test_file in supported_extensions:
-            with patch("scitex.io._load_modules._eeg.mne") as mock_mne:
+            with patch("scitex_io._load_modules._eeg.mne") as mock_mne:
                 with patch(
-                    "scitex.io._load_modules._eeg.os.path.isfile"
+                    "scitex_io._load_modules._eeg.os.path.isfile"
                 ) as mock_isfile:
                     # For .eeg files, mock associated files exist
                     mock_isfile.return_value = True
@@ -81,8 +81,8 @@ class TestLoadEegData:
                     with pytest.raises(ValueError, match="test error"):
                         _load_eeg_data(test_file)
 
-    @patch("scitex.io._load_modules._eeg.mne")
-    @patch("scitex.io._load_modules._eeg.warnings")
+    @patch("scitex_io._load_modules._eeg.mne")
+    @patch("scitex_io._load_modules._eeg.warnings")
     def test_brainvision_vhdr_loading(self, mock_warnings, mock_mne):
         """Test loading BrainVision .vhdr files"""
         from scitex_io._load_modules._eeg import _load_eeg_data
@@ -105,7 +105,7 @@ class TestLoadEegData:
         # Verify result
         assert result == mock_raw
 
-    @patch("scitex.io._load_modules._eeg.mne")
+    @patch("scitex_io._load_modules._eeg.mne")
     def test_brainvision_vmrk_loading(self, mock_mne):
         """Test loading BrainVision .vmrk files"""
         from scitex_io._load_modules._eeg import _load_eeg_data
@@ -120,7 +120,7 @@ class TestLoadEegData:
         )
         assert result == mock_raw
 
-    @patch("scitex.io._load_modules._eeg.mne")
+    @patch("scitex_io._load_modules._eeg.mne")
     def test_edf_loading(self, mock_mne):
         """Test loading European Data Format (.edf) files"""
         from scitex_io._load_modules._eeg import _load_eeg_data
@@ -135,7 +135,7 @@ class TestLoadEegData:
         )
         assert result == mock_raw
 
-    @patch("scitex.io._load_modules._eeg.mne")
+    @patch("scitex_io._load_modules._eeg.mne")
     def test_bdf_loading(self, mock_mne):
         """Test loading BioSemi Data Format (.bdf) files"""
         from scitex_io._load_modules._eeg import _load_eeg_data
@@ -150,7 +150,7 @@ class TestLoadEegData:
         )
         assert result == mock_raw
 
-    @patch("scitex.io._load_modules._eeg.mne")
+    @patch("scitex_io._load_modules._eeg.mne")
     def test_gdf_loading(self, mock_mne):
         """Test loading General Data Format (.gdf) files"""
         from scitex_io._load_modules._eeg import _load_eeg_data
@@ -165,7 +165,7 @@ class TestLoadEegData:
         )
         assert result == mock_raw
 
-    @patch("scitex.io._load_modules._eeg.mne")
+    @patch("scitex_io._load_modules._eeg.mne")
     def test_cnt_loading(self, mock_mne):
         """Test loading Neuroscan CNT (.cnt) files"""
         from scitex_io._load_modules._eeg import _load_eeg_data
@@ -180,7 +180,7 @@ class TestLoadEegData:
         )
         assert result == mock_raw
 
-    @patch("scitex.io._load_modules._eeg.mne")
+    @patch("scitex_io._load_modules._eeg.mne")
     def test_egi_loading(self, mock_mne):
         """Test loading EGI simple binary (.egi) files"""
         from scitex_io._load_modules._eeg import _load_eeg_data
@@ -195,7 +195,7 @@ class TestLoadEegData:
         )
         assert result == mock_raw
 
-    @patch("scitex.io._load_modules._eeg.mne")
+    @patch("scitex_io._load_modules._eeg.mne")
     def test_set_loading(self, mock_mne):
         """Test loading EEGLAB SET (.set) files"""
         from scitex_io._load_modules._eeg import _load_eeg_data
@@ -208,8 +208,8 @@ class TestLoadEegData:
         mock_mne.io.read_raw.assert_called_once_with("eeglab_data.set", preload=True)
         assert result == mock_raw
 
-    @patch("scitex.io._load_modules._eeg.os.path.isfile")
-    @patch("scitex.io._load_modules._eeg.mne")
+    @patch("scitex_io._load_modules._eeg.os.path.isfile")
+    @patch("scitex_io._load_modules._eeg.mne")
     def test_eeg_brainvision_detection(self, mock_mne, mock_isfile):
         """Test .eeg file detection for BrainVision format"""
         from scitex_io._load_modules._eeg import _load_eeg_data
@@ -231,8 +231,8 @@ class TestLoadEegData:
         )
         assert result == mock_raw
 
-    @patch("scitex.io._load_modules._eeg.os.path.isfile")
-    @patch("scitex.io._load_modules._eeg.mne")
+    @patch("scitex_io._load_modules._eeg.os.path.isfile")
+    @patch("scitex_io._load_modules._eeg.mne")
     def test_eeg_nihon_koden_detection(self, mock_mne, mock_isfile):
         """Test .eeg file detection for Nihon Koden format"""
         from scitex_io._load_modules._eeg import _load_eeg_data
@@ -254,7 +254,7 @@ class TestLoadEegData:
         mock_mne.io.read_raw.assert_called_once_with("nihon_data.eeg", preload=True)
         assert result == mock_raw
 
-    @patch("scitex.io._load_modules._eeg.mne")
+    @patch("scitex_io._load_modules._eeg.mne")
     def test_mne_exception_propagation(self, mock_mne):
         """Test that MNE exceptions are properly propagated"""
         from scitex_io._load_modules._eeg import _load_eeg_data
@@ -271,7 +271,7 @@ class TestLoadEegData:
         with pytest.raises(ValueError, match="Invalid BDF format"):
             _load_eeg_data("invalid.bdf")
 
-    @patch("scitex.io._load_modules._eeg.mne")
+    @patch("scitex_io._load_modules._eeg.mne")
     def test_kwargs_forwarding(self, mock_mne):
         """Test that kwargs are properly forwarded to MNE functions"""
         from scitex_io._load_modules._eeg import _load_eeg_data
@@ -294,7 +294,7 @@ class TestLoadEegData:
             "test.edf", preload=True, **kwargs
         )
 
-    @patch("scitex.io._load_modules._eeg.mne")
+    @patch("scitex_io._load_modules._eeg.mne")
     def test_preload_always_true(self, mock_mne):
         """Test that preload=True is always enforced"""
         from scitex_io._load_modules._eeg import _load_eeg_data
@@ -343,7 +343,7 @@ class TestLoadEegData:
         assert "Returns" in docstring
         assert "Raises" in docstring
 
-    @patch("scitex.io._load_modules._eeg.mne")
+    @patch("scitex_io._load_modules._eeg.mne")
     def test_warnings_suppression(self, mock_mne):
         """Test that runtime warnings are suppressed during loading"""
         import warnings
@@ -355,17 +355,17 @@ class TestLoadEegData:
 
         # Test that warnings are caught
         with patch(
-            "scitex.io._load_modules._eeg.warnings.catch_warnings"
+            "scitex_io._load_modules._eeg.warnings.catch_warnings"
         ) as mock_catch:
             with patch(
-                "scitex.io._load_modules._eeg.warnings.simplefilter"
+                "scitex_io._load_modules._eeg.warnings.simplefilter"
             ) as mock_filter:
                 _load_eeg_data("test.edf")
 
                 mock_catch.assert_called_once()
                 mock_filter.assert_called_once_with("ignore", RuntimeWarning)
 
-    @patch("scitex.io._load_modules._eeg.mne")
+    @patch("scitex_io._load_modules._eeg.mne")
     def test_real_world_eeg_scenarios(self, mock_mne):
         """Test realistic EEG data loading scenarios"""
         from scitex_io._load_modules._eeg import _load_eeg_data
@@ -418,7 +418,7 @@ class TestLoadEegData:
             "highdensity_128ch.egi", preload=True, montage=None
         )
 
-    @patch("scitex.io._load_modules._eeg.mne")
+    @patch("scitex_io._load_modules._eeg.mne")
     def test_extension_extraction_edge_cases(self, mock_mne):
         """Test edge cases in file extension extraction"""
         from scitex_io._load_modules._eeg import _load_eeg_data
@@ -454,8 +454,8 @@ class TestLoadEegData:
             ):
                 _load_eeg_data(test_file)
 
-    @patch("scitex.io._load_modules._eeg.os.path.isfile")
-    @patch("scitex.io._load_modules._eeg.mne")
+    @patch("scitex_io._load_modules._eeg.os.path.isfile")
+    @patch("scitex_io._load_modules._eeg.mne")
     def test_eeg_extension_no_associated_files(self, mock_mne, mock_isfile):
         """Test .eeg file handling when no associated files are found"""
         from scitex_io._load_modules._eeg import _load_eeg_data
