@@ -45,8 +45,18 @@ against **the current working directory**. Three idiomatic fixes:
 
 3. **Stay within `@stx.session`** — every output lives under
    `FINISHED_SUCCESS/{session_id}/`, so scripts produce a clean,
-   timestamped, hash-tracked directory by design, and load from inside
-   the same session resolves relative to the session dir.
+   timestamped, hash-tracked directory by design. The session decorator
+   injects a `CONFIG` with paths already resolved:
+
+   - `CONFIG.SDIR_OUT` — base output dir (e.g., `analysis_out/`)
+   - `CONFIG.SDIR_RUN` — this run's dir (e.g., `analysis_out/FINISHED_SUCCESS/<session_id>/`)
+
+   ```python
+   @stx.session
+   def main(CONFIG=stx.session.INJECTED):
+       stx.io.save(df, "results.csv")                       # auto-routed
+       df = stx.io.load(CONFIG.SDIR_RUN / "results.csv")    # explicit session-path load
+   ```
 
 Once you learn the routing, it's a feature, not a bug: every
 `stx.io.save` call produces a clean side-effect-free directory layout

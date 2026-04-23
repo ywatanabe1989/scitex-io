@@ -28,7 +28,18 @@ the path as given. Three idiomatic fixes:
    ```
 3. Stay inside `@stx.session` — every output lives under
    `FINISHED_SUCCESS/{session_id}/`, so the layout becomes predictable
-   and hash-verifiable by Clew.
+   and hash-verifiable by Clew. The session decorator injects a
+   `CONFIG` object with the paths already resolved:
+
+   ```python
+   @stx.session
+   def main(CONFIG=stx.session.INJECTED):
+       stx.io.save(df, "results.csv")             # auto-routed
+       # CONFIG.SDIR_OUT → {script}_out/
+       # CONFIG.SDIR_RUN → {script}_out/FINISHED_SUCCESS/{session_id}/
+       # Load explicitly from the session dir if needed:
+       df = stx.io.load(CONFIG.SDIR_RUN / "results.csv")
+   ```
 
 Once you internalize this, the routing is a feature: every save
 produces a clean, dated, hash-tracked output dir without you lifting a
