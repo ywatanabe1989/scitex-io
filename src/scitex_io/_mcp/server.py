@@ -195,7 +195,7 @@ def io_register_info() -> Dict[str, str]:
 
 @mcp.tool()
 def io_skills_list() -> dict:
-    """List available skill pages for scitex-io."""
+    """List every scitex-io skill page (usage guides, format refs, recipes). Use when you need to see what detailed documentation exists for scitex-io before drilling into a specific topic. Returns a list of skill names that can be fetched with `io_skills_get`."""
     try:
         from scitex_dev.skills import list_skills
 
@@ -207,7 +207,7 @@ def io_skills_list() -> dict:
 
 @mcp.tool()
 def io_skills_get(name: str = None) -> dict:
-    """Get a skill page for scitex-io."""
+    """Fetch the full content of a specific scitex-io skill page. Use after `io_skills_list` to read an individual guide (e.g., YAML config loading, HDF5 recipes, custom format registration). Returns the Markdown body of the requested page."""
     try:
         from scitex_dev.skills import get_skill
 
