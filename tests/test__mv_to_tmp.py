@@ -2,7 +2,7 @@
 # Timestamp: "2025-05-31"
 # File: test__mv_to_tmp.py
 
-"""Tests for scitex.io._mv_to_tmp module."""
+"""Tests for scitex_io._mv_to_tmp module."""
 
 import os
 import tempfile
@@ -27,7 +27,7 @@ class TestMvToTmpBasic:
         test_path = "/home/user/data/test.txt"
 
         # Mock move where it's imported (in the module, not shutil)
-        with patch("scitex.io._mv_to_tmp.move") as mock_move:
+        with patch("scitex_io._mv_to_tmp.move") as mock_move:
             with patch("builtins.print") as mock_print:
                 _mv_to_tmp(test_path)
 
@@ -42,7 +42,7 @@ class TestMvToTmpBasic:
 
         test_path = "/home/user/documents/project/data/file.csv"
 
-        with patch("scitex.io._mv_to_tmp.move") as mock_move:
+        with patch("scitex_io._mv_to_tmp.move") as mock_move:
             with patch("builtins.print") as mock_print:
                 # Test with L=3 (should take last 3 path components)
                 _mv_to_tmp(test_path, L=3)
@@ -57,7 +57,7 @@ class TestMvToTmpBasic:
 
         test_path = "/path/to/deep/folder/structure/myfile.txt"
 
-        with patch("scitex.io._mv_to_tmp.move") as mock_move:
+        with patch("scitex_io._mv_to_tmp.move") as mock_move:
             with patch("builtins.print") as mock_print:
                 _mv_to_tmp(test_path)
 
@@ -71,7 +71,7 @@ class TestMvToTmpBasic:
 
         test_path = "file.txt"  # Only 1 component
 
-        with patch("scitex.io._mv_to_tmp.move") as mock_move:
+        with patch("scitex_io._mv_to_tmp.move") as mock_move:
             with patch("builtins.print") as mock_print:
                 _mv_to_tmp(test_path, L=3)  # L larger than path components
 
@@ -90,7 +90,7 @@ class TestMvToTmpErrorHandling:
         test_path = "/nonexistent/file.txt"
 
         with patch(
-            "scitex.io._mv_to_tmp.move", side_effect=FileNotFoundError("File not found")
+            "scitex_io._mv_to_tmp.move", side_effect=FileNotFoundError("File not found")
         ):
             # Should not raise exception due to try/except
             _mv_to_tmp(test_path)  # Should complete without error
@@ -102,7 +102,7 @@ class TestMvToTmpErrorHandling:
         test_path = "/root/protected/file.txt"
 
         with patch(
-            "scitex.io._mv_to_tmp.move",
+            "scitex_io._mv_to_tmp.move",
             side_effect=PermissionError("Permission denied"),
         ):
             # Should not raise exception
@@ -127,7 +127,7 @@ class TestMvToTmpErrorHandling:
 
         test_path = "/home/user/file.txt"
 
-        with patch("scitex.io._mv_to_tmp.move", side_effect=OSError("Target exists")):
+        with patch("scitex_io._mv_to_tmp.move", side_effect=OSError("Target exists")):
             # Should handle silently
             _mv_to_tmp(test_path)  # Should complete without error
 
@@ -142,7 +142,7 @@ class TestMvToTmpPathHandling:
         # Windows path with backslashes
         test_path = r"C:\Users\Documents\file.txt"
 
-        with patch("scitex.io._mv_to_tmp.move") as mock_move:
+        with patch("scitex_io._mv_to_tmp.move") as mock_move:
             with patch("builtins.print"):
                 _mv_to_tmp(test_path)
 
@@ -156,7 +156,7 @@ class TestMvToTmpPathHandling:
 
         test_path = "/home/user/my documents/important file.txt"
 
-        with patch("scitex.io._mv_to_tmp.move") as mock_move:
+        with patch("scitex_io._mv_to_tmp.move") as mock_move:
             with patch("builtins.print") as mock_print:
                 _mv_to_tmp(test_path)
 
@@ -169,7 +169,7 @@ class TestMvToTmpPathHandling:
 
         test_path = "/data/files/report_2024-01-01.csv"
 
-        with patch("scitex.io._mv_to_tmp.move") as mock_move:
+        with patch("scitex_io._mv_to_tmp.move") as mock_move:
             with patch("builtins.print"):
                 _mv_to_tmp(test_path)
 
@@ -182,7 +182,7 @@ class TestMvToTmpPathHandling:
 
         test_path = "./data/file.txt"
 
-        with patch("scitex.io._mv_to_tmp.move") as mock_move:
+        with patch("scitex_io._mv_to_tmp.move") as mock_move:
             with patch("builtins.print"):
                 _mv_to_tmp(test_path)
 
@@ -210,7 +210,7 @@ class TestMvToTmpLevelParameter:
         ]
 
         for L, expected_target in test_cases:
-            with patch("scitex.io._mv_to_tmp.move") as mock_move:
+            with patch("scitex_io._mv_to_tmp.move") as mock_move:
                 with patch("builtins.print"):
                     _mv_to_tmp(test_path, L=L)
                     mock_move.assert_called_once_with(test_path, expected_target)
@@ -221,7 +221,7 @@ class TestMvToTmpLevelParameter:
 
         test_path = "/path/to/file.txt"
 
-        with patch("scitex.io._mv_to_tmp.move") as mock_move:
+        with patch("scitex_io._mv_to_tmp.move") as mock_move:
             with patch("builtins.print"):
                 _mv_to_tmp(test_path, L=0)
 
@@ -236,7 +236,7 @@ class TestMvToTmpLevelParameter:
 
         test_path = "/path/to/file.txt"
 
-        with patch("scitex.io._mv_to_tmp.move") as mock_move:
+        with patch("scitex_io._mv_to_tmp.move") as mock_move:
             with patch("builtins.print"):
                 # Negative L might cause unexpected slicing behavior
                 _mv_to_tmp(test_path, L=-1)
@@ -261,7 +261,7 @@ class TestMvToTmpIntegration:
         mock_tmp.mkdir()
 
         # Patch to use mock_tmp instead of /tmp
-        with patch("scitex.io._mv_to_tmp.move") as mock_move:
+        with patch("scitex_io._mv_to_tmp.move") as mock_move:
 
             def mock_move_impl(src, dst):
                 # Simulate actual move
@@ -284,7 +284,7 @@ class TestMvToTmpIntegration:
 
         test_path = "/home/user/文档/ファイル.txt"
 
-        with patch("scitex.io._mv_to_tmp.move") as mock_move:
+        with patch("scitex_io._mv_to_tmp.move") as mock_move:
             with patch("builtins.print"):
                 _mv_to_tmp(test_path)
 
