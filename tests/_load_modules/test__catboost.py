@@ -35,13 +35,13 @@ class TestLoadCatBoost:
     @pytest.fixture
     def mock_catboost_available(self):
         """Mock CatBoost availability."""
-        with patch("scitex.io._load_modules._catboost.CATBOOST_AVAILABLE", True):
+        with patch("scitex_io._load_modules._catboost.CATBOOST_AVAILABLE", True):
             yield
 
     @pytest.fixture
     def mock_catboost_unavailable(self):
         """Mock CatBoost unavailability."""
-        with patch("scitex.io._load_modules._catboost.CATBOOST_AVAILABLE", False):
+        with patch("scitex_io._load_modules._catboost.CATBOOST_AVAILABLE", False):
             yield
 
     @pytest.fixture

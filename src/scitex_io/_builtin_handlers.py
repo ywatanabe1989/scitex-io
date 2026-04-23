@@ -12,7 +12,6 @@ import warnings as _warnings
 from ._registry import register_loader, register_saver
 
 # === SAVE HANDLERS ===
-
 from ._save_modules import (
     save_catboost,
     save_csv,
@@ -105,6 +104,11 @@ try:
     from ._load_modules._bibtex import _load_bibtex
 except ImportError:
     _load_bibtex = None
+
+try:
+    from ._load_modules._catboost import _load_catboost
+except ImportError:
+    _load_catboost = None
 
 try:
     from ._load_modules._con import _load_con
@@ -214,6 +218,7 @@ _LOADER_MAP = {
     # Bibliography
     ".bib": _load_bibtex,
     # ML/DL
+    ".cbm": _load_catboost,
     ".pth": _load_torch,
     ".pt": _load_torch,
     ".joblib": _load_joblib,
