@@ -16,10 +16,14 @@ def _load_csv(lpath, **kwargs):
     index_col = kwargs.pop("index_col", None)
     obj = pd.read_csv(lpath, index_col=index_col, **kwargs)
 
-    # Remove unnamed columns only if they exist
-    unnamed_cols = obj.columns.str.contains("^Unnamed")
-    if unnamed_cols.any():
-        obj = obj.loc[:, ~unnamed_cols]
+    # Remove unnamed columns only if they exist. `obj.columns` is only
+    # string-typed when the CSV had a text header; pandas produces an
+    # integer RangeIndex when `header=None` is passed, and `.str` on an
+    # integer index raises AttributeError. Guard the accessor.
+    if obj.columns.dtype == "object":
+        unnamed_cols = obj.columns.str.contains("^Unnamed")
+        if unnamed_cols.any():
+            obj = obj.loc[:, ~unnamed_cols]
 
     return obj
 
