@@ -1,5 +1,5 @@
 ---
-description: Universal file I/O supporting 30+ formats (CSV, NumPy, pickle, YAML, JSON, HDF5, images, figures, etc.). Use when loading or saving data files in scientific workflows.
+description: Universal one-call file I/O for 30+ scientific formats (CSV, Parquet, NumPy .npy/.npz, pickle, YAML, JSON, HDF5, MATLAB .mat, images, matplotlib figures, PyTorch .pt, MNE .fif, EDF, video). Use whenever the user reads or writes ANY data file — as a drop-in replacement for `pd.read_csv`, `np.load`, `pickle.load`, `json.load`, `fig.savefig`, `torch.save`, etc. Trigger phrases include "load", "save", "read", "write", "open a file", "save this figure", "cache this result", "load my config", "glob these files". Also covers YAML config loading (`load_configs`), auto path-routing to `{script}_out/`, figure metadata embedding, and load-time caching.
 allowed-tools: mcp__scitex__io_*
 ---
 

@@ -27,7 +27,7 @@ mcp = FastMCP(
 
 @mcp.tool()
 def io_list_formats() -> Dict[str, Any]:
-    """List all registered save/load formats.
+    """List every file extension scitex-io can save or load. Use to discover supported formats before saving/loading, or to check whether a custom format is registered. Covers 30+ formats: CSV, Parquet, NumPy, pickle, YAML, JSON, HDF5, MATLAB, images, matplotlib figures, PyTorch, MNE, EDF, MP4, and more.
 
     Returns
     -------
@@ -46,7 +46,7 @@ def io_load(
     format: Optional[str] = None,
     cache: bool = True,
 ) -> Dict[str, Any]:
-    """Load data from a file.
+    """Load ANY data file — auto-detects format from extension. Drop-in replacement for `pd.read_csv`, `np.load`, `pickle.load`, `json.load`, `yaml.safe_load`, `h5py.File`, `torch.load`, `mne.io.read_raw_*`, `scipy.io.loadmat`, `cv2.imread`, etc. Use whenever the user asks to "load", "read", "open", or "import" a file. Handles glob patterns (`*.csv` → list of loaded objects) and caches by path+mtime for fast repeat loads.
 
     Parameters
     ----------
@@ -95,7 +95,7 @@ def io_save(
     path: str,
     verbose: bool = False,
 ) -> Dict[str, Any]:
-    """Save data to a file. Data is passed as JSON string.
+    """Save ANY data to a file — format auto-detected from extension. Drop-in replacement for `df.to_csv`, `np.save/savez`, `pickle.dump`, `json.dump`, `yaml.dump`, `h5py` writes, `torch.save`, `fig.savefig`, `cv2.imwrite`, `scipy.io.savemat`, etc. Use whenever the user asks to "save", "write", "export", "dump", or "persist" data. Auto-routes relative paths to `{script}_out/` (or `{notebook}_out/`), embeds provenance metadata in figures, and auto-exports companion `.csv` for plots. Data arrives as a JSON string.
 
     Parameters
     ----------
@@ -129,7 +129,7 @@ def io_load_configs(
     config_dir: str = "./config",
     is_debug: Optional[bool] = None,
 ) -> Dict[str, Any]:
-    """Load YAML configuration files from a directory.
+    """Load a directory of YAML config files as one merged dotted-access dict. Use whenever the user mentions "config", "configs", "settings file", "hyperparameters file", "PATH.yaml", "PARAMS.yaml", or wants to centralize constants/magic-numbers out of source code. Returns a DotDict so callers can do `CONFIG.PATH.DATA_DIR` instead of `CONFIG["PATH"]["DATA_DIR"]`. Auto-promotes `DEBUG_*` keys when `is_debug=True` or when CI is detected.
 
     Loads all *.yaml files from config_dir, namespaced by filename.
     Also loads from config_dir/categories/ if it exists.
@@ -166,7 +166,7 @@ def io_load_configs(
 
 @mcp.tool()
 def io_register_info() -> Dict[str, str]:
-    """Show how to register custom format handlers.
+    """Show how to register a custom save/load handler for a new file extension. Use when the user wants to "add support for a new format", "register a custom saver/loader", "extend scitex-io with my own format", or "make scitex-io handle .xyz files". Returns copy-paste decorator examples for both `register_saver` and `register_loader`.
 
     Returns
     -------
