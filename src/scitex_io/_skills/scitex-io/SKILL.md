@@ -1,12 +1,19 @@
 ---
 description: Universal one-call file I/O for 30+ scientific formats (CSV, Parquet, NumPy .npy/.npz, pickle, YAML, JSON, HDF5, MATLAB .mat, images, matplotlib figures, PyTorch .pt, MNE .fif, EDF, video). Use whenever the user reads or writes ANY data file — as a drop-in replacement for `pd.read_csv`, `np.load`, `pickle.load`, `json.load`, `fig.savefig`, `torch.save`, etc. Trigger phrases include "load", "save", "read", "write", "open a file", "save this figure", "cache this result", "load my config", "glob these files", "FileNotFoundError after stx.io.save", "where did my file go", "symlink_from_cwd", "script_out directory". Also covers YAML config loading (`load_configs`), figure metadata embedding, load-time caching, and the path-routing asymmetry every new user and agent hits: `save()` auto-routes to `{script}_out/` based on caller context while `load()` resolves the path as given against cwd — pass `symlink_from_cwd=True` for a one-liner round-trip, use an absolute path on both sides, or wrap in `@stx.session`.
 allowed-tools: mcp__scitex__io_*
-primary_interface: python
+primary_interface: mixed
+interfaces:
+  python: 3
+  cli: 1
+  mcp: 2
+  skills: 3
+  hook: 0
+  http: 0
 ---
 
 # scitex-io
 
-> **Primary interface: Python API.** Import in scripts/notebooks — CLI & MCP are thin wrappers over the Python functions.
+> **Interfaces:** Python ⭐⭐⭐ · CLI ⭐ · MCP ⭐⭐ · Skills ⭐⭐⭐ · Hook — · HTTP —
 
 Universal scientific data I/O with plugin registry. One `save()`/`load()` for 30+ formats.
 
