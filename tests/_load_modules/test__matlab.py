@@ -18,7 +18,6 @@ Tests cover:
 """
 
 import os
-import sys
 import tempfile
 
 import pytest
@@ -26,7 +25,7 @@ import pytest
 # Required for scitex.io module
 pytest.importorskip("h5py")
 pytest.importorskip("zarr")
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import patch
 
 import numpy as np
 import scipy.io as sio
@@ -316,7 +315,6 @@ class TestLoadMatlab:
             with patch(
                 "pymatreader.read_mat", return_value=mock_pymat_data
             ) as mock_read_mat:
-
                 custom_kwargs = {"ignore_fields": ["__header__"], "squeeze_me": True}
                 result = _load_matlab("test.mat", **custom_kwargs)
 
@@ -447,9 +445,9 @@ class TestLoadMatlab:
             os.unlink(temp_path)
 
     def test_integration_with_main_load_function(self):
-        """Test integration with main scitex.io.load function."""
+        """Test integration with scitex_io.load dispatch."""
         try:
-            import scitex
+            import scitex_io
 
             # Create test MATLAB file
             test_data = {
@@ -463,7 +461,7 @@ class TestLoadMatlab:
 
             try:
                 # Test loading through main interface
-                loaded_data = scitex.io.load(temp_path)
+                loaded_data = scitex_io.load(temp_path)
 
                 # Verify functionality
                 assert "integration_test" in loaded_data

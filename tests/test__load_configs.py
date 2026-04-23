@@ -9,12 +9,12 @@ pytest.importorskip("h5py")
 pytest.importorskip("zarr")
 import os
 import tempfile
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import yaml
 
-from scitex.dict import DotDict
 from scitex_io import load_configs
+from scitex_io._utils import DotDict
 
 
 class TestLoadConfigs:
