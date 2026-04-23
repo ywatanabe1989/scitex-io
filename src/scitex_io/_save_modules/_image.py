@@ -4,6 +4,7 @@
 # File: /ssh:sp:/home/ywatanabe/proj/scitex_repo/src/scitex/io/_save_modules/_save_image.py
 # ----------------------------------------
 import os
+
 __FILE__ = __file__
 __DIR__ = os.path.dirname(__FILE__)
 # ----------------------------------------
@@ -19,6 +20,20 @@ try:
     from PIL import Image
 except ImportError:
     Image = None
+
+
+def _is_plotly_figure(obj) -> bool:
+    """Safe plotly.Figure check that works when plotly is not installed."""
+    if plotly is None:
+        return False
+    return isinstance(obj, plotly.graph_objs.Figure)
+
+
+def _is_pil_image(obj) -> bool:
+    """Safe PIL.Image.Image check that works when PIL is not installed."""
+    if Image is None:
+        return False
+    return isinstance(obj, Image.Image)
 
 
 # Keys accepted by ``matplotlib.figure.Figure.savefig``. Any other kwargs
@@ -59,10 +74,10 @@ def save_image(obj, spath, **kwargs):
     # png
     if spath.endswith(".png"):
         # plotly
-        if isinstance(obj, plotly.graph_objs.Figure):
+        if _is_plotly_figure(obj):
             obj.write_image(file=spath, format="png")
         # PIL image
-        elif isinstance(obj, Image.Image):
+        elif _is_pil_image(obj):
             obj.save(spath)
         # matplotlib
         else:
@@ -76,7 +91,7 @@ def save_image(obj, spath, **kwargs):
     # tiff
     elif spath.endswith(".tiff") or spath.endswith(".tif"):
         # PIL image
-        if isinstance(obj, Image.Image):
+        if _is_pil_image(obj):
             obj.save(spath)
         # matplotlib
         else:
@@ -92,7 +107,7 @@ def save_image(obj, spath, **kwargs):
         buf = _io.BytesIO()
 
         # plotly
-        if isinstance(obj, plotly.graph_objs.Figure):
+        if _is_plotly_figure(obj):
             obj.write_image(buf, format="png")
             buf.seek(0)
             img = Image.open(buf)
@@ -100,7 +115,7 @@ def save_image(obj, spath, **kwargs):
             buf.close()
 
         # PIL image
-        elif isinstance(obj, Image.Image):
+        elif _is_pil_image(obj):
             obj.save(spath)
 
         # matplotlib
@@ -119,10 +134,10 @@ def save_image(obj, spath, **kwargs):
     # GIF
     elif spath.endswith(".gif"):
         # PIL image
-        if isinstance(obj, Image.Image):
+        if _is_pil_image(obj):
             obj.save(spath, save_all=True)
         # plotly - convert via PNG first
-        elif isinstance(obj, plotly.graph_objs.Figure):
+        elif _is_plotly_figure(obj):
             buf = _io.BytesIO()
             obj.write_image(buf, format="png")
             buf.seek(0)
@@ -145,7 +160,7 @@ def save_image(obj, spath, **kwargs):
     # SVG
     elif spath.endswith(".svg"):
         # Plotly
-        if isinstance(obj, plotly.graph_objs.Figure):
+        if _is_plotly_figure(obj):
             obj.write_image(file=spath, format="svg")
         # Matplotlib
         else:
@@ -158,13 +173,13 @@ def save_image(obj, spath, **kwargs):
     # PDF
     elif spath.endswith(".pdf"):
         # Plotly
-        if isinstance(obj, plotly.graph_objs.Figure):
+        if _is_plotly_figure(obj):
             obj.write_image(file=spath, format="pdf")
         # PIL Image - convert to PDF
-        elif isinstance(obj, Image.Image):
+        elif _is_pil_image(obj):
             # Convert RGBA to RGB if needed
-            if obj.mode == 'RGBA':
-                rgb_img = Image.new('RGB', obj.size, (255, 255, 255))
+            if obj.mode == "RGBA":
+                rgb_img = Image.new("RGB", obj.size, (255, 255, 255))
                 rgb_img.paste(obj, mask=obj.split()[3])
                 rgb_img.save(spath, "PDF")
             else:
@@ -176,5 +191,6 @@ def save_image(obj, spath, **kwargs):
             except AttributeError:
                 obj.figure.savefig(spath, format="pdf")
         del obj
+
 
 # EOF
