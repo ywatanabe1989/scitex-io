@@ -4,7 +4,6 @@
 # File: /ssh:sp:/home/ywatanabe/proj/scitex_repo/src/scitex/io/_save_modules/_save_image.py
 # ----------------------------------------
 import os
-
 __FILE__ = __file__
 __DIR__ = os.path.dirname(__FILE__)
 # ----------------------------------------
@@ -22,44 +21,41 @@ except ImportError:
     Image = None
 
 
-def _sanitize_mpl_savefig_kwargs(kwargs: dict) -> dict:
-    """Filter kwargs so they are safe to forward to `Figure.savefig(...)`.
-
-    matplotlib accepts a narrow kwarg set; passing extras raises.
-    Also: `metadata=` must be a flat `dict[str, str]` — matplotlib calls
-    ``.encode()`` on each value when writing PNG chunk headers. scitex's
-    auto-collected nested-dict metadata crashes with
-    ``'dict' object has no attribute 'encode'``. Drop the key if nested.
-    """
-    allowed = {
-        "dpi",
-        "facecolor",
-        "edgecolor",
-        "orientation",
-        "format",
+# Keys accepted by ``matplotlib.figure.Figure.savefig``. Any other kwargs
+# that reach ``save_image`` from ``stx.io.save`` (e.g. ``verbose``,
+# ``track``, ``no_csv``, internal scitex flags) must be filtered out
+# before being forwarded, otherwise matplotlib raises TypeError.
+#
+# ``metadata`` is deliberately EXCLUDED: stx.io.save auto-collects a
+# nested dict of scitex-specific metadata for the JSON sidecar, and
+# matplotlib's savefig ``metadata`` kwarg expects a flat dict[str, str]
+# that it writes into the PNG chunk headers. Forwarding the nested
+# scitex dict crashes matplotlib with ``'dict' object has no attribute
+# 'encode'``. The scitex metadata still reaches disk through the
+# separate ``_save_metadata_json`` path.
+_MPL_SAVEFIG_KEYS = frozenset(
+    {
         "transparent",
+        "dpi",
+        "format",
         "bbox_inches",
         "pad_inches",
-        "metadata",
-        "bbox_extra_artists",
+        "facecolor",
+        "edgecolor",
         "backend",
+        "orientation",
+        "papertype",
+        "bbox_extra_artists",
         "pil_kwargs",
     }
-    out = {k: v for k, v in kwargs.items() if k in allowed}
-    md = out.get("metadata")
-    if isinstance(md, dict) and any(
-        not isinstance(v, (str, type(None))) for v in md.values()
-    ):
-        # Flatten one level or drop — matplotlib only accepts flat str values.
-        out["metadata"] = {
-            k: v for k, v in md.items() if isinstance(v, (str, type(None)))
-        }
-    return out
+)
+
+
+def _mpl_savefig_kwargs(kwargs):
+    return {k: v for k, v in kwargs.items() if k in _MPL_SAVEFIG_KEYS}
 
 
 def save_image(obj, spath, **kwargs):
-    mpl_kwargs = _sanitize_mpl_savefig_kwargs(kwargs)
-
     # png
     if spath.endswith(".png"):
         # plotly
@@ -70,10 +66,11 @@ def save_image(obj, spath, **kwargs):
             obj.save(spath)
         # matplotlib
         else:
+            savefig_kwargs = _mpl_savefig_kwargs(kwargs)
             try:
-                obj.savefig(spath, **mpl_kwargs)
-            except AttributeError:
-                obj.figure.savefig(spath, **mpl_kwargs)
+                obj.savefig(spath, **savefig_kwargs)
+            except Exception:
+                obj.figure.savefig(spath, **savefig_kwargs)
         del obj
 
     # tiff
@@ -84,11 +81,9 @@ def save_image(obj, spath, **kwargs):
         # matplotlib
         else:
             try:
-                obj.savefig(spath, format="tiff", **{**{"dpi": 300}, **mpl_kwargs})
-            except AttributeError:
-                obj.figure.savefig(
-                    spath, format="tiff", **{**{"dpi": 300}, **mpl_kwargs}
-                )
+                obj.savefig(spath, dpi=300, format="tiff")
+            except:
+                obj.figure.savefig(spath, dpi=300, format="tiff")
 
         del obj
 
@@ -155,9 +150,9 @@ def save_image(obj, spath, **kwargs):
         # Matplotlib
         else:
             try:
-                obj.savefig(spath, format="svg", **mpl_kwargs)
+                obj.savefig(spath, format="svg")
             except AttributeError:
-                obj.figure.savefig(spath, format="svg", **mpl_kwargs)
+                obj.figure.savefig(spath, format="svg")
         del obj
 
     # PDF
@@ -168,8 +163,8 @@ def save_image(obj, spath, **kwargs):
         # PIL Image - convert to PDF
         elif isinstance(obj, Image.Image):
             # Convert RGBA to RGB if needed
-            if obj.mode == "RGBA":
-                rgb_img = Image.new("RGB", obj.size, (255, 255, 255))
+            if obj.mode == 'RGBA':
+                rgb_img = Image.new('RGB', obj.size, (255, 255, 255))
                 rgb_img.paste(obj, mask=obj.split()[3])
                 rgb_img.save(spath, "PDF")
             else:
@@ -177,10 +172,9 @@ def save_image(obj, spath, **kwargs):
         # Matplotlib
         else:
             try:
-                obj.savefig(spath, format="pdf", **mpl_kwargs)
+                obj.savefig(spath, format="pdf")
             except AttributeError:
-                obj.figure.savefig(spath, format="pdf", **mpl_kwargs)
+                obj.figure.savefig(spath, format="pdf")
         del obj
-
 
 # EOF
