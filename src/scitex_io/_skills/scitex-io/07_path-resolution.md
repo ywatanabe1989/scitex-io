@@ -6,14 +6,51 @@ description: Auto save-path routing in scitex-io and scitex.path utilities for p
 
 ## Auto save-path routing (scitex-io)
 
-`sio.save(obj, "relative/path.csv")` auto-routes based on context:
+`stx.io.save(obj, "relative/path.csv")` auto-routes the actual write
+location based on caller context:
 
 | Context | Output directory |
 |---------|-----------------|
-| Script | `{script_dir}_out/{path}` |
+| Script | `{script_name}_out/{path}` (e.g. `analysis_out/results.csv`) |
+| `@stx.session` | `{script_name}_out/FINISHED_{status}/{session_id}/{path}` |
 | Jupyter | `{notebook_dir}/{notebook_base}_out/{path}` |
-| Interactive | `/tmp/{USER}/{path}` |
-| Absolute path | Used as-is |
+| Interactive REPL | `/tmp/{USER}/{path}` |
+| Absolute path | Used as-is, no routing |
+
+### The round-trip gotcha (important for new users + agents)
+
+```python
+stx.io.save(df, "results.csv")    # writes to analysis_out/results.csv
+df = stx.io.load("results.csv")   # ❌ FileNotFoundError — looks in cwd
+```
+
+`save()` routes by caller context; `load()` resolves relative paths
+against **the current working directory**. Three idiomatic fixes:
+
+1. **Drop a symlink at cwd** — one-flag round trip by filename:
+
+   ```python
+   stx.io.save(df, "results.csv", symlink_from_cwd=True)
+   df = stx.io.load("results.csv")   # ✓ works via the cwd symlink
+   ```
+
+2. **Use the absolute path** returned by save's provenance (or
+   `stx.path.mk_spath`):
+
+   ```python
+   spath = stx.path.mk_spath("results.csv")  # analysis_out/results.csv
+   stx.io.save(df, spath)
+   df = stx.io.load(spath)            # ✓ absolute on both sides
+   ```
+
+3. **Stay within `@stx.session`** — every output lives under
+   `FINISHED_SUCCESS/{session_id}/`, so scripts produce a clean,
+   timestamped, hash-tracked directory by design, and load from inside
+   the same session resolves relative to the session dir.
+
+Once you learn the routing, it's a feature, not a bug: every
+`stx.io.save` call produces a clean side-effect-free directory layout
+that's trivial to archive, hash-verify via Clew, and reproduce.
 
 ## scitex_io path utilities
 

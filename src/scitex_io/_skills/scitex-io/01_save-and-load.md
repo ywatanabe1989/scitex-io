@@ -1,8 +1,38 @@
 ---
-description: Core save/load API with two-tier format registry and custom format registration.
+description: Core save/load API with two-tier format registry and custom format registration. Includes the save/load path-asymmetry gotcha every new user and agent hits.
 ---
 
 # Save and Load
+
+## ⚠️ Round-trip gotcha (read this first)
+
+```python
+stx.io.save(df, "results.csv")    # writes to <script>_out/results.csv (auto-routed)
+df = stx.io.load("results.csv")   # ❌ FileNotFoundError — resolves against cwd
+```
+
+`save()` auto-routes by caller context; `load()` does NOT — it reads
+the path as given. Three idiomatic fixes:
+
+1. Pass `symlink_from_cwd=True` — drops a symlink at cwd so `load`
+   finds it by the same filename:
+   ```python
+   stx.io.save(df, "results.csv", symlink_from_cwd=True)
+   df = stx.io.load("results.csv")   # ✓
+   ```
+2. Use the absolute path on both sides (via `stx.path.mk_spath` or the
+   `Path` returned by `save`):
+   ```python
+   spath = stx.io.save(df, "results.csv")
+   df = stx.io.load(spath)            # ✓
+   ```
+3. Stay inside `@stx.session` — every output lives under
+   `FINISHED_SUCCESS/{session_id}/`, so the layout becomes predictable
+   and hash-verifiable by Clew.
+
+Once you internalize this, the routing is a feature: every save
+produces a clean, dated, hash-tracked output dir without you lifting a
+finger.
 
 ## Import
 
