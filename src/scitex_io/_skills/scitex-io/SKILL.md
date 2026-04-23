@@ -7,16 +7,44 @@ allowed-tools: mcp__scitex__io_*
 
 Universal scientific data I/O with plugin registry. One `save()`/`load()` for 30+ formats.
 
+## Installation & import (two equivalent paths)
+
+The same module is reachable via two install paths; use whichever
+matches your dependency story. Verified 2026-04-23 in a clean
+container.
+
+```python
+# Standalone — pip install scitex-io
+import scitex_io as sio
+sio.save(df, "results.csv")
+
+# Umbrella — pip install scitex
+import scitex.io as sio
+sio.save(df, "results.csv")
+```
+
+`pip install scitex-io` alone **does not** expose the `scitex`
+namespace; `import scitex.io` raises `ModuleNotFoundError`. If you
+want the `scitex.io` form, install both (`pip install scitex
+scitex-io`) or install the umbrella which pulls scitex-io in
+as an extra.
+
+See [../../general/02_interface-python-api.md] for the ecosystem-wide
+rule and the empirical verification table.
+
 ## Sub-skills
 
-* [save-and-load](save-and-load.md) — Core save/load API, registry, custom formats
-* [centralized-config](centralized-config.md) — `load_configs()` and DotDict
-* [metadata-embedding](metadata-embedding.md) — Provenance in PNG/JPEG/SVG/PDF
-* [cache](cache.md) — Load caching, reload, flush
-* [glob](glob.md) — Pattern matching with natural sort
-* [linting-rules](linting-rules.md) — STX-IO001–007 lint rules
-* [supported-formats](supported-formats.md) — All 30+ format tables
-* [path-resolution](path-resolution.md) — Auto save-path, scitex.path utilities
+### Core
+* [01_save-and-load](01_save-and-load.md) — Core save/load API, registry, custom formats
+* [02_centralized-config](02_centralized-config.md) — `load_configs()` and DotDict
+* [03_metadata-embedding](03_metadata-embedding.md) — Provenance in PNG/JPEG/SVG/PDF
+* [04_cache](04_cache.md) — Load caching, reload, flush
+* [05_glob](05_glob.md) — Pattern matching with natural sort
+* [06_supported-formats](06_supported-formats.md) — All 30+ format tables
+* [07_path-resolution](07_path-resolution.md) — Auto save-path, scitex.path utilities
+
+### Standards
+* [20_linting-rules](20_linting-rules.md) — STX-IO001–007 lint rules
 
 ## MCP Tools
 

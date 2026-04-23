@@ -4,6 +4,19 @@ description: Core save/load API with two-tier format registry and custom format 
 
 # Save and Load
 
+## Import
+
+```python
+# Standalone install (pip install scitex-io):
+import scitex_io as sio
+
+# Umbrella install (pip install scitex):
+import scitex.io as sio
+```
+
+Both forms resolve to the same module. Examples below use `sio` which
+works for either. See `SKILL.md` for the dual-install rationale.
+
 ## save()
 
 ```python
