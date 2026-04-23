@@ -19,8 +19,12 @@ def _load_csv(lpath, **kwargs):
     # Remove unnamed columns only if they exist. `obj.columns` is only
     # string-typed when the CSV had a text header; pandas produces an
     # integer RangeIndex when `header=None` is passed, and `.str` on an
-    # integer index raises AttributeError. Guard the accessor.
-    if obj.columns.dtype == "object":
+    # integer index raises AttributeError. Guard the accessor. Note that
+    # pandas >= 2.2 reports the dtype as "str" (pyarrow-backed) rather
+    # than "object", so we check dtype.kind == "O" as well as the new
+    # string dtypes.
+    col_dtype = obj.columns.dtype
+    if col_dtype == "object" or str(col_dtype) in ("str", "string"):
         unnamed_cols = obj.columns.str.contains("^Unnamed")
         if unnamed_cols.any():
             obj = obj.loc[:, ~unnamed_cols]
