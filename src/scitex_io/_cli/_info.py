@@ -5,9 +5,21 @@
 import click
 
 
-@click.command()
+@click.command("info", hidden=True, context_settings={"ignore_unknown_options": True})
+@click.pass_context
+def info_deprecated(ctx):
+    """(deprecated) Renamed to `show-info`."""
+    click.echo(
+        "error: `scitex-io info` was renamed to `scitex-io show-info`.\n"
+        "Re-run with: scitex-io show-info",
+        err=True,
+    )
+    ctx.exit(2)
+
+
+@click.command("show-info")
 @click.option("-v", "--verbose", count=True, help="Verbosity level (-v, -vv)")
-def info(verbose):
+def show_info(verbose):
     """Show registered I/O formats and registry status."""
     from .._registry import list_formats
 

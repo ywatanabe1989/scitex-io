@@ -8,15 +8,15 @@ import click
 
 from .. import __version__
 from ._apis import list_python_apis
-from ._configs import configs  # noqa: F401
-from ._info import info
+from ._configs import configs_deprecated, load_configs_cmd
+from ._info import info_deprecated, show_info
 from ._mcp import mcp
 from ._version import version as version_cmd
 
 CONTEXT_SETTINGS = {"help_option_names": ["-h", "--help"]}
 
 COMMAND_CATEGORIES = [
-    ("Core I/O", ["info", "configs"]),
+    ("Core I/O", ["show-info", "load-configs"]),
     ("Integration", ["mcp", "list-python-apis"]),
     ("Utility", ["version", "shell-completion"]),
 ]
@@ -124,8 +124,10 @@ def shell_completion(shell):
     click.echo(result.stdout)
 
 
-main.add_command(configs)
-main.add_command(info)
+main.add_command(load_configs_cmd, "load-configs")
+main.add_command(configs_deprecated, "configs")  # hidden redirect
+main.add_command(show_info, "show-info")
+main.add_command(info_deprecated, "info")  # hidden redirect
 main.add_command(list_python_apis, "list-python-apis")
 main.add_command(mcp)
 main.add_command(version_cmd, "version")

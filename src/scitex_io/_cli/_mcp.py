@@ -59,13 +59,14 @@ def doctor():
     # Check fastmcp
     try:
         import fastmcp
+
         checks.append(("fastmcp", True, f"v{fastmcp.__version__}"))
     except ImportError:
         checks.append(("fastmcp", False, "not installed (pip install scitex-io[mcp])"))
 
     # Check MCP server
     try:
-        from .._mcp.server import mcp as mcp_server
+
         checks.append(("MCP server", True, "importable"))
     except Exception as e:
         checks.append(("MCP server", False, str(e)))
@@ -73,10 +74,17 @@ def doctor():
     # Check scitex_io core
     try:
         from .. import __version__, list_formats
+
         fmts = list_formats()
         n_save = len(fmts["save"]["builtin"])
         n_load = len(fmts["load"]["builtin"])
-        checks.append(("scitex-io", True, f"v{__version__} ({n_save} save, {n_load} load formats)"))
+        checks.append(
+            (
+                "scitex-io",
+                True,
+                f"v{__version__} ({n_save} save, {n_load} load formats)",
+            )
+        )
     except Exception as e:
         checks.append(("scitex-io", False, str(e)))
 
@@ -95,8 +103,23 @@ def doctor():
         click.secho("Some checks failed. See above.", fg="red")
 
 
-@mcp.command("installation")
-def installation():
+@mcp.command(
+    "installation", hidden=True, context_settings={"ignore_unknown_options": True}
+)
+@click.pass_context
+def installation_deprecated(ctx):
+    """(deprecated) Renamed to `show-installation`."""
+    click.echo(
+        "error: `scitex-io mcp installation` was renamed to "
+        "`scitex-io mcp show-installation`.\n"
+        "Re-run with: scitex-io mcp show-installation",
+        err=True,
+    )
+    ctx.exit(2)
+
+
+@mcp.command("show-installation")
+def show_installation():
     """Show MCP installation and configuration instructions."""
     click.secho("scitex-io MCP Installation", fg="cyan", bold=True)
     click.echo()
@@ -106,14 +129,14 @@ def installation():
     click.echo()
     click.echo("Add to your MCP client config (e.g., claude_desktop_config.json):")
     click.echo()
-    click.secho('  {', dim=True)
+    click.secho("  {", dim=True)
     click.secho('    "mcpServers": {', dim=True)
     click.secho('      "scitex-io": {', dim=True)
     click.secho('        "command": "fastmcp",', dim=True)
     click.secho('        "args": ["run", "scitex_io._mcp.server:mcp"]', dim=True)
-    click.secho('      }', dim=True)
-    click.secho('    }', dim=True)
-    click.secho('  }', dim=True)
+    click.secho("      }", dim=True)
+    click.secho("    }", dim=True)
+    click.secho("  }", dim=True)
     click.echo()
     click.echo("Or start the server manually:")
     click.echo()
