@@ -21,6 +21,15 @@
 
 ---
 
+## Problem and Solution
+
+
+| # | Problem | Solution |
+|---|---------|----------|
+| 1 | **Format zoo** -- save/load scattered across `pd.read_csv`, `np.load`, `pickle`, `json`, `h5py`, `torch.save`, `cv2.imread`, etc. Every format = a different API | **One call** -- `stx.io.save(obj, "x.ext")` / `stx.io.load("x.ext")` routes by extension across 30+ formats; plugin registry lets users register custom handlers |
+| 2 | **FileNotFoundError after save** -- `save()` auto-routes to `{script}_out/` but `load()` resolves cwd-relative, so the naive round-trip breaks for new users | **Predictable paths** -- `symlink_from_cwd=True` flag, `CONFIG.SDIR_RUN` session path, or absolute path on both sides — documented prominently in the skill |
+| 3 | **Figure + data diverge** -- save a PNG; the underlying DataFrame lives in a separate `.csv` that goes out of sync | **Auto-CSV export** -- `stx.io.save(fig, "plot.png")` writes `plot.png` + `plot.csv` + `plot.yaml` (figrecipe recipe) atomically, hash-tracked by Clew |
+
 ## Problem
 
 Three problems recur in every scientific Python project:

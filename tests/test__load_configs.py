@@ -9,12 +9,12 @@ pytest.importorskip("h5py")
 pytest.importorskip("zarr")
 import os
 import tempfile
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import yaml
 
-from scitex.dict import DotDict
 from scitex_io import load_configs
+from scitex_io._utils import DotDict
 
 
 class TestLoadConfigs:
@@ -50,8 +50,8 @@ class TestLoadConfigs:
 
             yield tmpdir
 
-    @patch("scitex.io._load_configs.glob")
-    @patch("scitex.io._load_configs.load")
+    @patch("scitex_io._load_configs.glob")
+    @patch("scitex_io._load_configs.load")
     def test_load_configs_basic(self, mock_load, mock_glob):
         """Test basic loading of config files."""
         # Setup mocks - source namespaces by filename
@@ -69,8 +69,8 @@ class TestLoadConfigs:
         assert result.config1.param2 == 123
         assert result.config2.param3 == "value3"
 
-    @patch("scitex.io._load_configs.glob")
-    @patch("scitex.io._load_configs.load")
+    @patch("scitex_io._load_configs.glob")
+    @patch("scitex_io._load_configs.load")
     def test_load_configs_debug_mode(self, mock_load, mock_glob):
         """Test loading configs with debug mode enabled."""
         # Setup mocks - source namespaces by filename
@@ -87,8 +87,8 @@ class TestLoadConfigs:
         assert result.config1.param1 == "debug_value"
         assert result.config1.param2 == "another_debug_value"
 
-    @patch("scitex.io._load_configs.glob")
-    @patch("scitex.io._load_configs.load")
+    @patch("scitex_io._load_configs.glob")
+    @patch("scitex_io._load_configs.load")
     def test_load_configs_nested_debug(self, mock_load, mock_glob):
         """Test debug value replacement in nested structures."""
         # Setup mocks - source namespaces by filename
@@ -108,9 +108,9 @@ class TestLoadConfigs:
         assert result.config1.top_level.nested.nested_key == "debug_nested_value"
         assert result.config1.top_level.normal_key == "normal_value"
 
-    @patch("scitex.io._load_configs.os.getenv")
-    @patch("scitex.io._load_configs.glob")
-    @patch("scitex.io._load_configs.load")
+    @patch("scitex_io._load_configs.os.getenv")
+    @patch("scitex_io._load_configs.glob")
+    @patch("scitex_io._load_configs.load")
     def test_load_configs_ci_environment(self, mock_load, mock_glob, mock_getenv):
         """Test that CI environment variable enables debug mode."""
         mock_getenv.return_value = "True"
@@ -122,9 +122,9 @@ class TestLoadConfigs:
         # CI should enable debug mode (namespaced by filename)
         assert result.config1.param == "debug"
 
-    @patch("scitex.io._load_configs.glob")
-    @patch("scitex.io._load_configs.load")
-    @patch("scitex.io._load_configs.os.path.exists")
+    @patch("scitex_io._load_configs.glob")
+    @patch("scitex_io._load_configs.load")
+    @patch("scitex_io._load_configs.os.path.exists")
     def test_load_configs_from_is_debug_file(self, mock_exists, mock_load, mock_glob):
         """Test loading debug mode from IS_DEBUG.yaml file."""
 
@@ -144,8 +144,8 @@ class TestLoadConfigs:
         # Should read debug mode from file (namespaced by filename)
         assert result.config1.param == "debug"
 
-    @patch("scitex.io._load_configs.glob")
-    @patch("scitex.io._load_configs.load")
+    @patch("scitex_io._load_configs.glob")
+    @patch("scitex_io._load_configs.load")
     def test_load_configs_show_output(self, mock_load, mock_glob, capsys):
         """Test verbose output during debug value replacement."""
         mock_glob.return_value = ["./config/config1.yaml"]
@@ -156,8 +156,8 @@ class TestLoadConfigs:
         captured = capsys.readouterr()
         assert "DEBUG_param -> param" in captured.out
 
-    @patch("scitex.io._load_configs.glob")
-    @patch("scitex.io._load_configs.load")
+    @patch("scitex_io._load_configs.glob")
+    @patch("scitex_io._load_configs.load")
     def test_load_configs_empty_config(self, mock_load, mock_glob):
         """Test loading empty config files."""
         mock_glob.return_value = ["./config/empty.yaml"]
@@ -168,7 +168,7 @@ class TestLoadConfigs:
         assert isinstance(result, DotDict)
         assert len(result) == 0
 
-    @patch("scitex.io._load_configs.glob")
+    @patch("scitex_io._load_configs.glob")
     def test_load_configs_exception_handling(self, mock_glob, capsys):
         """Test exception handling during config loading."""
         mock_glob.side_effect = Exception("Test error")
@@ -183,8 +183,8 @@ class TestLoadConfigs:
         captured = capsys.readouterr()
         assert "Error loading configs" in captured.out
 
-    @patch("scitex.io._load_configs.glob")
-    @patch("scitex.io._load_configs.load")
+    @patch("scitex_io._load_configs.glob")
+    @patch("scitex_io._load_configs.load")
     def test_load_configs_merge_multiple_files(self, mock_load, mock_glob):
         """Test loading configs from multiple files (namespaced)."""
         mock_glob.return_value = [

@@ -30,7 +30,7 @@ class TestLoadOptunaAvailableFlags:
 class TestLoadOptunaFunctions:
     """Test suite for Optuna loading functions"""
 
-    @patch("scitex.io._load_modules._optuna._load_yaml")
+    @patch("scitex_io._load_modules._optuna._load_yaml")
     def test_load_yaml_as_optuna_dict_categorical(self, mock_load):
         """Test YAML to Optuna dict conversion with categorical parameters"""
         from scitex_io._load_modules import load_yaml_as_an_optuna_dict
@@ -72,7 +72,7 @@ class TestLoadOptunaFunctions:
         assert result["optimizer"] == "adam"
         assert result["activation"] == "relu"
 
-    @patch("scitex.io._load_modules._optuna._load_yaml")
+    @patch("scitex_io._load_modules._optuna._load_yaml")
     def test_load_yaml_as_optuna_dict_uniform(self, mock_load):
         """Test YAML to Optuna dict conversion with uniform parameters"""
         from scitex_io._load_modules import load_yaml_as_an_optuna_dict
@@ -99,7 +99,7 @@ class TestLoadOptunaFunctions:
         assert result["batch_size"] == 17  # min_val + 1
         assert result["epochs"] == 11  # min_val + 1
 
-    @patch("scitex.io._load_modules._optuna._load_yaml")
+    @patch("scitex_io._load_modules._optuna._load_yaml")
     def test_load_yaml_as_optuna_dict_loguniform(self, mock_load):
         """Test YAML to Optuna dict conversion with loguniform parameters"""
         from scitex_io._load_modules import load_yaml_as_an_optuna_dict
@@ -128,7 +128,7 @@ class TestLoadOptunaFunctions:
         assert result["learning_rate"] == pytest.approx(1e-4)  # min_val * 10
         assert result["weight_decay"] == pytest.approx(1e-5)  # min_val * 10
 
-    @patch("scitex.io._load_modules._optuna._load_yaml")
+    @patch("scitex_io._load_modules._optuna._load_yaml")
     def test_load_yaml_as_optuna_dict_intloguniform(self, mock_load):
         """Test YAML to Optuna dict conversion with intloguniform parameters"""
         from scitex_io._load_modules import load_yaml_as_an_optuna_dict
@@ -156,7 +156,7 @@ class TestLoadOptunaFunctions:
         # Verify results
         assert result["hidden_size"] == 16  # int(min_val * 2)
 
-    @patch("scitex.io._load_modules._optuna._load_yaml")
+    @patch("scitex_io._load_modules._optuna._load_yaml")
     def test_load_yaml_as_optuna_dict_mixed_parameters(self, mock_load):
         """Test YAML to Optuna dict conversion with mixed parameter types"""
         from scitex_io._load_modules import load_yaml_as_an_optuna_dict
@@ -326,7 +326,7 @@ class TestLoadOptunaFunctions:
         assert "study" in load_study_rdb.__doc__.lower()
         assert "RDB" in load_study_rdb.__doc__
 
-    @patch("scitex.io._load_modules._optuna._load_yaml")
+    @patch("scitex_io._load_modules._optuna._load_yaml")
     def test_yaml_parameter_edge_cases(self, mock_load):
         """Test edge cases in YAML parameter processing"""
         from scitex_io._load_modules import load_yaml_as_an_optuna_dict
@@ -350,7 +350,7 @@ class TestLoadOptunaFunctions:
         mock_trial.suggest_int.assert_called_once_with("param1", 10.0, 100.0)
         assert result["param1"] == 50
 
-    @patch("scitex.io._load_modules._optuna._load_yaml")
+    @patch("scitex_io._load_modules._optuna._load_yaml")
     def test_empty_yaml_handling(self, mock_load):
         """Test handling of empty YAML configuration"""
         from scitex_io._load_modules import load_yaml_as_an_optuna_dict
@@ -402,7 +402,7 @@ class TestLoadOptunaFunctions:
             )
 
             # Load via the actual function (we need to patch the _load_yaml import)
-            with patch("scitex.io._load_modules._optuna._load_yaml") as mock_load:
+            with patch("scitex_io._load_modules._optuna._load_yaml") as mock_load:
                 mock_load.return_value = ml_config
 
                 result = load_yaml_as_an_optuna_dict(temp_yaml_path, mock_trial)

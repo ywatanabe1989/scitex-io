@@ -4,7 +4,9 @@
 # File: /home/ywatanabe/proj/scitex-io/src/scitex_io/_load_modules/_pdf.py
 # ----------------------------------------
 from __future__ import annotations
+
 import os
+
 __FILE__ = __file__
 __DIR__ = os.path.dirname(__FILE__)
 # ----------------------------------------
@@ -31,13 +33,32 @@ from ._pdf_utils import (
     DotDict,
     _select_backend,
 )
-from ._pdf_text_extractors import _extract_text, _extract_pages
+
+# Expose the fitz / pypdf / pdfplumber module handles at this module's
+# top level so tests that `mock.patch("scitex_io._load_modules._pdf.fitz")`
+# can find them. They're re-imported here (not re-exported from
+# _pdf_utils) so the patched value affects only this module's view.
+try:
+    import fitz  # noqa: F401  PyMuPDF
+except ImportError:
+    fitz = None  # type: ignore[assignment]
+
+try:
+    import pdfplumber  # noqa: F401
+except ImportError:
+    pdfplumber = None  # type: ignore[assignment]
+
+try:
+    import PyPDF2  # noqa: F401
+except ImportError:
+    PyPDF2 = None  # type: ignore[assignment]
 from ._pdf_content_extractors import (
     _extract_images,
     _extract_metadata,
     _extract_sections,
     _extract_tables,
 )
+from ._pdf_text_extractors import _extract_pages, _extract_text
 
 logger = logging.getLogger(__name__)
 
@@ -144,8 +165,13 @@ def _load_pdf(lpath: str, mode: str = "full", **kwargs) -> Any:
     elif mode == "full":
         save_as_jpg = kwargs.get("save_as_jpg", True)
         return _extract_full(
-            lpath, backend, clean_text, extract_images,
-            output_dir, table_settings, save_as_jpg,
+            lpath,
+            backend,
+            clean_text,
+            extract_images,
+            output_dir,
+            table_settings,
+            save_as_jpg,
         )
     else:
         raise ValueError(f"Unknown extraction mode: {mode}")
@@ -202,9 +228,7 @@ def _extract_scientific(
             "total_words": len(result["text"].split()),
             "total_pages": result["metadata"].get("pages", 0),
             "num_sections": len(result["sections"]),
-            "num_tables": sum(
-                len(tables) for tables in result["tables"].values()
-            ),
+            "num_tables": sum(len(tables) for tables in result["tables"].values()),
             "num_images": len(result["images"]),
         }
 
@@ -284,5 +308,6 @@ def _extract_full(
         result["error"] = str(e)
 
     return DotDict(result)
+
 
 # EOF

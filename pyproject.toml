@@ -4,10 +4,10 @@ build-backend = "hatchling.build"
 
 [project]
 name = "scitex-io"
-version = "0.2.3"
+version = "0.2.5"
 description = "Universal scientific data I/O with plugin registry"
 readme = "README.md"
-license = "AGPL-3.0"
+license = "AGPL-3.0-only"
 requires-python = ">=3.9"
 authors = [
     { name = "Yusuke Watanabe", email = "ywatanabe@scitex.ai" },
@@ -48,6 +48,9 @@ dependencies = [
 dev = [
     "pytest>=7.0",
     "pytest-cov",
+    "matplotlib",
+    "plotly",
+    "Pillow",
 ]
 scientific = [
     "scipy",
@@ -99,9 +102,6 @@ Issues = "https://github.com/ywatanabe1989/scitex-io/issues"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/scitex_io"]
-
-[tool.hatch.build.targets.wheel.force-include]
-"src/scitex_io/_skills" = "scitex_io/_skills"
 
 [tool.scitex-linter]
 library_dirs = ["src", "tests", "examples"]

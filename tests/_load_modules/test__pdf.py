@@ -34,8 +34,8 @@ class TestLoadPdf:
                 _load_pdf(missing_file)
 
     @patch("os.path.exists")
-    @patch("scitex.io._load_modules._pdf.fitz")
-    @patch("scitex.io._load_modules._pdf.FITZ_AVAILABLE", True)
+    @patch("scitex_io._load_modules._pdf.fitz")
+    @patch("scitex_io._load_modules._pdf.FITZ_AVAILABLE", True)
     def test_text_mode_fitz_extraction(self, mock_fitz, mock_exists):
         """Test text extraction using fitz (PyMuPDF) backend"""
         from scitex_io._load_modules._pdf import _load_pdf
@@ -62,8 +62,8 @@ class TestLoadPdf:
         assert "Sample text" in result
 
     @patch("os.path.exists")
-    @patch("scitex.io._load_modules._pdf.fitz")
-    @patch("scitex.io._load_modules._pdf.FITZ_AVAILABLE", True)
+    @patch("scitex_io._load_modules._pdf.fitz")
+    @patch("scitex_io._load_modules._pdf.FITZ_AVAILABLE", True)
     def test_multi_page_text_extraction(self, mock_fitz, mock_exists):
         """Test processing of multi-page PDFs"""
         from scitex_io._load_modules._pdf import _load_pdf
@@ -93,8 +93,8 @@ class TestLoadPdf:
         assert "Content from page 3" in result or "page 3" in result
 
     @patch("os.path.exists")
-    @patch("scitex.io._load_modules._pdf.fitz")
-    @patch("scitex.io._load_modules._pdf.FITZ_AVAILABLE", True)
+    @patch("scitex_io._load_modules._pdf.fitz")
+    @patch("scitex_io._load_modules._pdf.FITZ_AVAILABLE", True)
     def test_empty_pdf_handling(self, mock_fitz, mock_exists):
         """Test handling of empty PDFs"""
         from scitex_io._load_modules._pdf import _load_pdf
@@ -116,8 +116,8 @@ class TestLoadPdf:
         assert isinstance(result, str)
 
     @patch("os.path.exists")
-    @patch("scitex.io._load_modules._pdf.fitz")
-    @patch("scitex.io._load_modules._pdf.FITZ_AVAILABLE", True)
+    @patch("scitex_io._load_modules._pdf.fitz")
+    @patch("scitex_io._load_modules._pdf.FITZ_AVAILABLE", True)
     def test_unicode_text_handling(self, mock_fitz, mock_exists):
         """Test handling of Unicode characters in PDF text"""
         from scitex_io._load_modules._pdf import _load_pdf
@@ -142,8 +142,8 @@ class TestLoadPdf:
         assert "Héllo" in result or "hello" in result.lower()
 
     @patch("os.path.exists")
-    @patch("scitex.io._load_modules._pdf.fitz")
-    @patch("scitex.io._load_modules._pdf.FITZ_AVAILABLE", True)
+    @patch("scitex_io._load_modules._pdf.fitz")
+    @patch("scitex_io._load_modules._pdf.FITZ_AVAILABLE", True)
     def test_large_pdf_handling(self, mock_fitz, mock_exists):
         """Test handling of PDFs with many pages"""
         from scitex_io._load_modules._pdf import _load_pdf
@@ -199,8 +199,8 @@ class TestLoadPdf:
         assert "text" in docstring.lower()
 
     @patch("os.path.exists")
-    @patch("scitex.io._load_modules._pdf.fitz")
-    @patch("scitex.io._load_modules._pdf.FITZ_AVAILABLE", True)
+    @patch("scitex_io._load_modules._pdf.fitz")
+    @patch("scitex_io._load_modules._pdf.FITZ_AVAILABLE", True)
     def test_text_mode_with_kwargs(self, mock_fitz, mock_exists):
         """Test that additional kwargs are handled"""
         from scitex_io._load_modules._pdf import _load_pdf
@@ -220,8 +220,8 @@ class TestLoadPdf:
         assert isinstance(result, str)
 
     @patch("os.path.exists")
-    @patch("scitex.io._load_modules._pdf.fitz")
-    @patch("scitex.io._load_modules._pdf.FITZ_AVAILABLE", True)
+    @patch("scitex_io._load_modules._pdf.fitz")
+    @patch("scitex_io._load_modules._pdf.FITZ_AVAILABLE", True)
     def test_path_variations(self, mock_fitz, mock_exists):
         """Test various path formats"""
         from scitex_io._load_modules._pdf import _load_pdf
@@ -256,8 +256,8 @@ class TestLoadPdf:
 
         # Mock file exists
         with patch("os.path.exists", return_value=True):
-            with patch("scitex.io._load_modules._pdf.FITZ_AVAILABLE", True):
-                with patch("scitex.io._load_modules._pdf.fitz") as mock_fitz:
+            with patch("scitex_io._load_modules._pdf.FITZ_AVAILABLE", True):
+                with patch("scitex_io._load_modules._pdf.fitz") as mock_fitz:
                     mock_doc = MagicMock()
                     mock_fitz.open.return_value = mock_doc
 
@@ -266,8 +266,8 @@ class TestLoadPdf:
 
     @patch("os.path.exists")
     @patch("os.path.getsize")
-    @patch("scitex.io._load_modules._pdf.fitz")
-    @patch("scitex.io._load_modules._pdf.FITZ_AVAILABLE", True)
+    @patch("scitex_io._load_modules._pdf.fitz")
+    @patch("scitex_io._load_modules._pdf.FITZ_AVAILABLE", True)
     def test_scientific_mode(self, mock_fitz, mock_getsize, mock_exists):
         """Test scientific extraction mode"""
         from scitex_io._load_modules._pdf import _load_pdf
@@ -291,7 +291,7 @@ class TestLoadPdf:
 
         # Mock file hash calculation
         with patch(
-            "scitex.io._load_modules._pdf._calculate_file_hash", return_value="abc123"
+            "scitex_io._load_modules._pdf._calculate_file_hash", return_value="abc123"
         ):
             result = _load_pdf("scientific_paper.pdf", mode="scientific")
 
@@ -301,8 +301,8 @@ class TestLoadPdf:
         assert result["extraction_mode"] == "scientific"
 
     @patch("os.path.exists")
-    @patch("scitex.io._load_modules._pdf.fitz")
-    @patch("scitex.io._load_modules._pdf.FITZ_AVAILABLE", True)
+    @patch("scitex_io._load_modules._pdf.fitz")
+    @patch("scitex_io._load_modules._pdf.FITZ_AVAILABLE", True)
     def test_metadata_mode(self, mock_fitz, mock_exists):
         """Test metadata extraction mode"""
         from scitex_io._load_modules._pdf import _load_pdf
@@ -326,7 +326,7 @@ class TestLoadPdf:
 
         with patch("os.path.getsize", return_value=1024):
             with patch(
-                "scitex.io._load_modules._pdf._calculate_file_hash",
+                "scitex_io._load_modules._pdf._calculate_file_hash",
                 return_value="abc123",
             ):
                 result = _load_pdf("document.pdf", mode="metadata")
@@ -337,10 +337,10 @@ class TestLoadPdf:
         assert result["author"] == "Test Author"
 
     @patch("os.path.exists")
-    @patch("scitex.io._load_modules._pdf.PyPDF2")
-    @patch("scitex.io._load_modules._pdf.PYPDF2_AVAILABLE", True)
-    @patch("scitex.io._load_modules._pdf.FITZ_AVAILABLE", False)
-    @patch("scitex.io._load_modules._pdf.PDFPLUMBER_AVAILABLE", False)
+    @patch("scitex_io._load_modules._pdf.PyPDF2")
+    @patch("scitex_io._load_modules._pdf.PYPDF2_AVAILABLE", True)
+    @patch("scitex_io._load_modules._pdf.FITZ_AVAILABLE", False)
+    @patch("scitex_io._load_modules._pdf.PDFPLUMBER_AVAILABLE", False)
     def test_pypdf2_fallback_text_extraction(self, mock_pypdf2, mock_exists):
         """Test text extraction using PyPDF2 fallback backend"""
         from scitex_io._load_modules._pdf import _load_pdf
@@ -362,8 +362,8 @@ class TestLoadPdf:
         assert "Sample PyPDF2 text" in result or "Sample" in result
 
     @patch("os.path.exists")
-    @patch("scitex.io._load_modules._pdf.fitz")
-    @patch("scitex.io._load_modules._pdf.FITZ_AVAILABLE", True)
+    @patch("scitex_io._load_modules._pdf.fitz")
+    @patch("scitex_io._load_modules._pdf.FITZ_AVAILABLE", True)
     def test_text_extraction_edge_cases(self, mock_fitz, mock_exists):
         """Test edge cases in text extraction"""
         from scitex_io._load_modules._pdf import _load_pdf
@@ -399,8 +399,8 @@ class TestLoadPdf:
         assert callable(_load_pdf)
 
     @patch("os.path.exists")
-    @patch("scitex.io._load_modules._pdf.fitz")
-    @patch("scitex.io._load_modules._pdf.FITZ_AVAILABLE", True)
+    @patch("scitex_io._load_modules._pdf.fitz")
+    @patch("scitex_io._load_modules._pdf.FITZ_AVAILABLE", True)
     def test_scientific_document_scenario(self, mock_fitz, mock_exists):
         """Test realistic scientific document processing scenario"""
         from scitex_io._load_modules._pdf import _load_pdf
@@ -441,8 +441,8 @@ class TestLoadPdf:
         assert "Abstract" in result or "paper" in result.lower()
 
     @patch("os.path.exists")
-    @patch("scitex.io._load_modules._pdf.fitz")
-    @patch("scitex.io._load_modules._pdf.FITZ_AVAILABLE", True)
+    @patch("scitex_io._load_modules._pdf.fitz")
+    @patch("scitex_io._load_modules._pdf.FITZ_AVAILABLE", True)
     def test_metadata_tuple_return(self, mock_fitz, mock_exists):
         """Test metadata=True returns tuple"""
         from scitex_io._load_modules._pdf import _load_pdf
@@ -468,8 +468,8 @@ class TestLoadPdf:
         # Second element is metadata (None if extraction failed)
 
     @patch("os.path.exists")
-    @patch("scitex.io._load_modules._pdf.fitz")
-    @patch("scitex.io._load_modules._pdf.FITZ_AVAILABLE", True)
+    @patch("scitex_io._load_modules._pdf.fitz")
+    @patch("scitex_io._load_modules._pdf.FITZ_AVAILABLE", True)
     def test_clean_text_option(self, mock_fitz, mock_exists):
         """Test clean_text option"""
         from scitex_io._load_modules._pdf import _load_pdf

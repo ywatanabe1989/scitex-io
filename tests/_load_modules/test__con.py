@@ -41,7 +41,7 @@ class TestLoadCon:
             with pytest.raises(ValueError, match="File must have .con extension"):
                 _load_con(invalid_file)
 
-    @patch("scitex.io._load_modules._con.mne")
+    @patch("scitex_io._load_modules._con.mne")
     def test_mne_read_raw_fif_called_correctly(self, mock_mne):
         """Test that mne.io.read_raw_fif is called with correct parameters"""
         from scitex_io._load_modules._con import _load_con
@@ -66,7 +66,7 @@ class TestLoadCon:
         assert isinstance(result, pd.DataFrame)
         assert "samp_rate" in result.columns
 
-    @patch("scitex.io._load_modules._con.mne")
+    @patch("scitex_io._load_modules._con.mne")
     def test_dataframe_conversion_and_samp_rate_addition(self, mock_mne):
         """Test that raw data is converted to DataFrame and samp_rate is added"""
         from scitex_io._load_modules._con import _load_con
@@ -96,7 +96,7 @@ class TestLoadCon:
         assert list(result["Fp2"]) == [0.4, 0.5, 0.6]
         assert list(result["F3"]) == [0.7, 0.8, 0.9]
 
-    @patch("scitex.io._load_modules._con.mne")
+    @patch("scitex_io._load_modules._con.mne")
     def test_sampling_rate_extraction(self, mock_mne):
         """Test different sampling rate scenarios"""
         from scitex_io._load_modules._con import _load_con
@@ -117,7 +117,7 @@ class TestLoadCon:
                 result["samp_rate"] == sfreq
             )  # All rows should have same sampling rate
 
-    @patch("scitex.io._load_modules._con.mne")
+    @patch("scitex_io._load_modules._con.mne")
     def test_kwargs_forwarding(self, mock_mne):
         """Test that kwargs are properly forwarded to mne.io.read_raw_fif"""
         from scitex_io._load_modules._con import _load_con
@@ -143,7 +143,7 @@ class TestLoadCon:
             "test.con", preload=True, **kwargs
         )
 
-    @patch("scitex.io._load_modules._con.mne")
+    @patch("scitex_io._load_modules._con.mne")
     def test_mne_exception_propagation(self, mock_mne):
         """Test that MNE exceptions are properly propagated"""
         from scitex_io._load_modules._con import _load_con
@@ -160,7 +160,7 @@ class TestLoadCon:
         with pytest.raises(ValueError, match="Invalid file format"):
             _load_con("invalid.con")
 
-    @patch("scitex.io._load_modules._con.mne")
+    @patch("scitex_io._load_modules._con.mne")
     def test_empty_dataframe_handling(self, mock_mne):
         """Test handling of empty dataframes"""
         from scitex_io._load_modules._con import _load_con
@@ -177,7 +177,7 @@ class TestLoadCon:
         assert "samp_rate" in result.columns
         assert len(result) == 0
 
-    @patch("scitex.io._load_modules._con.mne")
+    @patch("scitex_io._load_modules._con.mne")
     def test_large_dataframe_handling(self, mock_mne):
         """Test handling of large dataframes"""
         # Create large mock DataFrame (1000 samples, 64 channels)
@@ -202,7 +202,7 @@ class TestLoadCon:
         assert "samp_rate" in result.columns
         assert all(result["samp_rate"] == 1000.0)
 
-    @patch("scitex.io._load_modules._con.mne")
+    @patch("scitex_io._load_modules._con.mne")
     def test_missing_sfreq_info(self, mock_mne):
         """Test handling when sfreq is missing from info"""
         from scitex_io._load_modules._con import _load_con
@@ -231,7 +231,7 @@ class TestLoadCon:
         # Check return annotation
         assert sig.return_annotation != inspect.Signature.empty
 
-    @patch("scitex.io._load_modules._con.mne")
+    @patch("scitex_io._load_modules._con.mne")
     def test_real_world_eeg_scenario(self, mock_mne):
         """Test realistic EEG connectivity file scenario"""
         from scitex_io._load_modules._con import _load_con
@@ -268,7 +268,7 @@ class TestLoadCon:
             assert not result[ch].isna().any()
             assert len(result[ch]) == n_samples
 
-    @patch("scitex.io._load_modules._con.mne")
+    @patch("scitex_io._load_modules._con.mne")
     def test_preload_always_true(self, mock_mne):
         """Test that preload=True is always enforced"""
         from scitex_io._load_modules._con import _load_con

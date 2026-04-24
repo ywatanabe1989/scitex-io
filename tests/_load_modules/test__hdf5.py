@@ -19,7 +19,6 @@ Tests cover:
 
 import os
 import pickle
-import sys
 import tempfile
 
 import pytest
@@ -27,7 +26,6 @@ import pytest
 # Required for scitex.io module
 pytest.importorskip("h5py")
 pytest.importorskip("zarr")
-from unittest.mock import MagicMock, Mock, patch
 
 import h5py
 import numpy as np
@@ -539,9 +537,9 @@ class TestLoadHDF5:
             os.unlink(temp_path)
 
     def test_integration_with_main_load_function(self):
-        """Test integration with main scitex.io.load function."""
+        """Test integration with scitex_io.load dispatch."""
         try:
-            import scitex
+            import scitex_io
 
             # Create test HDF5 file
             with tempfile.NamedTemporaryFile(suffix=".hdf5", delete=False) as f:
@@ -553,7 +551,7 @@ class TestLoadHDF5:
 
             try:
                 # Test loading through main interface
-                loaded_data = scitex.io.load(temp_path)
+                loaded_data = scitex_io.load(temp_path)
 
                 # Verify functionality
                 assert "test_data" in loaded_data

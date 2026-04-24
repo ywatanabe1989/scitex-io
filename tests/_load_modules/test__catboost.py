@@ -17,7 +17,6 @@ Tests cover:
 """
 
 import os
-import sys
 import tempfile
 
 import pytest
@@ -25,7 +24,7 @@ import pytest
 # Required for scitex.io module
 pytest.importorskip("h5py")
 pytest.importorskip("zarr")
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import Mock, patch
 
 import numpy as np
 
@@ -36,13 +35,13 @@ class TestLoadCatBoost:
     @pytest.fixture
     def mock_catboost_available(self):
         """Mock CatBoost availability."""
-        with patch("scitex.io._load_modules._catboost.CATBOOST_AVAILABLE", True):
+        with patch("scitex_io._load_modules._catboost.CATBOOST_AVAILABLE", True):
             yield
 
     @pytest.fixture
     def mock_catboost_unavailable(self):
         """Mock CatBoost unavailability."""
-        with patch("scitex.io._load_modules._catboost.CATBOOST_AVAILABLE", False):
+        with patch("scitex_io._load_modules._catboost.CATBOOST_AVAILABLE", False):
             yield
 
     @pytest.fixture
@@ -103,10 +102,10 @@ class TestLoadCatBoost:
         mock_classifier_class.return_value = mock_instance
 
         # Patch the classes into the module
-        with patch.object(
-            catboost_module, "CatBoostClassifier", mock_classifier_class
-        ), patch.object(catboost_module, "CatBoostRegressor", mock_regressor_class):
-
+        with (
+            patch.object(catboost_module, "CatBoostClassifier", mock_classifier_class),
+            patch.object(catboost_module, "CatBoostRegressor", mock_regressor_class),
+        ):
             result = catboost_module._load_catboost("model.cbm")
 
             mock_classifier_class.assert_called_once()
@@ -135,10 +134,10 @@ class TestLoadCatBoost:
         mock_regressor_class.return_value = mock_regressor_instance
 
         # Patch both classes
-        with patch.object(
-            catboost_module, "CatBoostClassifier", mock_classifier_class
-        ), patch.object(catboost_module, "CatBoostRegressor", mock_regressor_class):
-
+        with (
+            patch.object(catboost_module, "CatBoostClassifier", mock_classifier_class),
+            patch.object(catboost_module, "CatBoostRegressor", mock_regressor_class),
+        ):
             result = catboost_module._load_catboost("model.cbm")
 
             # Verify classifier was tried first
@@ -164,10 +163,10 @@ class TestLoadCatBoost:
         mock_classifier_class.return_value = mock_instance
 
         # Patch classes
-        with patch.object(
-            catboost_module, "CatBoostClassifier", mock_classifier_class
-        ), patch.object(catboost_module, "CatBoostRegressor", mock_regressor_class):
-
+        with (
+            patch.object(catboost_module, "CatBoostClassifier", mock_classifier_class),
+            patch.object(catboost_module, "CatBoostRegressor", mock_regressor_class),
+        ):
             custom_kwargs = {"format": "cbm", "ignore_checkpoints": True}
             catboost_module._load_catboost("model.cbm", **custom_kwargs)
 
@@ -405,10 +404,10 @@ class TestLoadCatBoost:
         mock_instance.load_model.return_value = mock_loaded_model
         mock_classifier_class.return_value = mock_instance
 
-        with patch.object(
-            catboost_module, "CatBoostClassifier", mock_classifier_class
-        ), patch.object(catboost_module, "CatBoostRegressor", mock_regressor_class):
-
+        with (
+            patch.object(catboost_module, "CatBoostClassifier", mock_classifier_class),
+            patch.object(catboost_module, "CatBoostRegressor", mock_regressor_class),
+        ):
             # Test various valid .cbm filenames
             valid_names = [
                 "model.cbm",
@@ -448,20 +447,20 @@ class TestLoadCatBoost:
         mock_regressor_instance.load_model.side_effect = Exception("Regressor failed")
         mock_regressor_class.return_value = mock_regressor_instance
 
-        with patch.object(
-            catboost_module, "CatBoostClassifier", mock_classifier_class
-        ), patch.object(catboost_module, "CatBoostRegressor", mock_regressor_class):
-
+        with (
+            patch.object(catboost_module, "CatBoostClassifier", mock_classifier_class),
+            patch.object(catboost_module, "CatBoostRegressor", mock_regressor_class),
+        ):
             # Should raise the regressor exception (the final attempt)
             with pytest.raises(Exception, match="Regressor failed"):
                 catboost_module._load_catboost("model.cbm")
 
     def test_integration_with_main_load_function(self):
-        """Test integration with main scitex.io.load function."""
+        """Test integration with scitex_io.load dispatch."""
         try:
             import catboost
 
-            import scitex
+            import scitex_io
 
             # Create and save a model
             X = np.random.rand(50, 3)
@@ -478,7 +477,7 @@ class TestLoadCatBoost:
 
             try:
                 # Test loading through main interface
-                loaded_model = scitex.io.load(temp_path)
+                loaded_model = scitex_io.load(temp_path)
 
                 # Verify functionality
                 assert hasattr(loaded_model, "predict")

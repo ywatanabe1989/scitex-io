@@ -16,9 +16,15 @@ def _load_csv(lpath, **kwargs):
     index_col = kwargs.pop("index_col", None)
     obj = pd.read_csv(lpath, index_col=index_col, **kwargs)
 
-    # Remove unnamed columns only if they exist
-    unnamed_cols = obj.columns.str.contains("^Unnamed")
-    if unnamed_cols.any():
+    # Remove unnamed columns when the CSV had a text header. `.str` on a
+    # non-string Index (e.g. RangeIndex from header=None) raises
+    # AttributeError; we use try/except instead of a dtype check so this
+    # works across pandas versions (object, "string", pyarrow-backed "str").
+    try:
+        unnamed_cols = obj.columns.str.contains("^Unnamed")
+    except (AttributeError, TypeError):
+        unnamed_cols = None
+    if unnamed_cols is not None and unnamed_cols.any():
         obj = obj.loc[:, ~unnamed_cols]
 
     return obj
