@@ -74,3 +74,8 @@ scitex-io configs show ./config/  # Display merged configs
 scitex-io mcp start               # Start MCP server
 scitex-io skills list              # List skill pages
 ```
+
+
+## Environment
+
+- [08_env-vars.md](08_env-vars.md) — SCITEX_* env vars read by scitex-io at runtime
