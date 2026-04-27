@@ -48,12 +48,8 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = [
-    "pytest>=7.0",
-    "pytest-cov",
-    "matplotlib",
-    "plotly",
-    "Pillow",
+mcp = [
+    "fastmcp>=2.0",
 ]
 scientific = [
     "scipy",
@@ -62,6 +58,13 @@ scientific = [
     "numcodecs",
     "matplotlib",
 ]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov",
+    "matplotlib",
+    "plotly",
+    "Pillow",
+]
 docs = [
     "sphinx>=7.0",
     "sphinx-rtd-theme>=2.0",
@@ -69,20 +72,9 @@ docs = [
     "sphinx-copybutton>=0.5",
     "sphinx-autodoc-typehints>=1.25",
 ]
-mcp = [
-    "fastmcp>=2.0",
-]
 all = [
-    "scitex-io[dev,scientific,docs,mcp]",
-    "Pillow",
-    "PyYAML",
-    "joblib",
-    "openpyxl",
-    "xlrd",
-    "PyPDF2",
-    "pdfplumber",
-    "python-docx",
-    "bibtexparser",
+    "scitex-io[mcp]",
+    "scitex-io[scientific]",
 ]
 
 [project.scripts]
