@@ -37,6 +37,9 @@ classifiers = [
     "Topic :: Scientific/Engineering",
 ]
 dependencies = [
+    "tqdm",
+    "ruamel.yaml",
+    "mne",
     "numpy",
     "pandas",
     "click>=8.0.0",
