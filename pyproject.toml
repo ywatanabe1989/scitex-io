@@ -38,6 +38,7 @@ classifiers = [
 ]
 dependencies = [
     "tqdm",
+    "PyYAML",
     "ruamel.yaml",
     "mne",
     "numpy",
