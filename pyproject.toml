@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "scitex-io"
-version = "0.2.8"
+version = "0.2.9"
 description = "Universal scientific data I/O with plugin registry"
 readme = "README.md"
 license = "AGPL-3.0-only"
@@ -47,6 +47,7 @@ dependencies = [
     "rich>=13.0.0",
     "scitex-dev>=0.1.0",
     "scitex-linter>=0.3.0",
+    "scitex",
 ]
 
 [project.optional-dependencies]
