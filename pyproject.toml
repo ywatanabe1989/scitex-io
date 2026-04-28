@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "scitex-io"
-version = "0.2.9"
+version = "0.2.10"
 description = "Universal scientific data I/O with plugin registry"
 readme = "README.md"
 license = "AGPL-3.0-only"
@@ -27,7 +27,6 @@ keywords = [
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Science/Research",
-    "License :: OSI Approved :: GNU Affero General Public License v3",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.9",
