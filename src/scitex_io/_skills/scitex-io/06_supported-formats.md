@@ -1,5 +1,7 @@
 ---
 description: All 30+ supported file formats with extensions, load/save types, and notes.
+name: supported-formats
+tags: [scitex-io, scitex-package]
 ---
 
 # Supported Formats

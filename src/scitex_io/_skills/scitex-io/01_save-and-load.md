@@ -1,5 +1,7 @@
 ---
 description: Core save/load API with two-tier format registry and custom format registration. Includes the save/load path-asymmetry gotcha every new user and agent hits.
+name: save-and-load
+tags: [scitex-io, scitex-package]
 ---
 
 # Save and Load

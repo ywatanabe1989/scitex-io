@@ -1,5 +1,7 @@
 ---
 description: load_configs() loads YAML config directory into DotDict with dot-access and DEBUG_ override.
+name: centralized-config
+tags: [scitex-io, scitex-package]
 ---
 
 # Centralized Config
