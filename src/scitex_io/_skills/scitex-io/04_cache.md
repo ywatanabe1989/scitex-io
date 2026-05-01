@@ -1,5 +1,7 @@
 ---
 description: Load caching with mtime invalidation, reload, flush, and configuration.
+name: cache
+tags: [scitex-io, scitex-package]
 ---
 
 # Cache

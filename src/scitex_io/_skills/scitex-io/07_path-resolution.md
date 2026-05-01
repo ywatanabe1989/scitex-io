@@ -1,5 +1,7 @@
 ---
 description: Auto save-path routing in scitex-io and scitex.path utilities for path splitting, finding, versioning, and symlinks.
+name: path-resolution
+tags: [scitex-io, scitex-package]
 ---
 
 # Path Resolution

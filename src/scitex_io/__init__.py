@@ -13,6 +13,8 @@ Supports 30+ formats out of the box. Register custom handlers via::
     def load_myformat(path, **kw): ...
 """
 
+from __future__ import annotations
+
 # Registry API (must be imported before _builtin_handlers)
 # Trigger built-in handler registration
 from . import _builtin_handlers  # noqa: F401
@@ -109,9 +111,17 @@ try:
 except ImportError:
     pass
 
-__version__ = "0.2.5"
-
+try:
+    from importlib.metadata import version as _v, PackageNotFoundError
+    try:
+        __version__ = _v("scitex-io")
+    except PackageNotFoundError:
+        __version__ = "0.0.0+local"
+    del _v, PackageNotFoundError
+except ImportError:  # pragma: no cover — only on ancient Pythons
+    __version__ = "0.0.0+local"
 __all__ = [
+    "__version__",
     # Registry API
     "register_saver",
     "register_loader",

@@ -4,6 +4,9 @@
 DotDict is used by load_configs() to return config values that can be
 accessed with attribute syntax: CONFIG.MODEL.HIDDEN_DIM instead of
 CONFIG["MODEL"]["HIDDEN_DIM"].
+
+Usage:
+    python 04_dotdict.py
 """
 
 from scitex_io import DotDict
@@ -43,6 +46,7 @@ def main():
     plain = PARAMS.to_dict()
     print(f"Type after to_dict(): {type(plain).__name__}")
     print(f"plain['MODEL']['HIDDEN_DIM'] = {plain['MODEL']['HIDDEN_DIM']}")
+    return 0
 
 
 if __name__ == "__main__":

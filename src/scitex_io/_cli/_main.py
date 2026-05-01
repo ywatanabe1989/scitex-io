@@ -8,15 +8,15 @@ import click
 
 from .. import __version__
 from ._apis import list_python_apis
-from ._configs import configs  # noqa: F401
-from ._info import info
+from ._configs import configs_deprecated, load_configs_cmd
+from ._info import info_deprecated, show_info
 from ._mcp import mcp
 from ._version import version as version_cmd
 
 CONTEXT_SETTINGS = {"help_option_names": ["-h", "--help"]}
 
 COMMAND_CATEGORIES = [
-    ("Core I/O", ["info", "configs"]),
+    ("Core I/O", ["show-info", "load-configs"]),
     ("Integration", ["mcp", "list-python-apis"]),
     ("Utility", ["version", "shell-completion"]),
 ]
@@ -92,10 +92,23 @@ def _print_help_recursive(ctx):
     cls=CategorizedGroup, context_settings=CONTEXT_SETTINGS, invoke_without_command=True
 )
 @click.option("--help-recursive", is_flag=True, help="Show help for all subcommands")
+@click.option(
+    "--json",
+    "as_json",
+    is_flag=True,
+    help="Emit structured JSON output (propagates to subcommands that honour it).",
+)
 @click.version_option(__version__, "--version", "-V")
 @click.pass_context
-def main(ctx, help_recursive):
-    """scitex-io: Universal scientific data I/O with plugin registry."""
+def main(ctx, help_recursive, as_json):
+    """scitex-io: Universal scientific data I/O with plugin registry.
+
+    \b
+    Config is loaded with the SciTeX precedence chain:
+      config.yaml -> $SCITEX_IO_CONFIG -> ~/.scitex/io/config.yaml -> defaults
+    """
+    ctx.ensure_object(dict)
+    ctx.obj["as_json"] = as_json
     if help_recursive:
         _print_help_recursive(ctx)
         ctx.exit(0)
@@ -106,7 +119,14 @@ def main(ctx, help_recursive):
 @main.command("shell-completion")
 @click.argument("shell", type=click.Choice(["bash", "zsh", "fish"]))
 def shell_completion(shell):
-    """Generate shell completion script."""
+    """Generate shell completion script.
+
+    \b
+    Example:
+      $ scitex-io shell-completion bash
+      $ scitex-io shell-completion zsh >> ~/.zshrc
+      $ scitex-io shell-completion fish > ~/.config/fish/completions/scitex-io.fish
+    """
     import subprocess
 
     env_var = "_SCITEX_IO_COMPLETE"
@@ -124,8 +144,10 @@ def shell_completion(shell):
     click.echo(result.stdout)
 
 
-main.add_command(configs)
-main.add_command(info)
+main.add_command(load_configs_cmd, "load-configs")
+main.add_command(configs_deprecated, "configs")  # hidden redirect
+main.add_command(show_info, "show-info")
+main.add_command(info_deprecated, "info")  # hidden redirect
 main.add_command(list_python_apis, "list-python-apis")
 main.add_command(mcp)
 main.add_command(version_cmd, "version")

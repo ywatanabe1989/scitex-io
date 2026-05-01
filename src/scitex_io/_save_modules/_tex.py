@@ -116,7 +116,7 @@ def save_tex(
                 from scitex_stats._utils._normalizers import convert_results
             except ImportError:
                 try:
-                    from scitex.stats.utils._normalizers import convert_results
+                    from scitex_stats._utils._normalizers import convert_results
                 except ImportError:
                     raise ImportError("scitex.stats / scitex_stats not available")
             tex_content = convert_results(obj, return_as="latex", **kwargs)

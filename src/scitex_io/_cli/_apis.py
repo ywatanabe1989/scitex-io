@@ -88,11 +88,32 @@ TYPE_COLORS = {"M": "blue", "C": "magenta", "F": "green", "V": "cyan"}
 
 @click.command("list-python-apis")
 @click.option("-v", "--verbose", count=True, help="-v names, -vv sigs, -vvv docs")
-def list_python_apis(verbose):
-    """List public Python APIs in scitex-io."""
+@click.option("--json", "as_json", is_flag=True, help="Output as JSON.")
+def list_python_apis(verbose, as_json):
+    """List public Python APIs in scitex-io.
+
+    \b
+    Example:
+      $ scitex-io list-python-apis
+      $ scitex-io list-python-apis -vv
+      $ scitex-io list-python-apis --json
+    """
     import scitex_io
 
     apis = _get_apis(scitex_io, "scitex_io")
+
+    if as_json:
+        import json as _json
+
+        payload = {
+            "module": "scitex_io",
+            "apis": [
+                {"kind": kind, "name": name, "signature": sig, "doc": doc}
+                for kind, name, sig, doc in apis
+            ],
+        }
+        click.echo(_json.dumps(payload, indent=2))
+        return
 
     if not apis:
         click.echo("No public APIs found.")

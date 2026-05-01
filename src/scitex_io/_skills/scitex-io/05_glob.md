@@ -1,5 +1,7 @@
 ---
 description: Pattern-based file matching with natural sorting and path parsing.
+name: glob
+tags: [scitex-io, scitex-package]
 ---
 
 # Glob

@@ -9,6 +9,8 @@ interfaces:
   skills: 3
   hook: 0
   http: 0
+name: scitex-io
+tags: [scitex-io, scitex-package]
 ---
 
 # scitex-io

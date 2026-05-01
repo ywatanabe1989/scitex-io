@@ -38,8 +38,22 @@ def _print_help_recursive(ctx):
 @mcp.command("start")
 @click.option("--host", default="127.0.0.1", help="Host to bind to.")
 @click.option("--port", default=8100, type=int, help="Port to bind to.")
-def start_server(host, port):
-    """Start the scitex-io MCP server."""
+@click.option("--dry-run", is_flag=True, help="Print launch plan without starting.")
+@click.option(
+    "-y", "--yes", is_flag=True, help="Suppress interactive confirmation (assume yes)."
+)
+def start_server(host, port, dry_run, yes):
+    """Start the scitex-io MCP server.
+
+    \b
+    Example:
+      $ scitex-io mcp start
+      $ scitex-io mcp start --host 0.0.0.0 --port 9100
+      $ scitex-io mcp start --dry-run
+    """
+    if dry_run:
+        click.echo(f"DRY RUN — would start scitex-io MCP server on {host}:{port}")
+        return
     try:
         from .._mcp.server import mcp as mcp_server
     except ImportError as e:
@@ -53,19 +67,24 @@ def start_server(host, port):
 
 @mcp.command("doctor")
 def doctor():
-    """Check MCP server health and dependencies."""
+    """Check MCP server health and dependencies.
+
+    \b
+    Example:
+      $ scitex-io mcp doctor
+    """
     checks = []
 
     # Check fastmcp
     try:
         import fastmcp
+
         checks.append(("fastmcp", True, f"v{fastmcp.__version__}"))
     except ImportError:
         checks.append(("fastmcp", False, "not installed (pip install scitex-io[mcp])"))
 
     # Check MCP server
     try:
-        from .._mcp.server import mcp as mcp_server
         checks.append(("MCP server", True, "importable"))
     except Exception as e:
         checks.append(("MCP server", False, str(e)))
@@ -73,10 +92,17 @@ def doctor():
     # Check scitex_io core
     try:
         from .. import __version__, list_formats
+
         fmts = list_formats()
         n_save = len(fmts["save"]["builtin"])
         n_load = len(fmts["load"]["builtin"])
-        checks.append(("scitex-io", True, f"v{__version__} ({n_save} save, {n_load} load formats)"))
+        checks.append(
+            (
+                "scitex-io",
+                True,
+                f"v{__version__} ({n_save} save, {n_load} load formats)",
+            )
+        )
     except Exception as e:
         checks.append(("scitex-io", False, str(e)))
 
@@ -95,9 +121,54 @@ def doctor():
         click.secho("Some checks failed. See above.", fg="red")
 
 
-@mcp.command("installation")
-def installation():
-    """Show MCP installation and configuration instructions."""
+@mcp.command(
+    "installation", hidden=True, context_settings={"ignore_unknown_options": True}
+)
+@click.pass_context
+def installation_deprecated(ctx):
+    """(deprecated) Renamed to `show-installation`."""
+    click.echo(
+        "error: `scitex-io mcp installation` was renamed to "
+        "`scitex-io mcp show-installation`.\n"
+        "Re-run with: scitex-io mcp show-installation",
+        err=True,
+    )
+    ctx.exit(2)
+
+
+@mcp.command("show-installation")
+@click.option("--json", "as_json", is_flag=True, help="Output as JSON.")
+def show_installation(as_json):
+    """Show MCP installation and configuration instructions.
+
+    \b
+    Example:
+      $ scitex-io mcp show-installation
+      $ scitex-io mcp show-installation --json
+    """
+    config = {
+        "mcpServers": {
+            "scitex-io": {
+                "command": "fastmcp",
+                "args": ["run", "scitex_io._mcp.server:mcp"],
+            }
+        }
+    }
+    if as_json:
+        import json as _json
+
+        click.echo(
+            _json.dumps(
+                {
+                    "install_command": "pip install scitex-io[mcp]",
+                    "config": config,
+                    "verify_commands": ["scitex-io mcp doctor"],
+                },
+                indent=2,
+            )
+        )
+        return
+
     click.secho("scitex-io MCP Installation", fg="cyan", bold=True)
     click.echo()
     click.echo("Install scitex-io with MCP support:")
@@ -106,14 +177,10 @@ def installation():
     click.echo()
     click.echo("Add to your MCP client config (e.g., claude_desktop_config.json):")
     click.echo()
-    click.secho('  {', dim=True)
-    click.secho('    "mcpServers": {', dim=True)
-    click.secho('      "scitex-io": {', dim=True)
-    click.secho('        "command": "fastmcp",', dim=True)
-    click.secho('        "args": ["run", "scitex_io._mcp.server:mcp"]', dim=True)
-    click.secho('      }', dim=True)
-    click.secho('    }', dim=True)
-    click.secho('  }', dim=True)
+    import json as _json
+
+    for line in _json.dumps(config, indent=2).split("\n"):
+        click.secho(f"  {line}", dim=True)
     click.echo()
     click.echo("Or start the server manually:")
     click.echo()
@@ -126,8 +193,16 @@ def installation():
 
 @mcp.command("list-tools")
 @click.option("-v", "--verbose", count=True, help="-v names, -vv params, -vvv docs")
-def list_tools(verbose):
-    """List available MCP tools."""
+@click.option("--json", "as_json", is_flag=True, help="Output as JSON.")
+def list_tools(verbose, as_json):
+    """List available MCP tools.
+
+    \b
+    Example:
+      $ scitex-io mcp list-tools
+      $ scitex-io mcp list-tools -vv
+      $ scitex-io mcp list-tools --json
+    """
     try:
         from .._mcp.server import mcp as mcp_server
     except ImportError as e:
@@ -138,6 +213,23 @@ def list_tools(verbose):
     import asyncio
 
     tools = asyncio.run(mcp_server.list_tools())
+
+    if as_json:
+        import json as _json
+
+        payload = {
+            "total": len(tools),
+            "tools": [
+                {
+                    "name": getattr(t, "name", str(t)),
+                    "description": getattr(t, "description", "") or "",
+                    "parameters": getattr(t, "parameters", {}) or {},
+                }
+                for t in tools
+            ],
+        }
+        click.echo(_json.dumps(payload, indent=2))
+        return
 
     if not tools:
         click.echo("No MCP tools registered.")

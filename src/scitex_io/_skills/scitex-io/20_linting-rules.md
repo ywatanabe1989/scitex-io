@@ -1,5 +1,7 @@
 ---
 description: STX-IO001–007 lint rules detected by scitex-linter when scitex-io is installed.
+name: linting-rules
+tags: [scitex-io, scitex-package]
 ---
 
 # Linting Rules
