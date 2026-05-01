@@ -193,27 +193,65 @@ def io_register_info() -> Dict[str, str]:
     }
 
 
+# §5 — skills introspection tools (per audit-mcp-tools convention)
 @mcp.tool()
-def io_skills_list() -> dict:
-    """List every scitex-io skill page (usage guides, format refs, recipes). Use when you need to see what detailed documentation exists for scitex-io before drilling into a specific topic. Returns a list of skill names that can be fetched with `io_skills_get`."""
-    try:
-        from scitex_dev.skills import list_skills
+def io_skills_list() -> str:
+    """List the names of every skill page shipped by scitex-io.
 
-        result = list_skills(package="scitex-io")
-        return {"success": True, "skills": result.get("scitex-io", [])}
-    except ImportError:
-        return {"success": False, "error": "scitex-dev not installed"}
+    Returns
+    -------
+        JSON string with `{"success": true, "package": "scitex-io",
+        "skills": ["01_save-and-load", "02_centralized-config", ...]}`.
+    """
+    try:
+        from pathlib import Path
+
+        skills_dir = Path(__file__).parent.parent / "_skills" / "scitex-io"
+        names = sorted(p.stem for p in skills_dir.glob("*.md") if p.name != "SKILL.md")
+        return json.dumps(
+            {"success": True, "package": "scitex-io", "skills": names},
+            indent=2,
+        )
+    except Exception as e:
+        return json.dumps({"success": False, "error": str(e)}, indent=2)
 
 
 @mcp.tool()
-def io_skills_get(name: str = None) -> dict:
-    """Fetch the full content of a specific scitex-io skill page. Use after `io_skills_list` to read an individual guide (e.g., YAML config loading, HDF5 recipes, custom format registration). Returns the Markdown body of the requested page."""
-    try:
-        from scitex_dev.skills import get_skill
+def io_skills_get(name: str) -> str:
+    """Fetch the full Markdown content of one scitex-io skill page.
 
-        content = get_skill(package="scitex-io", name=name)
-        if content:
-            return {"success": True, "name": name, "content": content}
-        return {"success": False, "error": f"Skill '{name}' not found"}
-    except ImportError:
-        return {"success": False, "error": "scitex-dev not installed"}
+    Args:
+        name: Skill page name without `.md`, e.g. `01_save-and-load`.
+
+    Returns
+    -------
+        JSON string with `{"success": true, "package": "scitex-io",
+        "name": <name>, "content": <markdown>}`, or an error envelope.
+    """
+    try:
+        from pathlib import Path
+
+        skills_dir = Path(__file__).parent.parent / "_skills" / "scitex-io"
+        target = skills_dir / f"{name}.md"
+        if not target.exists():
+            available = sorted(
+                p.stem for p in skills_dir.glob("*.md") if p.name != "SKILL.md"
+            )
+            return json.dumps(
+                {
+                    "success": False,
+                    "error": f"unknown skill {name!r}; available: {available}",
+                },
+                indent=2,
+            )
+        return json.dumps(
+            {
+                "success": True,
+                "package": "scitex-io",
+                "name": name,
+                "content": target.read_text(encoding="utf-8"),
+            },
+            indent=2,
+        )
+    except Exception as e:
+        return json.dumps({"success": False, "error": str(e)}, indent=2)
