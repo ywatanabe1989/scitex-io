@@ -1,16 +1,27 @@
 #!/usr/bin/env python3
-"""Custom format registration demonstration for scitex-io."""
+"""Custom format registration demonstration for scitex-io.
+
+Registers a toy `.tsv3` saver/loader and round-trips data through the
+unified `save` / `load` API.
+
+Usage:
+    python 02_custom_format.py
+"""
+
 import os
-from scitex_io import register_saver, register_loader, save, load, list_formats
+
+from scitex_io import list_formats, load, register_loader, register_saver, save
 
 OUT_DIR = os.path.join(os.path.dirname(__file__), "02_custom_format_out")
 os.makedirs(OUT_DIR, exist_ok=True)
+
 
 @register_saver(".tsv3")
 def save_tsv3(obj, path, **kwargs):
     with open(path, "w") as f:
         for row in obj:
             f.write("\t".join(str(x) for x in row[:3]) + "\n")
+
 
 @register_loader(".tsv3")
 def load_tsv3(path, **kwargs):
@@ -20,12 +31,17 @@ def load_tsv3(path, **kwargs):
             rows.append(line.strip().split("\t"))
     return rows
 
+
 def main():
     fmts = list_formats()
-    print(f"Formats: {len(fmts['save']['builtin'])} save, {len(fmts['load']['builtin'])} load")
+    print(
+        f"Formats: {len(fmts['save']['builtin'])} save, {len(fmts['load']['builtin'])} load"
+    )
     data = [[1, 2, 3], [4, 5, 6]]
     save(data, os.path.join(OUT_DIR, "custom.tsv3"), verbose=False)
     print(f"Custom .tsv3: {load(os.path.join(OUT_DIR, 'custom.tsv3'), cache=False)}")
+    return 0
+
 
 if __name__ == "__main__":
     main()

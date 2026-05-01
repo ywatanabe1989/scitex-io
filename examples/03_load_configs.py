@@ -6,12 +6,15 @@ in YAML files under a config/ directory, loaded as a single DotDict
 with dot-notation access.
 
 Convention: use UPPER_CASE for config keys to signal user-defined constants.
+
+Usage:
+    python 03_load_configs.py
 """
 
 import os
 import shutil
 
-from scitex_io import DotDict, load_configs, save
+from scitex_io import load_configs, save
 
 SCRIPT_DIR = os.path.dirname(__file__)
 CONFIG_DIR = os.path.join(SCRIPT_DIR, "03_load_configs_config")
@@ -99,6 +102,7 @@ def main():
 
     # Cleanup
     shutil.rmtree(CONFIG_DIR)
+    return 0
 
 
 if __name__ == "__main__":

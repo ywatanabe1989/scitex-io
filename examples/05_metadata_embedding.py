@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
-"""Example 5: Embed provenance metadata into figure files.
+"""Embed provenance metadata into figure files.
 
 Demonstrates embed_metadata, read_metadata, and has_metadata for PNG files.
 Supported formats: PNG (tEXt), JPEG (EXIF), SVG (XML), PDF (Info Dict).
+
+Usage:
+    python 05_metadata_embedding.py
 """
 
 import os
@@ -15,24 +18,32 @@ os.makedirs(OUT_DIR, exist_ok=True)
 
 FIGURE_PATH = os.path.join(OUT_DIR, "figure.png")
 
-# --- Create a simple figure ---------------------------------------------------
-try:
-    import matplotlib
+METADATA = {
+    "EXPERIMENT": "exp_042",
+    "MODEL": "resnet50",
+    "ACCURACY": 0.94,
+    "TIMESTAMP": "2026-03-11",
+    "NOTES": "Baseline run with default hyperparameters",
+}
 
-    matplotlib.use("Agg")
-    import matplotlib.pyplot as plt
 
-    fig, ax = plt.subplots()
-    ax.plot([1, 2, 3], [4, 5, 6], marker="o")
-    ax.set(xlabel="X", ylabel="Y", title="Demo Figure")
-    fig.savefig(FIGURE_PATH, dpi=100)
-    plt.close()
-except ImportError:
-    # Fallback: create a minimal 1x1 PNG without matplotlib
-    import struct
-    import zlib
+def _create_figure(path):
+    """Create a small PNG figure (matplotlib if available, minimal PNG otherwise)."""
+    try:
+        import matplotlib
 
-    def _minimal_png(path):
+        matplotlib.use("Agg")
+        import matplotlib.pyplot as plt
+
+        fig, ax = plt.subplots()
+        ax.plot([1, 2, 3], [4, 5, 6], marker="o")
+        ax.set(xlabel="X", ylabel="Y", title="Demo Figure")
+        fig.savefig(path, dpi=100)
+        plt.close()
+    except ImportError:
+        import struct
+        import zlib
+
         sig = b"\x89PNG\r\n\x1a\n"
         ihdr = struct.pack(">IIBBBBB", 1, 1, 8, 2, 0, 0, 0)
         ihdr_chunk = b"IHDR" + ihdr
@@ -50,28 +61,24 @@ except ImportError:
                 + struct.pack(">I", zlib.crc32(b"IEND") & 0xFFFFFFFF)
             )
 
-    _minimal_png(FIGURE_PATH)
 
-# --- Embed metadata -----------------------------------------------------------
-METADATA = {
-    "EXPERIMENT": "exp_042",
-    "MODEL": "resnet50",
-    "ACCURACY": 0.94,
-    "TIMESTAMP": "2026-03-11",
-    "NOTES": "Baseline run with default hyperparameters",
-}
+def main():
+    _create_figure(FIGURE_PATH)
 
-embed_metadata(FIGURE_PATH, METADATA)
-print("Metadata embedded into figure.png")
+    embed_metadata(FIGURE_PATH, METADATA)
+    print("Metadata embedded into figure.png")
 
-# --- Read it back -------------------------------------------------------------
-assert has_metadata(FIGURE_PATH), "Expected metadata in figure.png"
+    assert has_metadata(FIGURE_PATH), "Expected metadata in figure.png"
 
-META = read_metadata(FIGURE_PATH)
-print(f"EXPERIMENT : {META['EXPERIMENT']}")
-print(f"MODEL      : {META['MODEL']}")
-print(f"ACCURACY   : {META['ACCURACY']}")
+    META = read_metadata(FIGURE_PATH)
+    print(f"EXPERIMENT : {META['EXPERIMENT']}")
+    print(f"MODEL      : {META['MODEL']}")
+    print(f"ACCURACY   : {META['ACCURACY']}")
 
-# --- Save metadata as sidecar for archival ------------------------------------
-save(META, os.path.join(OUT_DIR, "figure_metadata.json"))
-print(f"Metadata also saved to {OUT_DIR}/figure_metadata.json")
+    save(META, os.path.join(OUT_DIR, "figure_metadata.json"))
+    print(f"Metadata also saved to {OUT_DIR}/figure_metadata.json")
+    return 0
+
+
+if __name__ == "__main__":
+    main()
