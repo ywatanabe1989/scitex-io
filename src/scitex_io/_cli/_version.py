@@ -5,9 +5,15 @@
 import click
 
 
-@click.command()
-def version():
-    """Show scitex-io version."""
-    from .. import __version__
-
-    click.echo(f"scitex-io {__version__}")
+@click.command(
+    "version", hidden=True, context_settings={"ignore_unknown_options": True}
+)
+@click.pass_context
+def version(ctx):
+    """(deprecated) Use `scitex-io --version` instead."""
+    click.echo(
+        "error: `scitex-io version` was replaced by `scitex-io --version`.\n"
+        "Re-run with: scitex-io --version",
+        err=True,
+    )
+    ctx.exit(2)

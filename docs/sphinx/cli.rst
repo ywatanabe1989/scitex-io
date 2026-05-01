@@ -30,8 +30,8 @@ Commands
      - ``scitex-io list-python-apis``
      - List all Python API functions with signatures
    * - **Utility**
-     - ``scitex-io version``
-     - Show version information
+     - ``scitex-io --version``
+     - Show version information (top-level flag)
    * - **Utility**
      - ``scitex-io shell-completion``
      - Generate shell completion scripts

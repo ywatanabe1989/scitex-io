@@ -286,7 +286,7 @@ scitex-io configs                   # Load and display project configs
 scitex-io configs -d ./my_configs   # Custom config directory
 scitex-io configs --json            # Output as JSON
 scitex-io list-python-apis -vv      # List Python APIs with signatures
-scitex-io version                   # Show version
+scitex-io --version                 # Show version
 scitex-io mcp start                 # Start MCP server
 scitex-io mcp doctor                # Check MCP health
 scitex-io mcp list-tools -vv        # List MCP tools with parameters

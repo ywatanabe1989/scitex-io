@@ -92,10 +92,23 @@ def _print_help_recursive(ctx):
     cls=CategorizedGroup, context_settings=CONTEXT_SETTINGS, invoke_without_command=True
 )
 @click.option("--help-recursive", is_flag=True, help="Show help for all subcommands")
+@click.option(
+    "--json",
+    "as_json",
+    is_flag=True,
+    help="Emit structured JSON output (propagates to subcommands that honour it).",
+)
 @click.version_option(__version__, "--version", "-V")
 @click.pass_context
-def main(ctx, help_recursive):
-    """scitex-io: Universal scientific data I/O with plugin registry."""
+def main(ctx, help_recursive, as_json):
+    """scitex-io: Universal scientific data I/O with plugin registry.
+
+    \b
+    Config is loaded with the SciTeX precedence chain:
+      config.yaml -> $SCITEX_IO_CONFIG -> ~/.scitex/io/config.yaml -> defaults
+    """
+    ctx.ensure_object(dict)
+    ctx.obj["as_json"] = as_json
     if help_recursive:
         _print_help_recursive(ctx)
         ctx.exit(0)
@@ -106,7 +119,14 @@ def main(ctx, help_recursive):
 @main.command("shell-completion")
 @click.argument("shell", type=click.Choice(["bash", "zsh", "fish"]))
 def shell_completion(shell):
-    """Generate shell completion script."""
+    """Generate shell completion script.
+
+    \b
+    Example:
+      $ scitex-io shell-completion bash
+      $ scitex-io shell-completion zsh >> ~/.zshrc
+      $ scitex-io shell-completion fish > ~/.config/fish/completions/scitex-io.fish
+    """
     import subprocess
 
     env_var = "_SCITEX_IO_COMPLETE"

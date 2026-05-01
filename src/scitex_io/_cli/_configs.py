@@ -31,6 +31,12 @@ def load_configs_cmd(config_dir, debug, as_json, verbose):
 
     Reads all *.yaml files from CONFIG_DIR (default: ./config),
     namespaced by filename. Also loads from categories/ subdirectory.
+
+    \b
+    Example:
+      $ scitex-io load-configs
+      $ scitex-io load-configs -d ./my-config --json
+      $ scitex-io load-configs --debug -v
     """
     from scitex_io import load_configs
 

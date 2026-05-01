@@ -19,8 +19,16 @@ def info_deprecated(ctx):
 
 @click.command("show-info")
 @click.option("-v", "--verbose", count=True, help="Verbosity level (-v, -vv)")
-def show_info(verbose):
-    """Show registered I/O formats and registry status."""
+@click.option("--json", "as_json", is_flag=True, help="Output as JSON.")
+def show_info(verbose, as_json):
+    """Show registered I/O formats and registry status.
+
+    \b
+    Example:
+      $ scitex-io show-info
+      $ scitex-io show-info -v
+      $ scitex-io show-info --json
+    """
     from .._registry import list_formats
 
     formats = list_formats()
@@ -28,6 +36,20 @@ def show_info(verbose):
     save_user = sorted(formats["save"]["user"])
     load_builtin = sorted(formats["load"]["builtin"])
     load_user = sorted(formats["load"]["user"])
+
+    if as_json:
+        import json as _json
+
+        click.echo(
+            _json.dumps(
+                {
+                    "save": {"builtin": save_builtin, "user": save_user},
+                    "load": {"builtin": load_builtin, "user": load_user},
+                },
+                indent=2,
+            )
+        )
+        return
 
     click.secho("scitex-io Format Registry", fg="cyan", bold=True)
     click.echo()
