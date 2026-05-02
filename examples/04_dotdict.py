@@ -12,7 +12,8 @@ Usage:
 from scitex_io import DotDict
 
 
-def main():
+@stx.session
+def main(CONFIG=stx.session.INJECTED, logger=stx.session.INJECTED):
     # Create from nested dict
     PARAMS = DotDict(
         {

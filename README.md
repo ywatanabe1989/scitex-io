@@ -1,5 +1,18 @@
+<p align="center">
+  <a href="https://scitex.ai">
+    <img src="docs/scitex-logo-blue-cropped.png" alt="SciTeX" width="400">
+  </a>
+</p>
+
 # scitex-io
 
+<p align="center"><b>Universal scientific data I/O with plugin registry</b></p>
+
+<p align="center">
+  <a href="https://scitex-io.readthedocs.io/">Full Documentation</a> · <code>pip install scitex-io</code>
+</p>
+
+<p align="center">
 <!-- scitex-badges:start -->
 [![PyPI](https://img.shields.io/pypi/v/scitex-io.svg)](https://pypi.org/project/scitex-io/)
 [![Python](https://img.shields.io/pypi/pyversions/scitex-io.svg)](https://pypi.org/project/scitex-io/)
@@ -9,29 +22,9 @@
 [![Docs](https://readthedocs.org/projects/scitex-io/badge/?version=latest)](https://scitex-io.readthedocs.io/en/latest/)
 [![License: AGPL v3](https://img.shields.io/badge/license-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 <!-- scitex-badges:end -->
-
-<p align="center">
-  <a href="https://scitex.ai">
-    <img src="docs/scitex-logo-blue-cropped.png" alt="SciTeX" width="400">
-  </a>
-</p>
-
-<p align="center"><b>Universal scientific data I/O with plugin registry</b></p>
-
-<p align="center">
-  <a href="https://badge.fury.io/py/scitex-io"><img src="https://badge.fury.io/py/scitex-io.svg" alt="PyPI version"></a>
-  <a href="https://scitex-io.readthedocs.io/"><img src="https://readthedocs.org/projects/scitex-io/badge/?version=latest" alt="Documentation"></a>
-  <a href="https://github.com/ywatanabe1989/scitex-io/actions/workflows/ci.yml"><img src="https://github.com/ywatanabe1989/scitex-io/actions/workflows/ci.yml/badge.svg" alt="Tests"></a>
-  <a href="https://www.gnu.org/licenses/agpl-3.0"><img src="https://img.shields.io/badge/License-AGPL--3.0-blue.svg" alt="License: AGPL-3.0"></a>
-</p>
-
-<p align="center">
-  <a href="https://scitex-io.readthedocs.io/">Full Documentation</a> · <code>pip install scitex-io</code>
 </p>
 
 ---
-
-> **Interfaces:** Python ⭐⭐⭐ · CLI ⭐ · MCP ⭐⭐ · Skills ⭐⭐⭐ · Hook — · HTTP —
 
 ## Problem and Solution
 

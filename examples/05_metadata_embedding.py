@@ -8,6 +8,7 @@ Usage:
     python 05_metadata_embedding.py
 """
 
+import scitex as stx
 import os
 
 from scitex_io import embed_metadata, has_metadata, read_metadata, save
@@ -62,7 +63,8 @@ def _create_figure(path):
             )
 
 
-def main():
+@stx.session
+def main(CONFIG=stx.session.INJECTED, logger=stx.session.INJECTED):
     _create_figure(FIGURE_PATH)
 
     embed_metadata(FIGURE_PATH, METADATA)

@@ -8,6 +8,7 @@ Usage:
     python 02_custom_format.py
 """
 
+import scitex as stx
 import os
 
 from scitex_io import list_formats, load, register_loader, register_saver, save
@@ -32,7 +33,8 @@ def load_tsv3(path, **kwargs):
     return rows
 
 
-def main():
+@stx.session
+def main(CONFIG=stx.session.INJECTED, logger=stx.session.INJECTED):
     fmts = list_formats()
     print(
         f"Formats: {len(fmts['save']['builtin'])} save, {len(fmts['load']['builtin'])} load"
