@@ -1,0 +1,60 @@
+name: newb docs verification
+
+# First-run scaffolding. Manual trigger only — once we've seen one
+# successful end-to-end run we'll add `schedule:` and `pull_request:`
+# triggers. Manual = no surprise spend.
+on:
+  workflow_dispatch:
+
+jobs:
+  newb:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install newb
+        run: pip install --upgrade newb
+
+      - name: Show newb version + resolved image
+        run: |
+          newb --version
+          python -c "from newb._container_runner import _default_image; print('image:', _default_image())"
+
+      - name: Run newb (verbose so the log shows per-prompt timing)
+        env:
+          NEWB_ANTHROPIC_API_KEY: ${{ secrets.NEWB_ANTHROPIC_API_KEY }}
+        run: |
+          if [ -z "${NEWB_ANTHROPIC_API_KEY}" ]; then
+            echo "::error::secrets.NEWB_ANTHROPIC_API_KEY is not set on this repo." >&2
+            exit 1
+          fi
+          newb . --json -vv > newb-report.json
+
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: newb-report
+          path: newb-report.json
+          if-no-files-found: warn
+
+      - name: Render markdown summary into the run summary
+        if: success()
+        env:
+          NEWB_ANTHROPIC_API_KEY: ${{ secrets.NEWB_ANTHROPIC_API_KEY }}
+        run: |
+          # Reuse the JSON we already produced; render via the API to
+          # avoid a second container run.
+          python - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import json, newb
+          with open("newb-report.json") as f:
+              report = json.load(f)
+          print(newb.render_markdown(report))
+          PY
