@@ -47,11 +47,7 @@ jobs:
 
       - name: Render markdown summary into the run summary
         if: success()
-        env:
-          NEWB_ANTHROPIC_API_KEY: ${{ secrets.NEWB_ANTHROPIC_API_KEY }}
         run: |
-          # Reuse the JSON we already produced; render via the API to
-          # avoid a second container run.
           python - <<'PY' >> "$GITHUB_STEP_SUMMARY"
           import json, newb
           with open("newb-report.json") as f:
