@@ -10,7 +10,6 @@
 [![License: AGPL v3](https://img.shields.io/badge/license-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 <!-- scitex-badges:end -->
 
-
 <p align="center">
   <a href="https://scitex.ai">
     <img src="docs/scitex-logo-blue-cropped.png" alt="SciTeX" width="400">
@@ -35,7 +34,6 @@
 > **Interfaces:** Python ⭐⭐⭐ · CLI ⭐ · MCP ⭐⭐ · Skills ⭐⭐⭐ · Hook — · HTTP —
 
 ## Problem and Solution
-
 
 | # | Problem | Solution |
 |---|---------|----------|
@@ -97,8 +95,6 @@ For MCP server support:
 ```bash
 pip install scitex-io[mcp]
 ```
-
-> **SciTeX users**: `pip install scitex` already includes scitex-io.
 
 ## Quickstart
 
@@ -364,7 +360,9 @@ Detected by [scitex-linter](https://github.com/ywatanabe1989/scitex-linter) when
 
 ## Part of SciTeX
 
-scitex-io is part of [**SciTeX**](https://scitex.ai). When used inside the SciTeX framework, I/O is seamless:
+`scitex-io` is part of [**SciTeX**](https://scitex.ai). Install via
+the umbrella with `pip install scitex[io]` to use as
+`scitex.io` (Python) or `scitex io ...` (CLI).
 
 ```python
 import scitex

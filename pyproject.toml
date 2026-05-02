@@ -66,6 +66,13 @@ dev = [
     "matplotlib",
     "plotly",
     "Pillow",
+    # Optional features whose tests live in the suite — installed in [dev]
+    # so a fresh `pip install -e .[dev]` runs the full suite. Production
+    # users opt in via `pip install scitex-io[<extra>]`. See
+    # _skills/general/01_ecosystem_02_dependency-and-version-pinning.md
+    # `[dev]` extras completeness.
+    "fastmcp>=2.0",       # tested via scitex_io._mcp_server
+    "numcodecs",          # tested via [scientific] zarr/blosc paths
 ]
 docs = [
     "sphinx>=7.0",
