@@ -1,7 +1,9 @@
 ---
-description: STX-IO001–007 lint rules detected by scitex-linter when scitex-io is installed.
-name: linting-rules
-tags: [scitex-io, scitex-package]
+description: |
+  [TOPIC] Linting rules
+  [DETAILS] STX-IO001–007 lint rules detected by scitex-linter when
+  scitex-io is installed (np.save → stx.io.save, etc.).
+tags: [scitex-io-linting-rules, scitex-io, scitex-package]
 ---
 
 # Linting Rules

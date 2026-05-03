@@ -1,7 +1,9 @@
 ---
-description: Load caching with mtime invalidation, reload, flush, and configuration.
-name: cache
-tags: [scitex-io, scitex-package]
+description: |
+  [TOPIC] Cache
+  [DETAILS] Load caching with mtime + size invalidation, reload, flush,
+  and per-call cache=False override.
+tags: [scitex-io-cache, scitex-io, scitex-package]
 ---
 
 # Cache

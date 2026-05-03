@@ -1,7 +1,9 @@
 ---
-name: scitex-io-env-vars
-description: Environment variables read by scitex-io at import / runtime. Follow SCITEX_<MODULE>_* convention — see general/10_arch-environment-variables.md.
-tags: [scitex-io, scitex-package]
+description: |
+  [TOPIC] Environment variables
+  [DETAILS] Env vars read by scitex-io at import/runtime. No user-tunable
+  knobs; only optional-dependency presence flags (SCITEX_*_AVAILABLE).
+tags: [scitex-io-env-vars, scitex-io, scitex-package]
 ---
 
 # scitex-io — Environment Variables

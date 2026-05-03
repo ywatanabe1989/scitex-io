@@ -1,7 +1,9 @@
 ---
-description: Embed and read provenance metadata in PNG/JPEG/SVG/PDF files.
-name: metadata-embedding
-tags: [scitex-io, scitex-package]
+description: |
+  [TOPIC] Metadata embedding
+  [DETAILS] Embed and read provenance metadata in PNG/JPEG/SVG/PDF
+  figure files so they carry their own experiment history.
+tags: [scitex-io-metadata-embedding, scitex-io, scitex-package]
 ---
 
 # Metadata Embedding

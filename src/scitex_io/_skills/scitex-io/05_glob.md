@@ -1,7 +1,9 @@
 ---
-description: Pattern-based file matching with natural sorting and path parsing.
-name: glob
-tags: [scitex-io, scitex-package]
+description: |
+  [TOPIC] Glob
+  [DETAILS] Pattern-based file matching with natural sorting and
+  optional path parsing into structured dicts.
+tags: [scitex-io-glob, scitex-io, scitex-package]
 ---
 
 # Glob

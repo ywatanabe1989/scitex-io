@@ -1,7 +1,9 @@
 ---
-description: All 30+ supported file formats with extensions, load/save types, and notes.
-name: supported-formats
-tags: [scitex-io, scitex-package]
+description: |
+  [TOPIC] Supported formats
+  [DETAILS] All 30+ supported file formats with extensions, load/save
+  types, and per-format notes (tabular, array, image, model, time series).
+tags: [scitex-io-supported-formats, scitex-io, scitex-package]
 ---
 
 # Supported Formats
