@@ -1,4 +1,4 @@
-name: newb docs verification
+name: Newb
 
 # First-run scaffolding. Manual trigger only — once we've seen one
 # successful end-to-end run we'll add `schedule:` and `pull_request:`
