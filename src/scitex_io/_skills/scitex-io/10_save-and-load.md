@@ -9,46 +9,10 @@ tags: [scitex-io-save-and-load, scitex-io, scitex-package]
 
 # Save and Load
 
-## ⚠️ Round-trip gotcha (read this first)
-
-```python
-stx.io.save(df, "results.csv")    # writes to <script>_out/results.csv (auto-routed)
-df = stx.io.load("results.csv")   # ❌ FileNotFoundError — resolves against cwd
-```
-
-`save()` auto-routes by caller context; `load()` does NOT — it reads
-the path as given. Three idiomatic fixes:
-
-1. Pass `symlink_from_cwd=True` — drops a symlink at cwd so `load`
-   finds it by the same filename:
-   ```python
-   stx.io.save(df, "results.csv", symlink_from_cwd=True)
-   df = stx.io.load("results.csv")   # ✓
-   ```
-2. Use the absolute path on both sides (via `stx.path.mk_spath` or the
-   `Path` returned by `save`):
-   ```python
-   spath = stx.io.save(df, "results.csv")
-   df = stx.io.load(spath)            # ✓
-   ```
-3. Stay inside `@stx.session` — every output lives under
-   `FINISHED_SUCCESS/{session_id}/`, so the layout becomes predictable
-   and hash-verifiable by Clew. The session decorator injects a
-   `CONFIG` object with the paths already resolved:
-
-   ```python
-   @stx.session
-   def main(CONFIG=stx.session.INJECTED):
-       stx.io.save(df, "results.csv")             # auto-routed
-       # CONFIG.SDIR_OUT → {script}_out/
-       # CONFIG.SDIR_RUN → {script}_out/FINISHED_SUCCESS/{session_id}/
-       # Load explicitly from the session dir if needed:
-       df = stx.io.load(CONFIG.SDIR_RUN / "results.csv")
-   ```
-
-Once you internalize this, the routing is a feature: every save
-produces a clean, dated, hash-tracked output dir without you lifting a
-finger.
+> The save/load **round-trip gotcha** (`save()` auto-routes,
+> `load()` doesn't) is covered in [02_quick-start.md](02_quick-start.md)
+> and [16_path-resolution.md](16_path-resolution.md). This page is the
+> reference for the full save/load surface.
 
 ## Import
 
