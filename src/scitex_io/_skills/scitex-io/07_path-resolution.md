@@ -85,11 +85,11 @@ path.find_the_git_root_dir()          # → git repo root
 ### Path components
 
 ```python
-import scitex as stx
+import scitex
 
-stx.path.split("data/file.txt")       # → (Path("data"), "file", ".txt")
-stx.path.clean("/home/./user/../x")   # → "/home/x"
-stx.path.this_path()                  # → Path of calling script
+scitex.path.split("data/file.txt")       # → (Path("data"), "file", ".txt")
+scitex.path.clean("/home/./user/../x")   # → "/home/x"
+scitex.path.this_path()                  # → Path of calling script
 ```
 
 ### File finding
