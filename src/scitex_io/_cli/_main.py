@@ -159,9 +159,6 @@ try:
 except ImportError:
     pass
 
-try:
-    from scitex_dev.cli import skills_click_group
+from ._skills import skills_group
 
-    main.add_command(skills_click_group(package="scitex-io"))
-except ImportError:
-    pass
+main.add_command(skills_group)
