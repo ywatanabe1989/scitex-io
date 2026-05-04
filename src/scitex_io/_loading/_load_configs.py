@@ -14,9 +14,9 @@ __DIR__ = os.path.dirname(__FILE__)
 from pathlib import Path
 from typing import Optional, Union
 
-from ._glob import glob
+from .._glob import glob
+from .._utils import DotDict
 from ._load import load
-from ._utils import DotDict
 
 
 def load_configs(

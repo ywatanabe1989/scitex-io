@@ -50,17 +50,17 @@ _LAZY_ATTRS: dict[str, str] = {
     "unregister_loader": "._registry",
     # Core I/O
     "save": "._save",
-    "load": "._load",
-    "load_configs": "._load_configs",
+    "load": "._loading",
+    "load_configs": "._loading",
     "glob": "._glob",
     "parse_glob": "._glob",
     "reload": "._reload",
     "flush": "._flush",
     "cache": "._cache",
     # Cache control
-    "configure_cache": "._load_cache",
-    "get_cache_info": "._load_cache",
-    "clear_load_cache": "._load_cache",  # aliased below
+    "configure_cache": "._loading",
+    "get_cache_info": "._loading",
+    "clear_load_cache": "._loading",  # aliased below
     # Dict utilities
     "DotDict": "._utils",
 }

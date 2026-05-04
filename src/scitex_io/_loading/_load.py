@@ -4,6 +4,7 @@
 # File: /home/ywatanabe/proj/SciTeX-Code/src/scitex/io/_load.py
 # ----------------------------------------
 from __future__ import annotations
+
 import os
 
 __FILE__ = __file__
@@ -14,12 +15,12 @@ import glob
 from pathlib import Path
 from typing import Any, Union
 
+from .._registry import get_loader  # noqa: F401
 from ._load_cache import (
     cache_data,
     get_cached_data,
     load_npy_cached,
 )
-from ._registry import get_loader  # noqa: F401
 
 
 def load(

@@ -8,11 +8,11 @@ File load caching infrastructure for scitex.io module.
 Provides intelligent caching with file modification detection.
 """
 
-import os
 import hashlib
+import os
 import weakref
 from functools import lru_cache
-from typing import Any, Tuple, Optional, Dict
+from typing import Any, Dict, Optional, Tuple
 
 try:
     from scitex import logging
@@ -260,7 +260,7 @@ def _cached_load_npy(file_key: Tuple[str, float, int]) -> Any:
     """
     file_path = file_key[0]
     # Import here to avoid circular imports
-    from ._load_modules._numpy import _load_npy
+    from .._load_modules._numpy import _load_npy
 
     result = _load_npy(file_path)
 
@@ -287,7 +287,7 @@ def load_npy_cached(file_path: str, **kwargs) -> Any:
         Loaded numpy array
     """
     if not _cache_config["enabled"]:
-        from ._load_modules._numpy import _load_npy
+        from .._load_modules._numpy import _load_npy
 
         return _load_npy(file_path, **kwargs)
 
