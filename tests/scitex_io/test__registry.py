@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Tests for the format registry system."""
 
-import scitex_io  # noqa: F401 — triggers plugin registration via __init__
+from scitex_io import _builtin_handlers  # noqa: F401 — registers builtin formats
 from scitex_io._registry import (
     _normalize_ext,
     get_loader,
