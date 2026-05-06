@@ -153,7 +153,10 @@ def show_installation_deprecated(ctx):
 
 @mcp.command("install")
 @click.option("--json", "as_json", is_flag=True, help="Output as JSON.")
-def install(as_json):
+@click.option("--dry-run", is_flag=True, help="Accepted for §2; this verb is informational, never mutates state.")
+@click.option("--yes", "-y", is_flag=True, help="Accepted for §2; this verb is informational, never mutates state.")
+def install(as_json, dry_run, yes):
+    del dry_run, yes  # audit §2 — no-op flags
     """Show MCP installation and configuration instructions.
 
     \b
