@@ -16,11 +16,11 @@ import pytest
 # ===== AUTO-GENERATED: cross-package imports =====
 CROSS_PACKAGE_IMPORTS = [
     'scitex',
-    'scitex.logging',
     'scitex_dev',
     'scitex_dev._cli._completion',
     'scitex_dev.cli',
     'scitex_linter._rules._base',
+    'scitex_logging',
     'scitex_stats._utils._normalizers',
 ]
 # ===== END AUTO-GENERATED =====
