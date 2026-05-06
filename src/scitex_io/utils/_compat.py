@@ -10,14 +10,14 @@ import os
 import warnings
 
 try:
-    from scitex.logging import (
+    from scitex_logging import (
         FileFormatError,
         PathNotFoundError,
         check_file_exists,
         check_path,
         warn_data_loss,
     )
-    from scitex.logging import (
+    from scitex_logging import (
         IOError as SciTeXIOError,
     )
 
