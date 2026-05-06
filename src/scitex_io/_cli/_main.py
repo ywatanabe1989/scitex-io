@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 """Main CLI entry point for scitex-io."""
 
-import os
 
 import click
 
@@ -116,32 +115,30 @@ def main(ctx, help_recursive, as_json):
         click.echo(ctx.get_help())
 
 
-@main.command("shell-completion")
-@click.argument("shell", type=click.Choice(["bash", "zsh", "fish"]))
-def shell_completion(shell):
-    """Generate shell completion script.
-
-    \b
-    Example:
-      $ scitex-io shell-completion bash
-      $ scitex-io shell-completion zsh >> ~/.zshrc
-      $ scitex-io shell-completion fish > ~/.config/fish/completions/scitex-io.fish
-    """
-    import subprocess
-
-    env_var = "_SCITEX_IO_COMPLETE"
-    shell_map = {
-        "bash": "bash_source",
-        "zsh": "zsh_source",
-        "fish": "fish_source",
-    }
-    result = subprocess.run(
-        ["scitex-io"],
-        env={**os.environ, env_var: shell_map[shell]},
-        capture_output=True,
-        text=True,
+@main.command(
+    "shell-completion",
+    hidden=True,
+    context_settings={"ignore_unknown_options": True, "allow_extra_args": True},
+)
+@click.pass_context
+def shell_completion_deprecated(ctx):
+    """(deprecated) Renamed — use `install-shell-completion` or `print-shell-completion`."""
+    click.echo(
+        "error: `scitex-io shell-completion` was split into:\n"
+        "  scitex-io install-shell-completion --shell <bash|zsh|fish>\n"
+        "  scitex-io print-shell-completion   --shell <bash|zsh|fish>",
+        err=True,
     )
-    click.echo(result.stdout)
+    ctx.exit(2)
+
+
+# §1a: install-shell-completion + print-shell-completion (canonical leaves)
+try:
+    from scitex_dev._cli._completion import attach_shell_completion
+
+    attach_shell_completion(main, prog_name="scitex-io")
+except ImportError:
+    pass
 
 
 main.add_command(load_configs_cmd, "load-configs")
