@@ -22,7 +22,6 @@ keywords = [
     "pandas",
     "registry",
     "plugin",
-    "scitex",
 ]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -46,7 +45,6 @@ dependencies = [
     "rich>=13.0.0",
     "scitex-dev>=0.1.0",
     "scitex-linter>=0.3.0",
-    "scitex",
 ]
 
 [project.optional-dependencies]
