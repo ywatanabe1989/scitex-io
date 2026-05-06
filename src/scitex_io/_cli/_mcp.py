@@ -156,7 +156,6 @@ def show_installation_deprecated(ctx):
 @click.option("--dry-run", is_flag=True, help="Accepted for §2; this verb is informational, never mutates state.")
 @click.option("--yes", "-y", is_flag=True, help="Accepted for §2; this verb is informational, never mutates state.")
 def install(as_json, dry_run, yes):
-    del dry_run, yes  # audit §2 — no-op flags
     """Show MCP installation and configuration instructions.
 
     \b
@@ -164,6 +163,7 @@ def install(as_json, dry_run, yes):
       $ scitex-io mcp install
       $ scitex-io mcp install --json
     """
+    del dry_run, yes  # audit §2 — no-op flags
     config = {
         "mcpServers": {
             "scitex-io": {
