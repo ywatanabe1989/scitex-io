@@ -5,3 +5,14 @@
 from ._main import main
 
 __all__ = ["main"]
+
+
+# audit §4 — inject version into root --help
+try:
+    from importlib.metadata import version as _v
+    main.help = (
+        f"scitex-io (v{_v('scitex-io')}) — "
+        + (main.help or "").lstrip()
+    )
+except Exception:
+    pass
