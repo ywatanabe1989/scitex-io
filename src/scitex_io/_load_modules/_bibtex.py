@@ -19,7 +19,7 @@ returning structured data that can be used by other SciTeX modules.
 import re
 
 try:
-    from scitex import logging
+    import scitex_logging as logging
 
     SCITEX_LOGGING_AVAILABLE = True
 except ImportError:

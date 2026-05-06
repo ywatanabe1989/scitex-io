@@ -15,7 +15,7 @@ from functools import lru_cache
 from typing import Any, Dict, Optional, Tuple
 
 try:
-    from scitex import logging
+    import scitex_logging as logging
 
     SCITEX_LOGGING_AVAILABLE = True
 except ImportError:
