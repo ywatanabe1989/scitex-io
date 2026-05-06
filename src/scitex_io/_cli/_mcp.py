@@ -126,25 +126,40 @@ def doctor():
 )
 @click.pass_context
 def installation_deprecated(ctx):
-    """(deprecated) Renamed to `show-installation`."""
+    """(deprecated) Renamed to `install`."""
     click.echo(
         "error: `scitex-io mcp installation` was renamed to "
-        "`scitex-io mcp show-installation`.\n"
-        "Re-run with: scitex-io mcp show-installation",
+        "`scitex-io mcp install`.\n"
+        "Re-run with: scitex-io mcp install",
         err=True,
     )
     ctx.exit(2)
 
 
-@mcp.command("show-installation")
+@mcp.command(
+    "show-installation", hidden=True, context_settings={"ignore_unknown_options": True}
+)
+@click.pass_context
+def show_installation_deprecated(ctx):
+    """(deprecated) Renamed to `install`."""
+    click.echo(
+        "error: `scitex-io mcp show-installation` was renamed to "
+        "`scitex-io mcp install`.\n"
+        "Re-run with: scitex-io mcp install",
+        err=True,
+    )
+    ctx.exit(2)
+
+
+@mcp.command("install")
 @click.option("--json", "as_json", is_flag=True, help="Output as JSON.")
-def show_installation(as_json):
+def install(as_json):
     """Show MCP installation and configuration instructions.
 
     \b
     Example:
-      $ scitex-io mcp show-installation
-      $ scitex-io mcp show-installation --json
+      $ scitex-io mcp install
+      $ scitex-io mcp install --json
     """
     config = {
         "mcpServers": {
@@ -163,6 +178,7 @@ def show_installation(as_json):
                     "install_command": "pip install scitex-io[mcp]",
                     "config": config,
                     "verify_commands": ["scitex-io mcp doctor"],
+                    "renamed_from": "show-installation",
                 },
                 indent=2,
             )
