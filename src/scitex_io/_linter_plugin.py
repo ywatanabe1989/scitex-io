@@ -7,7 +7,7 @@ discovers these rules automatically when scitex-io is installed.
 
 def get_plugin():
     """Return scitex-io linter rules and call mappings."""
-    from scitex_linter._rules._base import Rule
+    from scitex_dev.linter._rules._base import Rule
 
     IO001 = Rule(
         id="STX-IO001",

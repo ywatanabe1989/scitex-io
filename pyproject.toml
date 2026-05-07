@@ -44,7 +44,7 @@ dependencies = [
     "click>=8.0.0",
     "rich>=13.0.0",
     "scitex-dev>=0.1.0",
-    "scitex-linter>=0.3.0",
+    "scitex-dev>=0.11.0",
     # scitex_io._save imports scitex_logging at module top (also _bibtex
     # load/save modules) — the runtime needs it.
     "scitex-logging>=0.1.0",
@@ -96,6 +96,11 @@ scitex-io = "scitex_io"
 [project.entry-points."scitex_dev.skills"]
 scitex-io = "scitex_io"
 
+[project.entry-points."scitex_dev.linter.plugins"]
+io = "scitex_io._linter_plugin:get_plugin"
+
+# Legacy entry-point group (dual-register during scitex-linter
+# deprecation window — will be dropped after the final shim release).
 [project.entry-points."scitex_linter.plugins"]
 io = "scitex_io._linter_plugin:get_plugin"
 
