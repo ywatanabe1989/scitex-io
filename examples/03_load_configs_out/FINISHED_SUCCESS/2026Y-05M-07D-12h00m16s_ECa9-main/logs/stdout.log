@@ -1,0 +1,26 @@
+[94m
+========================================
+SciTeX v2.27.3 | 2026Y-05M-07D-12h00m16s_ECa9 (PID: 324300)
+
+/home/ywatanabe/proj/scitex-io/examples/03_load_configs.py
+
+Arguments:
+========================================
+[0m
+=== Production Config ===
+CONFIG.PATHS.DATA_DIR        = /data/experiment_01
+CONFIG.PREPROCESS.SAMPLE_RATE = 1000
+CONFIG.PREPROCESS.BANDPASS    = [0.5, 40]
+CONFIG.MODEL.HIDDEN_DIM      = 256
+CONFIG.MODEL.BATCH_SIZE      = 64
+
+=== Debug Config (IS_DEBUG=True) ===
+CONFIG.PREPROCESS.SAMPLE_RATE = 100
+CONFIG.PREPROCESS.N_CHANNELS  = 4
+CONFIG.MODEL.HIDDEN_DIM      = 32
+CONFIG.MODEL.BATCH_SIZE      = 4
+
+Namespaces: ['IS_DEBUG', 'MODEL', 'PATHS', 'PREPROCESS']
+Model keys: ['HIDDEN_DIM', 'N_LAYERS', 'DROPOUT', 'LEARNING_RATE', 'BATCH_SIZE', 'DEBUG_HIDDEN_DIM', 'DEBUG_BATCH_SIZE']
+
+Merged config saved to: /home/ywatanabe/proj/scitex-io/examples/03_load_configs_out/merged_config.json

@@ -1,0 +1,11 @@
+ID: 2026Y-05M-07D-12h00m26s_2xVm
+PID: 326473
+START_DATETIME: 2026-05-07 12:00:26.149485
+FILE: /home/ywatanabe/proj/scitex-io/examples/05_metadata_embedding.py
+SDIR_OUT: /home/ywatanabe/proj/scitex-io/examples/05_metadata_embedding_out
+SDIR_RUN: 
+    /home/ywatanabe/proj/scitex-io/examples/05_metadata_embedding_out/RUNNING/2026Y-05M-07D-12h00m26s_2xVm-main
+ARGS: {}
+EXIT_STATUS: 0
+END_DATETIME: 2026-05-07 12:00:31.458889
+RUN_DURATION: 00:00:05

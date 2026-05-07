@@ -9,6 +9,8 @@ Usage:
     python 04_dotdict.py
 """
 
+import scitex as stx
+
 from scitex_io import DotDict
 
 

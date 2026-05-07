@@ -1,0 +1,11 @@
+ID: 2026Y-05M-07D-12h00m16s_ECa9
+PID: 324300
+START_DATETIME: 2026-05-07 12:00:16.562878
+FILE: /home/ywatanabe/proj/scitex-io/examples/03_load_configs.py
+SDIR_OUT: /home/ywatanabe/proj/scitex-io/examples/03_load_configs_out
+SDIR_RUN: 
+    /home/ywatanabe/proj/scitex-io/examples/03_load_configs_out/RUNNING/2026Y-05M-07D-12h00m16s_ECa9-main
+ARGS: {}
+EXIT_STATUS: 0
+END_DATETIME: 2026-05-07 12:00:20.873000
+RUN_DURATION: 00:00:04

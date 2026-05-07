@@ -1,0 +1,15 @@
+[94m
+========================================
+SciTeX v2.27.3 | 2026Y-05M-07D-11h59m59s_a5sy (PID: 317565)
+
+/home/ywatanabe/proj/scitex-io/examples/01_basic_save_load.py
+
+Arguments:
+========================================
+[0m
+JSON: {'experiment': 'demo', 'values': [1, 2, 3]}
+CSV: (5, 2)
+NPY: shape=(10, 3)
+YAML: {'lr': 0.001, 'epochs': 100}
+
+All saved to: /home/ywatanabe/proj/scitex-io/examples/01_basic_save_load_out
