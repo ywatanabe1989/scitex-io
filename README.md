@@ -89,6 +89,29 @@ For MCP server support:
 pip install scitex-io[mcp]
 ```
 
+## Architecture
+
+```
+scitex_io/
+├── _save.py / _save_modules/      ← extension-based dispatcher + per-format savers
+├── _loading/ / _load_modules/     ← unified load() + per-format loaders
+├── _registry.py                   ← plugin registry (register_saver / register_loader)
+├── _cache.py / _flush.py / _reload.py  ← path+mtime cache
+├── _glob.py                       ← natural-sorted glob, brace expansion, parse_glob
+├── _path.py                       ← auto-routing path resolver (script_out/, etc.)
+├── _metadata.py / _metadata_modules/   ← embed_metadata / read_metadata (PNG/JPEG/SVG/PDF)
+├── _builtin_handlers.py           ← bundled handlers wired to the registry
+├── _image_csv_handler.py          ← figure → png + csv + yaml triplet
+├── _linter_plugin.py              ← STX-IO001..007 rule plugins for scitex-linter
+├── _cli/                          ← `scitex-io` Click CLI
+├── _mcp/                          ← MCP server tools
+└── _skills/                       ← agent-facing skill pages
+```
+
+`save()` and `load()` route by file extension through `_registry`;
+every format is a small handler module discovered eagerly at import. The
+registry is the extension point — see "Custom Format Registration" below.
+
 ## Quickstart
 
 ### Save and Load
@@ -336,6 +359,33 @@ scitex-io skills get supported-formats  # Get all format tables
 Also available via MCP: `io_skills_list()` / `io_skills_get(name)`.
 
 </details>
+
+## Demo
+
+```mermaid
+flowchart LR
+    A["scitex_io.save(obj, 'x.ext')"] --> R["registry: lookup(.ext)"]
+    R --> H["per-format saver"]
+    H --> F["file on disk + sidecar (csv/yaml)"]
+    L["scitex_io.load('x.ext')"] --> R2["registry: lookup(.ext)"]
+    R2 --> H2["per-format loader"]
+    H2 --> O["Python object<br/>(DataFrame, ndarray, ...)"]
+    G["glob('data/**/*.csv')"] --> N["natural-sorted paths"]
+    N --> L
+```
+
+```python
+>>> import pandas as pd, scitex_io as sio
+>>> df = pd.DataFrame({"x": [1, 2, 3]})
+>>> sio.save(df, "out.csv")          # routes by extension
+>>> sio.load("out.csv").equals(df)
+True
+>>> sio.list_formats()[:5]
+['.csv', '.tsv', '.xlsx', '.npy', '.npz']
+```
+
+A figure save additionally emits the underlying CSV + a figrecipe YAML
+sidecar, keeping figure-and-data atomically in sync.
 
 ## Lint Rules
 
