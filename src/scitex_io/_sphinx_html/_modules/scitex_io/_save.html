@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>scitex_io._save &mdash; SciTeX IO v0.2.11</title>
+  <title>scitex_io._save &mdash; SciTeX IO v0.2.12</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -13,7 +13,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=29c81e07"></script>
+      <script src="../../_static/documentation_options.js?v=1e30946d"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -250,6 +250,7 @@
 <span class="c1"># File: /home/ywatanabe/proj/scitex-io/src/scitex_io/_save.py</span>
 <span class="c1"># ----------------------------------------</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 
 <span class="n">__FILE__</span> <span class="o">=</span> <span class="s2">&quot;./src/scitex_io/_save.py&quot;</span>
@@ -274,22 +275,65 @@
 
 <span class="sd">&quot;&quot;&quot;Imports&quot;&quot;&quot;</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">inspect</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">os</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">_os</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">_os</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Union</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">._utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">clean</span><span class="p">,</span> <span class="n">getsize</span><span class="p">,</span> <span class="n">clean_path</span><span class="p">,</span> <span class="n">color_text</span><span class="p">,</span> <span class="n">readable_bytes</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">._registry</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_saver</span>  <span class="c1"># noqa: F401</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">._image_csv_handler</span><span class="w"> </span><span class="kn">import</span> <span class="n">handle_image_with_csv</span>  <span class="c1"># noqa: F401</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._registry</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_saver</span>  <span class="c1"># noqa: F401</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">clean</span><span class="p">,</span> <span class="n">clean_path</span><span class="p">,</span> <span class="n">color_text</span><span class="p">,</span> <span class="n">getsize</span><span class="p">,</span> <span class="n">readable_bytes</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span>
 
 
+<span class="c1"># Module-level latch for the once-per-process notebook-path warning.</span>
+<span class="n">_NOTEBOOK_PATH_WARNED</span> <span class="o">=</span> <span class="kc">False</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_warn_notebook_path_unresolved_once</span><span class="p">(</span><span class="n">fallback_sdir</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Emit a one-time hint when notebook-name detection fails.</span>
+
+<span class="sd">    Triggered when ``scitex_io.save`` runs inside a notebook but</span>
+<span class="sd">    ``get_notebook_info_simple()`` couldn&#39;t recover the notebook stem.</span>
+<span class="sd">    Falling back to ``&lt;cwd&gt;/notebook_out/`` is correct but surprising</span>
+<span class="sd">    — explain the canonical convention and how to opt in.</span>
+
+<span class="sd">    Silenced for the rest of the process by:</span>
+<span class="sd">      - ``SCITEX_IO_QUIET_NOTEBOOK_WARN=1`` env var, OR</span>
+<span class="sd">      - the latch (only the first call ever emits).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">global</span> <span class="n">_NOTEBOOK_PATH_WARNED</span>
+    <span class="k">if</span> <span class="n">_NOTEBOOK_PATH_WARNED</span><span class="p">:</span>
+        <span class="k">return</span>
+    <span class="k">if</span> <span class="n">_os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;SCITEX_IO_QUIET_NOTEBOOK_WARN&quot;</span><span class="p">):</span>
+        <span class="n">_NOTEBOOK_PATH_WARNED</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">return</span>
+    <span class="n">_NOTEBOOK_PATH_WARNED</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s2">&quot;scitex_io: notebook path could not be auto-detected; saving to &quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">fallback_sdir</span><span class="si">!r}</span><span class="s2"> instead of &lt;notebook_dir&gt;/&lt;stem&gt;_out/.</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="s2">&quot;  Canonical convention: &lt;dir&gt;/&lt;stem&gt;.ipynb -&gt; sio.save(obj, &#39;name.ext&#39;) &quot;</span>
+        <span class="s2">&quot;-&gt; &lt;dir&gt;/&lt;stem&gt;_out/name.ext</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="s2">&quot;  Fix by setting SCITEX_NOTEBOOK_PATH before running, e.g.:</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="s2">&quot;    SCITEX_NOTEBOOK_PATH=demo.ipynb jupyter nbconvert --execute --inplace demo.ipynb</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="s2">&quot;  Silence this hint with SCITEX_IO_QUIET_NOTEBOOK_WARN=1.</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="s2">&quot;  Or pass an absolute path to bypass routing: sio.save(obj, &#39;/abs/path.ext&#39;).</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="s2">&quot;  (This message prints at most once per process.)&quot;</span>
+    <span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="nb">__import__</span><span class="p">(</span><span class="s2">&quot;sys&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+
 <span class="k">def</span><span class="w"> </span><span class="nf">sh</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Simple shell execution.&quot;&quot;&quot;</span>
-    <span class="n">result</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Run ``command`` (a list of argv tokens) and return success boolean.</span>
+
+<span class="sd">    Bug fix: previously this used ``shell=True`` with a list, which on</span>
+<span class="sd">    POSIX runs only ``command[0]`` and silently discards the rest —</span>
+<span class="sd">    ``sh([&quot;ln&quot;, &quot;-sfr&quot;, src, dst])`` was effectively just ``sh -c ln``.</span>
+<span class="sd">    Switch to ``shell=False`` so the argv list is passed as-is.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">result</span><span class="o">.</span><span class="n">returncode</span> <span class="o">==</span> <span class="mi">0</span>
 
 
@@ -376,7 +420,16 @@
             <span class="n">env_type</span> <span class="o">=</span> <span class="n">detect_environment</span><span class="p">()</span>
 
             <span class="k">if</span> <span class="n">env_type</span> <span class="o">==</span> <span class="s2">&quot;jupyter&quot;</span><span class="p">:</span>
-                <span class="n">notebook_name</span><span class="p">,</span> <span class="n">notebook_dir</span> <span class="o">=</span> <span class="n">get_notebook_info_simple</span><span class="p">()</span>
+                <span class="c1"># Defensive: get_notebook_info_simple was historically a stub</span>
+                <span class="c1"># that returned a dict — unpacking it as a 2-tuple iterated</span>
+                <span class="c1"># the dict keys, producing `notebook_name=&#39;path&#39;`,</span>
+                <span class="c1"># `notebook_dir=&#39;name&#39;`, and every notebook saved to</span>
+                <span class="c1"># `&lt;cwd&gt;/name/path_out/`. Guard against any non-tuple shape.</span>
+                <span class="n">info</span> <span class="o">=</span> <span class="n">get_notebook_info_simple</span><span class="p">()</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">info</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">info</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                    <span class="n">notebook_name</span><span class="p">,</span> <span class="n">notebook_dir</span> <span class="o">=</span> <span class="n">info</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">notebook_name</span><span class="p">,</span> <span class="n">notebook_dir</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
                 <span class="k">if</span> <span class="n">notebook_name</span><span class="p">:</span>
                     <span class="n">notebook_base</span> <span class="o">=</span> <span class="n">_os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">notebook_name</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
                     <span class="n">sdir</span> <span class="o">=</span> <span class="n">_os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
@@ -384,6 +437,7 @@
                     <span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">sdir</span> <span class="o">=</span> <span class="n">_os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">_os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">(),</span> <span class="s2">&quot;notebook_out&quot;</span><span class="p">)</span>
+                    <span class="n">_warn_notebook_path_unresolved_once</span><span class="p">(</span><span class="n">sdir</span><span class="p">)</span>
                 <span class="n">spath</span> <span class="o">=</span> <span class="n">_os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">sdir</span><span class="p">,</span> <span class="n">specified_path</span><span class="p">)</span>
 
             <span class="k">elif</span> <span class="n">env_type</span> <span class="o">==</span> <span class="s2">&quot;script&quot;</span><span class="p">:</span>
@@ -483,7 +537,7 @@
         <span class="n">sh</span><span class="p">([</span><span class="s2">&quot;rm&quot;</span><span class="p">,</span> <span class="s2">&quot;-f&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">spath_cwd</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">],</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="n">sh</span><span class="p">([</span><span class="s2">&quot;ln&quot;</span><span class="p">,</span> <span class="s2">&quot;-sfr&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">spath</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">spath_cwd</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">],</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">success</span><span class="p">(</span><span class="n">color_text</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;(Symlinked to: </span><span class="si">{</span><span class="n">spath_cwd</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">))</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">success</span><span class="p">(</span><span class="n">color_text</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;(Symlinked to: </span><span class="si">{</span><span class="n">spath_cwd</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">,</span> <span class="s2">&quot;yellow&quot;</span><span class="p">))</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_symlink_to</span><span class="p">(</span><span class="n">spath_final</span><span class="p">,</span> <span class="n">symlink_to</span><span class="p">,</span> <span class="n">verbose</span><span class="p">):</span>
