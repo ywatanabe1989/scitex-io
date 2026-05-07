@@ -17,7 +17,7 @@ location based on caller context:
 |---------|-----------------|
 | Script | `{script_name}_out/{path}` (e.g. `analysis_out/results.csv`) |
 | `@stx.session` | `{script_name}_out/FINISHED_{status}/{session_id}/{path}` |
-| Jupyter | `{notebook_dir}/{notebook_base}_out/{path}` |
+| Jupyter (`*.ipynb`) | `{notebook_dir}/{notebook_base}_out/{path}` (see "Jupyter notebook routing" below) |
 | Interactive REPL | `/tmp/{USER}/{path}` |
 | Absolute path | Used as-is, no routing |
 
@@ -65,6 +65,54 @@ against **the current working directory**. Three idiomatic fixes:
 Once you learn the routing, it's a feature, not a bug: every
 `stx.io.save` call produces a clean side-effect-free directory layout
 that's trivial to archive, hash-verify via Clew, and reproduce.
+
+### Jupyter notebook routing
+
+Convention:
+
+```
+<dir>/<stem>.ipynb         →   sio.save(obj, "name.ext")
+                                    ↓
+<dir>/<stem>_out/name.ext
+```
+
+i.e. each notebook gets a sibling `<stem>_out/` directory in the same
+folder. To make this work, scitex-io needs to recover the notebook's
+own filename from inside the kernel — a hard problem because the
+kernel runs in a separate process from the notebook UI / nbconvert
+driver.
+
+**Detection layers** (first hit wins, see
+`scitex_io._utils.get_notebook_info_simple`):
+
+1. `SCITEX_NOTEBOOK_PATH` env var — explicit override, the only
+   reliable signal under `jupyter nbconvert`.
+2. `__vsc_ipynb_file__` — VS Code Jupyter injects this into the
+   user namespace.
+3. `__session__` / `__notebook__` globals — set by some classic
+   notebook setups.
+4. Optional `ipynbname` package — queries the running Jupyter server.
+5. `sys.argv` scan — last-ditch for tools that pass the path.
+
+**If none match**, scitex-io falls back to `<cwd>/notebook_out/` and
+emits a one-time stderr hint. Silence with
+`SCITEX_IO_QUIET_NOTEBOOK_WARN=1`.
+
+**Recommended for CI / nbconvert / book builders:**
+
+```bash
+SCITEX_NOTEBOOK_PATH=demo.ipynb \
+  jupyter nbconvert --to notebook --execute --inplace demo.ipynb
+```
+
+**Recommended for in-cell usage that needs to be portable:** pass an
+absolute path to `sio.save` — it bypasses routing entirely.
+
+```python
+from pathlib import Path
+ROOT = Path.cwd()                       # or any anchor you trust
+sio.save(fig, ROOT / "_assets" / "01_demo.png")
+```
 
 ## scitex_io path utilities
 
