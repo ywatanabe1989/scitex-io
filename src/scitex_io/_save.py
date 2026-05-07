@@ -29,17 +29,18 @@ __FILE__ = __file__
 
 """Imports"""
 import inspect
-import logging
 import os as _os
 import subprocess
 from pathlib import Path
 from typing import Any, Union
 
+from scitex_logging import getLogger as _getLogger
+
 from ._image_csv_handler import handle_image_with_csv  # noqa: F401
 from ._registry import get_saver  # noqa: F401
 from ._utils import clean, clean_path, color_text, getsize, readable_bytes
 
-logger = logging.getLogger()
+logger = _getLogger(__name__)
 
 
 # Module-level latch for the once-per-process notebook-path warning.
@@ -248,7 +249,7 @@ def save(
             if verbose:
                 print()
                 logger.success(
-                    color_text(f"(dry run) Saved to: ./{rel_path}", c="yellow")
+                    color_text(f"(dry run) Saved to: ./{rel_path}", "yellow")
                 )
             return
 

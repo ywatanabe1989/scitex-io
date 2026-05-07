@@ -7,6 +7,22 @@ versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.2.13] — 2026-05-07
+
+### Fixed
+- **`logger.success()` now works under stdlib Python on every
+  supported version.** Previously `_save.py` used
+  `logger = logging.getLogger()` (stdlib), which has no `.success()`
+  method — every save raised
+  `AttributeError: 'RootLogger' object has no attribute 'success'`
+  on a clean Python 3.10 install. Switched to
+  `from scitex_logging import getLogger` so the SciTeX-extended
+  logger (with `.success()`, `.fail()`) is used instead.
+- **`color_text(..., c="yellow")` → `color_text(..., "yellow")`**
+  in the dry-run success message. The kwarg was named `color`,
+  not `c`; the call was raising `TypeError: missing 1 required
+  positional argument: 'color'` on every dry-run save.
+
 ## [0.2.12] — 2026-05-07
 
 ### Fixed
