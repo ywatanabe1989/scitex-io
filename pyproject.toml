@@ -45,6 +45,9 @@ dependencies = [
     "rich>=13.0.0",
     "scitex-dev>=0.1.0",
     "scitex-linter>=0.3.0",
+    # scitex_io._save imports scitex_logging at module top (also _bibtex
+    # load/save modules) — the runtime needs it.
+    "scitex-logging>=0.1.0",
 ]
 
 [project.optional-dependencies]
