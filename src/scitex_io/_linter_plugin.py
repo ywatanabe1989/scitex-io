@@ -72,8 +72,76 @@ def get_plugin():
         requires="scitex",
     )
 
+    # ------------------------------------------------------------------
+    # Path-handling rules (PA001-PA005) — every PA rule talks about how
+    # `stx.io.save()` resolves paths and stx.io lives in scitex-io.
+    # Migrated out of the engine in the per-package-rules cutover.
+    # ------------------------------------------------------------------
+    PA001 = Rule(
+        id="STX-PA001",
+        severity="warning",
+        category="path",
+        message="Absolute path in `stx.io` call — use relative paths for reproducibility",
+        suggestion="Use `stx.io.save(obj, './relative/path.ext')` — paths resolve to script_out/.",
+        requires="scitex",
+    )
+
+    PA002 = Rule(
+        id="STX-PA002",
+        severity="warning",
+        category="path",
+        message="`open()` detected — use `stx.io.save()`/`stx.io.load()` which includes auto-logging",
+        suggestion=(
+            "Replace `open(path)` with `stx.io.load(path)` or `stx.io.save(obj, path)`.\n"
+            "  stx.io automatically logs all I/O operations for provenance tracking."
+        ),
+        requires="scitex",
+    )
+
+    PA003 = Rule(
+        id="STX-PA003",
+        severity="info",
+        category="path",
+        message="`os.makedirs()`/`mkdir()` detected — `stx.io.save()` creates directories automatically",
+        suggestion=(
+            "Remove manual directory creation.\n"
+            "  `stx.io.save(obj, './subdir/file.ext')` auto-creates `subdir/` inside script_out/."
+        ),
+        requires="scitex",
+    )
+
+    PA004 = Rule(
+        id="STX-PA004",
+        severity="warning",
+        category="path",
+        message="`os.chdir()` detected — scripts should be run from project root",
+        suggestion="Remove `os.chdir()` and run scripts from the project root directory.",
+    )
+
+    PA005 = Rule(
+        id="STX-PA005",
+        severity="info",
+        category="path",
+        message="Path without `./` prefix in `stx.io` call — use `./` for explicit relative intent",
+        suggestion="Use `./filename.ext` instead of `filename.ext` to clarify relative path intent.",
+        requires="scitex",
+    )
+
     return {
-        "rules": [IO001, IO002, IO003, IO004, IO005, IO006, IO007],
+        "rules": [
+            IO001,
+            IO002,
+            IO003,
+            IO004,
+            IO005,
+            IO006,
+            IO007,
+            PA001,
+            PA002,
+            PA003,
+            PA004,
+            PA005,
+        ],
         "call_rules": {
             ("np", "save"): IO001,
             ("numpy", "save"): IO001,
@@ -86,6 +154,9 @@ def get_plugin():
             ("pickle", "dumps"): IO005,
             ("json", "dump"): IO006,
             (None, "savefig"): IO007,
+            ("os", "makedirs"): PA003,
+            ("os", "mkdir"): PA003,
+            ("os", "chdir"): PA004,
         },
         "axes_hints": {},
         "checkers": [],
