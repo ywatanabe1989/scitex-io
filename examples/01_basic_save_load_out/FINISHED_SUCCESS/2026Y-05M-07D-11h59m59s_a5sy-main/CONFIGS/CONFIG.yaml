@@ -1,0 +1,11 @@
+ID: 2026Y-05M-07D-11h59m59s_a5sy
+PID: 317565
+START_DATETIME: 2026-05-07 11:59:59.222553
+FILE: /home/ywatanabe/proj/scitex-io/examples/01_basic_save_load.py
+SDIR_OUT: /home/ywatanabe/proj/scitex-io/examples/01_basic_save_load_out
+SDIR_RUN: 
+    /home/ywatanabe/proj/scitex-io/examples/01_basic_save_load_out/RUNNING/2026Y-05M-07D-11h59m59s_a5sy-main
+ARGS: {}
+EXIT_STATUS: 0
+END_DATETIME: 2026-05-07 12:00:03.925028
+RUN_DURATION: 00:00:04

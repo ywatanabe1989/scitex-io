@@ -1,0 +1,11 @@
+ID: 2026Y-05M-07D-12h01m27s_1ynL
+PID: 346934
+START_DATETIME: 2026-05-07 12:01:27.907232
+FILE: /home/ywatanabe/proj/scitex-io/examples/04_dotdict.py
+SDIR_OUT: /home/ywatanabe/proj/scitex-io/examples/04_dotdict_out
+SDIR_RUN: 
+    /home/ywatanabe/proj/scitex-io/examples/04_dotdict_out/RUNNING/2026Y-05M-07D-12h01m27s_1ynL-main
+ARGS: {}
+EXIT_STATUS: 0
+END_DATETIME: 2026-05-07 12:01:32.169546
+RUN_DURATION: 00:00:04

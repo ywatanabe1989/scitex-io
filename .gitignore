@@ -660,6 +660,13 @@ flycheck_*.el
 # Track example output artifacts
 !examples/*_out/
 !examples/*_out/**
+# Demo artefacts under examples/<n>_out/FINISHED_SUCCESS/<id>/ are
+# exempt from the global FINISHED / 202?Y-* ignores so PS503 viewers
+# see the demo run on GitHub.
+!examples/*_out/FINISHED_SUCCESS/
+!examples/*_out/FINISHED_SUCCESS/**
+!examples/*_out/FINISHED_SUCCESS/**/202?Y-*
+!examples/*_out/FINISHED_SUCCESS/**/202?Y-*/**
 
 ### Source: /home/ywatanabe/.git-templates/.gitignore-templates/Custom/SLURM.gitignore ###
 slurm_logs
