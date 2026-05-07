@@ -1,10 +1,10 @@
+# SciTeX IO (<code>scitex-io</code>)
+
 <p align="center">
   <a href="https://scitex.ai">
     <img src="docs/scitex-logo-blue-cropped.png" alt="SciTeX" width="400">
   </a>
 </p>
-
-# scitex-io
 
 <p align="center"><b>Universal scientific data I/O with plugin registry</b></p>
 
