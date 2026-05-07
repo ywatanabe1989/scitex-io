@@ -7,6 +7,17 @@ versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.2.14] — 2026-05-07
+
+### Fixed
+- **Top-level `scitex_io._load_cache` shim restored.** The published
+  umbrella `scitex.io._load` imports
+  `from scitex_io._load_cache import cache_data, get_cached_data,
+  load_npy_cached`. After standalonization the implementation moved
+  to `scitex_io._loading._load_cache`, breaking every umbrella
+  consumer's CI on Python 3.12/3.13 (clean sites that pull from
+  PyPI). The shim re-exports the three names from the new path.
+
 ## [0.2.13] — 2026-05-07
 
 ### Fixed
