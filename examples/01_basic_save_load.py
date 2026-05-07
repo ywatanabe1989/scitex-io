@@ -8,6 +8,7 @@ Usage:
     python 01_basic_save_load.py
 """
 
+import scitex as stx
 import os
 
 import numpy as np
@@ -19,7 +20,8 @@ OUT_DIR = os.path.join(os.path.dirname(__file__), "01_basic_save_load_out")
 os.makedirs(OUT_DIR, exist_ok=True)
 
 
-def main():
+@stx.session
+def main(CONFIG=stx.session.INJECTED, logger=stx.session.INJECTED):
     save(
         {"experiment": "demo", "values": [1, 2, 3]},
         os.path.join(OUT_DIR, "config.json"),

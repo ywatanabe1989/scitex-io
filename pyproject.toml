@@ -4,11 +4,11 @@ build-backend = "hatchling.build"
 
 [project]
 name = "scitex-io"
-version = "0.2.11"
+version = "0.2.12"
 description = "Universal scientific data I/O with plugin registry"
 readme = "README.md"
 license = "AGPL-3.0-only"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 authors = [
     { name = "Yusuke Watanabe", email = "ywatanabe@scitex.ai" },
 ]
@@ -22,7 +22,6 @@ keywords = [
     "pandas",
     "registry",
     "plugin",
-    "scitex",
 ]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -46,7 +45,6 @@ dependencies = [
     "rich>=13.0.0",
     "scitex-dev>=0.1.0",
     "scitex-linter>=0.3.0",
-    "scitex",
 ]
 
 [project.optional-dependencies]
@@ -66,6 +64,13 @@ dev = [
     "matplotlib",
     "plotly",
     "Pillow",
+    # Optional features whose tests live in the suite — installed in [dev]
+    # so a fresh `pip install -e .[dev]` runs the full suite. Production
+    # users opt in via `pip install scitex-io[<extra>]`. See
+    # _skills/general/01_ecosystem_02_dependency-and-version-pinning.md
+    # `[dev]` extras completeness.
+    "fastmcp>=2.0",       # tested via scitex_io._mcp_server
+    "numcodecs",          # tested via [scientific] zarr/blosc paths
 ]
 docs = [
     "sphinx>=7.0",

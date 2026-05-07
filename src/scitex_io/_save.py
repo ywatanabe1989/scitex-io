@@ -4,6 +4,7 @@
 # File: /home/ywatanabe/proj/scitex-io/src/scitex_io/_save.py
 # ----------------------------------------
 from __future__ import annotations
+
 import os
 
 __FILE__ = "./src/scitex_io/_save.py"
@@ -28,22 +29,65 @@ __FILE__ = __file__
 
 """Imports"""
 import inspect
-import os as _os
 import logging
+import os as _os
 import subprocess
 from pathlib import Path
 from typing import Any, Union
 
-from ._utils import clean, getsize, clean_path, color_text, readable_bytes
-from ._registry import get_saver  # noqa: F401
 from ._image_csv_handler import handle_image_with_csv  # noqa: F401
+from ._registry import get_saver  # noqa: F401
+from ._utils import clean, clean_path, color_text, getsize, readable_bytes
 
 logger = logging.getLogger()
 
 
+# Module-level latch for the once-per-process notebook-path warning.
+_NOTEBOOK_PATH_WARNED = False
+
+
+def _warn_notebook_path_unresolved_once(fallback_sdir: str) -> None:
+    """Emit a one-time hint when notebook-name detection fails.
+
+    Triggered when ``scitex_io.save`` runs inside a notebook but
+    ``get_notebook_info_simple()`` couldn't recover the notebook stem.
+    Falling back to ``<cwd>/notebook_out/`` is correct but surprising
+    — explain the canonical convention and how to opt in.
+
+    Silenced for the rest of the process by:
+      - ``SCITEX_IO_QUIET_NOTEBOOK_WARN=1`` env var, OR
+      - the latch (only the first call ever emits).
+    """
+    global _NOTEBOOK_PATH_WARNED
+    if _NOTEBOOK_PATH_WARNED:
+        return
+    if _os.environ.get("SCITEX_IO_QUIET_NOTEBOOK_WARN"):
+        _NOTEBOOK_PATH_WARNED = True
+        return
+    _NOTEBOOK_PATH_WARNED = True
+    msg = (
+        "scitex_io: notebook path could not be auto-detected; saving to "
+        f"{fallback_sdir!r} instead of <notebook_dir>/<stem>_out/.\n"
+        "  Canonical convention: <dir>/<stem>.ipynb -> sio.save(obj, 'name.ext') "
+        "-> <dir>/<stem>_out/name.ext\n"
+        "  Fix by setting SCITEX_NOTEBOOK_PATH before running, e.g.:\n"
+        "    SCITEX_NOTEBOOK_PATH=demo.ipynb jupyter nbconvert --execute --inplace demo.ipynb\n"
+        "  Silence this hint with SCITEX_IO_QUIET_NOTEBOOK_WARN=1.\n"
+        "  Or pass an absolute path to bypass routing: sio.save(obj, '/abs/path.ext').\n"
+        "  (This message prints at most once per process.)"
+    )
+    print(msg, file=__import__("sys").stderr, flush=True)
+
+
 def sh(command, *args, **kwargs):
-    """Simple shell execution."""
-    result = subprocess.run(command, shell=True, capture_output=True, text=True)
+    """Run ``command`` (a list of argv tokens) and return success boolean.
+
+    Bug fix: previously this used ``shell=True`` with a list, which on
+    POSIX runs only ``command[0]`` and silently discards the rest —
+    ``sh(["ln", "-sfr", src, dst])`` was effectively just ``sh -c ln``.
+    Switch to ``shell=False`` so the argv list is passed as-is.
+    """
+    result = subprocess.run(command, capture_output=True, text=True)
     return result.returncode == 0
 
 
@@ -128,7 +172,16 @@ def save(
             env_type = detect_environment()
 
             if env_type == "jupyter":
-                notebook_name, notebook_dir = get_notebook_info_simple()
+                # Defensive: get_notebook_info_simple was historically a stub
+                # that returned a dict — unpacking it as a 2-tuple iterated
+                # the dict keys, producing `notebook_name='path'`,
+                # `notebook_dir='name'`, and every notebook saved to
+                # `<cwd>/name/path_out/`. Guard against any non-tuple shape.
+                info = get_notebook_info_simple()
+                if isinstance(info, tuple) and len(info) == 2:
+                    notebook_name, notebook_dir = info
+                else:
+                    notebook_name, notebook_dir = None, None
                 if notebook_name:
                     notebook_base = _os.path.splitext(notebook_name)[0]
                     sdir = _os.path.join(
@@ -136,6 +189,7 @@ def save(
                     )
                 else:
                     sdir = _os.path.join(_os.getcwd(), "notebook_out")
+                    _warn_notebook_path_unresolved_once(sdir)
                 spath = _os.path.join(sdir, specified_path)
 
             elif env_type == "script":
@@ -234,7 +288,7 @@ def _symlink(spath, spath_cwd, symlink_from_cwd, verbose):
         sh(["rm", "-f", f"{spath_cwd}"], verbose=False)
         sh(["ln", "-sfr", f"{spath}", f"{spath_cwd}"], verbose=False)
         if verbose:
-            logger.success(color_text(f"(Symlinked to: {spath_cwd})"))
+            logger.success(color_text(f"(Symlinked to: {spath_cwd})", "yellow"))
 
 
 def _symlink_to(spath_final, symlink_to, verbose):

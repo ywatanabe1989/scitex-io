@@ -17,7 +17,7 @@ supporting both individual entries and collections.
 """
 
 try:
-    from scitex import logging
+    import scitex_logging as logging
 
     SCITEX_LOGGING_AVAILABLE = True
 except ImportError:

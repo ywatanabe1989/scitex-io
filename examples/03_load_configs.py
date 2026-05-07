@@ -11,6 +11,7 @@ Usage:
     python 03_load_configs.py
 """
 
+import scitex as stx
 import os
 import shutil
 
@@ -70,7 +71,8 @@ def setup_example_configs():
     )
 
 
-def main():
+@stx.session
+def main(CONFIG=stx.session.INJECTED, logger=stx.session.INJECTED):
     setup_example_configs()
 
     # Load all configs at once — namespaced by filename

@@ -1,16 +1,29 @@
 ---
-description: Universal one-call file I/O for 30+ scientific formats (CSV, Parquet, NumPy .npy/.npz, pickle, YAML, JSON, HDF5, MATLAB .mat, images, matplotlib figures, PyTorch .pt, MNE .fif, EDF, video). Use whenever the user reads or writes ANY data file — as a drop-in replacement for `pd.read_csv`, `np.load`, `pickle.load`, `json.load`, `fig.savefig`, `torch.save`, etc. Trigger phrases include "load", "save", "read", "write", "open a file", "save this figure", "cache this result", "load my config", "glob these files", "FileNotFoundError after stx.io.save", "where did my file go", "symlink_from_cwd", "script_out directory". Also covers YAML config loading (`load_configs`), figure metadata embedding, load-time caching, and the path-routing asymmetry every new user and agent hits: `save()` auto-routes to `{script}_out/` based on caller context while `load()` resolves the path as given against cwd — pass `symlink_from_cwd=True` for a one-liner round-trip, use an absolute path on both sides, or wrap in `@stx.session`.
+name: scitex-io
+description: |
+  [WHAT] Universal one-call file I/O for 30+ scientific formats — CSV,
+  Parquet, NumPy .npy/.npz, pickle, YAML, JSON, HDF5, MATLAB .mat,
+  images, matplotlib figures, PyTorch .pt, MNE .fif, EDF, video. Also
+  YAML config loading, figure metadata embedding, load-time caching.
+  [WHEN] reading or writing any data file — as a drop-in replacement
+  for pd.read_csv, np.load, pickle.load, json.load, fig.savefig,
+  torch.save. Trigger phrases: "load", "save", "read", "write", "open
+  a file", "save this figure", "cache this result", "load my config",
+  "glob these files", "FileNotFoundError after stx.io.save",
+  "symlink_from_cwd", "script_out directory".
+  [HOW] stx.io.save(obj, path) / stx.io.load(path) auto-dispatch by
+  extension. save() auto-routes to {script}_out/ from caller context;
+  load() resolves the path against cwd. Pass symlink_from_cwd=True
+  for round-trip, or use absolute paths on both sides.
+tags: [scitex-io]
 allowed-tools: mcp__scitex__io_*
-primary_interface: mixed
+primary_interface: python
 interfaces:
   python: 3
   cli: 1
   mcp: 2
   skills: 3
-  hook: 0
   http: 0
-name: scitex-io
-tags: [scitex-io, scitex-package]
 ---
 
 # scitex-io
@@ -46,17 +59,23 @@ rule and the empirical verification table.
 
 ## Sub-skills
 
-### Core
-* [01_save-and-load](01_save-and-load.md) — Core save/load API, registry, custom formats
-* [02_centralized-config](02_centralized-config.md) — `load_configs()` and DotDict
-* [03_metadata-embedding](03_metadata-embedding.md) — Provenance in PNG/JPEG/SVG/PDF
-* [04_cache](04_cache.md) — Load caching, reload, flush
-* [05_glob](05_glob.md) — Pattern matching with natural sort
-* [06_supported-formats](06_supported-formats.md) — All 30+ format tables
-* [07_path-resolution](07_path-resolution.md) — Auto save-path, scitex.path utilities
+### Onboarding (canonical 01–04)
+* [01_installation](01_installation.md) — pip install + extras + verify
+* [02_quick-start](02_quick-start.md) — first save/load round-trip
+* [03_python-api](03_python-api.md) — full Python surface
+* [04_cli-reference](04_cli-reference.md) — every CLI subcommand
+
+### Core workflow
+* [10_save-and-load](10_save-and-load.md) — Core save/load API, registry, custom formats
+* [11_centralized-config](11_centralized-config.md) — `load_configs()` and DotDict
+* [12_metadata-embedding](12_metadata-embedding.md) — Provenance in PNG/JPEG/SVG/PDF
+* [13_cache](13_cache.md) — Load caching, reload, flush
+* [14_glob](14_glob.md) — Pattern matching with natural sort
+* [15_supported-formats](15_supported-formats.md) — All 30+ format tables
+* [16_path-resolution](16_path-resolution.md) — Auto save-path, scitex.path utilities
 
 ### Standards
-* [20_linting-rules](20_linting-rules.md) — STX-IO001–007 lint rules
+* [21_linting-rules](21_linting-rules.md) — STX-IO001–007 lint rules
 
 ## MCP Tools
 
@@ -80,4 +99,4 @@ scitex-io skills list              # List skill pages
 
 ## Environment
 
-- [08_env-vars.md](08_env-vars.md) — SCITEX_* env vars read by scitex-io at runtime
+- [20_env-vars.md](20_env-vars.md) — SCITEX_* env vars read by scitex-io at runtime

@@ -1,41 +1,32 @@
-# scitex-io
-
-<!-- scitex-badges:start -->
-[![PyPI](https://img.shields.io/pypi/v/scitex-io.svg)](https://pypi.org/project/scitex-io/)
-[![Python](https://img.shields.io/pypi/pyversions/scitex-io.svg)](https://pypi.org/project/scitex-io/)
-[![Tests](https://github.com/ywatanabe1989/scitex-io/actions/workflows/test.yml/badge.svg)](https://github.com/ywatanabe1989/scitex-io/actions/workflows/test.yml)
-[![Install Test](https://github.com/ywatanabe1989/scitex-io/actions/workflows/install-test.yml/badge.svg)](https://github.com/ywatanabe1989/scitex-io/actions/workflows/install-test.yml)
-[![Coverage](https://codecov.io/gh/ywatanabe1989/scitex-io/graph/badge.svg)](https://codecov.io/gh/ywatanabe1989/scitex-io)
-[![Docs](https://readthedocs.org/projects/scitex-io/badge/?version=latest)](https://scitex-io.readthedocs.io/en/latest/)
-[![License: AGPL v3](https://img.shields.io/badge/license-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
-<!-- scitex-badges:end -->
-
-
 <p align="center">
   <a href="https://scitex.ai">
     <img src="docs/scitex-logo-blue-cropped.png" alt="SciTeX" width="400">
   </a>
 </p>
 
-<p align="center"><b>Universal scientific data I/O with plugin registry</b></p>
+# scitex-io
 
-<p align="center">
-  <a href="https://badge.fury.io/py/scitex-io"><img src="https://badge.fury.io/py/scitex-io.svg" alt="PyPI version"></a>
-  <a href="https://scitex-io.readthedocs.io/"><img src="https://readthedocs.org/projects/scitex-io/badge/?version=latest" alt="Documentation"></a>
-  <a href="https://github.com/ywatanabe1989/scitex-io/actions/workflows/ci.yml"><img src="https://github.com/ywatanabe1989/scitex-io/actions/workflows/ci.yml/badge.svg" alt="Tests"></a>
-  <a href="https://www.gnu.org/licenses/agpl-3.0"><img src="https://img.shields.io/badge/License-AGPL--3.0-blue.svg" alt="License: AGPL-3.0"></a>
-</p>
+<p align="center"><b>Universal scientific data I/O with plugin registry</b></p>
 
 <p align="center">
   <a href="https://scitex-io.readthedocs.io/">Full Documentation</a> · <code>pip install scitex-io</code>
 </p>
 
+<p align="center">
+<!-- scitex-badges:start -->
+<a href="https://pypi.org/project/scitex-io/"><img src="https://img.shields.io/pypi/v/scitex-io.svg" alt="PyPI"></a>
+<a href="https://pypi.org/project/scitex-io/"><img src="https://img.shields.io/pypi/pyversions/scitex-io.svg" alt="Python"></a>
+<a href="https://github.com/ywatanabe1989/scitex-io/actions/workflows/test.yml"><img src="https://github.com/ywatanabe1989/scitex-io/actions/workflows/test.yml/badge.svg" alt="Tests"></a>
+<a href="https://github.com/ywatanabe1989/scitex-io/actions/workflows/install-test.yml"><img src="https://github.com/ywatanabe1989/scitex-io/actions/workflows/install-test.yml/badge.svg" alt="Install Test"></a>
+<a href="https://codecov.io/gh/ywatanabe1989/scitex-io"><img src="https://codecov.io/gh/ywatanabe1989/scitex-io/graph/badge.svg" alt="Coverage"></a>
+<a href="https://scitex-io.readthedocs.io/en/latest/"><img src="https://readthedocs.org/projects/scitex-io/badge/?version=latest" alt="Docs"></a>
+<a href="https://www.gnu.org/licenses/agpl-3.0"><img src="https://img.shields.io/badge/license-AGPL_v3-blue.svg" alt="License: AGPL v3"></a>
+<!-- scitex-badges:end -->
+</p>
+
 ---
 
-> **Interfaces:** Python ⭐⭐⭐ · CLI ⭐ · MCP ⭐⭐ · Skills ⭐⭐⭐ · Hook — · HTTP —
-
 ## Problem and Solution
-
 
 | # | Problem | Solution |
 |---|---------|----------|
@@ -98,7 +89,28 @@ For MCP server support:
 pip install scitex-io[mcp]
 ```
 
-> **SciTeX users**: `pip install scitex` already includes scitex-io.
+## Architecture
+
+```
+scitex_io/
+├── _save.py / _save_modules/      ← extension-based dispatcher + per-format savers
+├── _loading/ / _load_modules/     ← unified load() + per-format loaders
+├── _registry.py                   ← plugin registry (register_saver / register_loader)
+├── _cache.py / _flush.py / _reload.py  ← path+mtime cache
+├── _glob.py                       ← natural-sorted glob, brace expansion, parse_glob
+├── _path.py                       ← auto-routing path resolver (script_out/, etc.)
+├── _metadata.py / _metadata_modules/   ← embed_metadata / read_metadata (PNG/JPEG/SVG/PDF)
+├── _builtin_handlers.py           ← bundled handlers wired to the registry
+├── _image_csv_handler.py          ← figure → png + csv + yaml triplet
+├── _linter_plugin.py              ← STX-IO001..007 rule plugins for scitex-linter
+├── _cli/                          ← `scitex-io` Click CLI
+├── _mcp/                          ← MCP server tools
+└── _skills/                       ← agent-facing skill pages
+```
+
+`save()` and `load()` route by file extension through `_registry`;
+every format is a small handler module discovered eagerly at import. The
+registry is the extension point — see "Custom Format Registration" below.
 
 ## Quickstart
 
@@ -253,7 +265,7 @@ assert load("data.custom") == "hello"
 
 ## Four Interfaces
 
-<details>
+<details open>
 <summary><strong>Python API</strong></summary>
 
 <br>
@@ -270,7 +282,7 @@ cfg  = load_configs()        # Load ./config/*.yaml as DotDict
 embed_metadata("fig.png", d) # Embed provenance into figure
 ```
 
-> **[Full API reference](https://scitex-io.readthedocs.io/)**
+> **[Full API reference](https://scitex-io.readthedocs.io/en/latest/api/scitex_io.html)**
 
 </details>
 
@@ -292,7 +304,7 @@ scitex-io mcp doctor                # Check MCP health
 scitex-io mcp list-tools -vv        # List MCP tools with parameters
 ```
 
-> **[Full CLI reference](https://scitex-io.readthedocs.io/)**
+> **[Full CLI reference](https://scitex-io.readthedocs.io/en/latest/cli.html)**
 
 </details>
 
@@ -315,7 +327,7 @@ AI agents can save, load, and discover formats autonomously.
 scitex-io mcp start
 ```
 
-> **[Full MCP specification](https://scitex-io.readthedocs.io/)**
+> **[Full MCP specification](https://scitex-io.readthedocs.io/en/latest/mcp.html)**
 
 </details>
 
@@ -348,6 +360,33 @@ Also available via MCP: `io_skills_list()` / `io_skills_get(name)`.
 
 </details>
 
+## Demo
+
+```mermaid
+flowchart LR
+    A["scitex_io.save(obj, 'x.ext')"] --> R["registry: lookup(.ext)"]
+    R --> H["per-format saver"]
+    H --> F["file on disk + sidecar (csv/yaml)"]
+    L["scitex_io.load('x.ext')"] --> R2["registry: lookup(.ext)"]
+    R2 --> H2["per-format loader"]
+    H2 --> O["Python object<br/>(DataFrame, ndarray, ...)"]
+    G["glob('data/**/*.csv')"] --> N["natural-sorted paths"]
+    N --> L
+```
+
+```python
+>>> import pandas as pd, scitex_io as sio
+>>> df = pd.DataFrame({"x": [1, 2, 3]})
+>>> sio.save(df, "out.csv")          # routes by extension
+>>> sio.load("out.csv").equals(df)
+True
+>>> sio.list_formats()[:5]
+['.csv', '.tsv', '.xlsx', '.npy', '.npz']
+```
+
+A figure save additionally emits the underlying CSV + a figrecipe YAML
+sidecar, keeping figure-and-data atomically in sync.
+
 ## Lint Rules
 
 Detected by [scitex-linter](https://github.com/ywatanabe1989/scitex-linter) when this package is installed.
@@ -364,7 +403,9 @@ Detected by [scitex-linter](https://github.com/ywatanabe1989/scitex-linter) when
 
 ## Part of SciTeX
 
-scitex-io is part of [**SciTeX**](https://scitex.ai). When used inside the SciTeX framework, I/O is seamless:
+`scitex-io` is part of [**SciTeX**](https://scitex.ai). Install via
+the umbrella with `pip install scitex[io]` to use as
+`scitex.io` (Python) or `scitex io ...` (CLI).
 
 ```python
 import scitex
