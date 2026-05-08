@@ -43,8 +43,8 @@ dependencies = [
     "pandas",
     "click>=8.0.0",
     "rich>=13.0.0",
-    "scitex-dev>=0.1.0",
-    "scitex-dev>=0.11.0",
+    "scitex-dev>=0.11.5",
+    "scitex-dev>=0.11.5",
     # scitex_io._save imports scitex_logging at module top (also _bibtex
     # load/save modules) — the runtime needs it.
     "scitex-logging>=0.1.0",
