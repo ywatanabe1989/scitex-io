@@ -33,6 +33,9 @@ from ._pdf_utils import (
     DotDict,
     _select_backend,
 )
+from ._pdf_utils import (
+    PYPDF2_AVAILABLE as PYPDF2_AVAILABLE,  # re-export for test patches
+)
 
 # Expose the fitz / pypdf / pdfplumber module handles at this module's
 # top level so tests that `mock.patch("scitex_io._load_modules._pdf.fitz")`

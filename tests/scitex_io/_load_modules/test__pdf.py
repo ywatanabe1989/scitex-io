@@ -5,7 +5,6 @@
 """Comprehensive tests for PDF file loading functionality."""
 
 import os
-import tempfile
 
 import pytest
 
@@ -34,7 +33,7 @@ class TestLoadPdf:
                 _load_pdf(missing_file)
 
     @patch("os.path.exists")
-    @patch("scitex_io._load_modules._pdf.fitz")
+    @patch("scitex_io._load_modules._pdf_text_extractors.fitz")
     @patch("scitex_io._load_modules._pdf.FITZ_AVAILABLE", True)
     def test_text_mode_fitz_extraction(self, mock_fitz, mock_exists):
         """Test text extraction using fitz (PyMuPDF) backend"""
@@ -62,7 +61,7 @@ class TestLoadPdf:
         assert "Sample text" in result
 
     @patch("os.path.exists")
-    @patch("scitex_io._load_modules._pdf.fitz")
+    @patch("scitex_io._load_modules._pdf_text_extractors.fitz")
     @patch("scitex_io._load_modules._pdf.FITZ_AVAILABLE", True)
     def test_multi_page_text_extraction(self, mock_fitz, mock_exists):
         """Test processing of multi-page PDFs"""
@@ -93,7 +92,7 @@ class TestLoadPdf:
         assert "Content from page 3" in result or "page 3" in result
 
     @patch("os.path.exists")
-    @patch("scitex_io._load_modules._pdf.fitz")
+    @patch("scitex_io._load_modules._pdf_text_extractors.fitz")
     @patch("scitex_io._load_modules._pdf.FITZ_AVAILABLE", True)
     def test_empty_pdf_handling(self, mock_fitz, mock_exists):
         """Test handling of empty PDFs"""
@@ -116,7 +115,7 @@ class TestLoadPdf:
         assert isinstance(result, str)
 
     @patch("os.path.exists")
-    @patch("scitex_io._load_modules._pdf.fitz")
+    @patch("scitex_io._load_modules._pdf_text_extractors.fitz")
     @patch("scitex_io._load_modules._pdf.FITZ_AVAILABLE", True)
     def test_unicode_text_handling(self, mock_fitz, mock_exists):
         """Test handling of Unicode characters in PDF text"""
@@ -142,7 +141,7 @@ class TestLoadPdf:
         assert "Héllo" in result or "hello" in result.lower()
 
     @patch("os.path.exists")
-    @patch("scitex_io._load_modules._pdf.fitz")
+    @patch("scitex_io._load_modules._pdf_text_extractors.fitz")
     @patch("scitex_io._load_modules._pdf.FITZ_AVAILABLE", True)
     def test_large_pdf_handling(self, mock_fitz, mock_exists):
         """Test handling of PDFs with many pages"""
@@ -176,14 +175,12 @@ class TestLoadPdf:
 
         sig = inspect.signature(_load_pdf)
 
-        # Check parameters
+        # Check parameters — metadata is now a `mode` value, not a flag.
         assert "lpath" in sig.parameters
         assert "mode" in sig.parameters
-        assert "metadata" in sig.parameters
 
         # Check default values
         assert sig.parameters["mode"].default == "full"
-        assert sig.parameters["metadata"].default == False
 
     def test_function_docstring(self):
         """Test that function has proper docstring"""
@@ -199,7 +196,7 @@ class TestLoadPdf:
         assert "text" in docstring.lower()
 
     @patch("os.path.exists")
-    @patch("scitex_io._load_modules._pdf.fitz")
+    @patch("scitex_io._load_modules._pdf_text_extractors.fitz")
     @patch("scitex_io._load_modules._pdf.FITZ_AVAILABLE", True)
     def test_text_mode_with_kwargs(self, mock_fitz, mock_exists):
         """Test that additional kwargs are handled"""
@@ -220,7 +217,7 @@ class TestLoadPdf:
         assert isinstance(result, str)
 
     @patch("os.path.exists")
-    @patch("scitex_io._load_modules._pdf.fitz")
+    @patch("scitex_io._load_modules._pdf_text_extractors.fitz")
     @patch("scitex_io._load_modules._pdf.FITZ_AVAILABLE", True)
     def test_path_variations(self, mock_fitz, mock_exists):
         """Test various path formats"""
@@ -257,7 +254,9 @@ class TestLoadPdf:
         # Mock file exists
         with patch("os.path.exists", return_value=True):
             with patch("scitex_io._load_modules._pdf.FITZ_AVAILABLE", True):
-                with patch("scitex_io._load_modules._pdf.fitz") as mock_fitz:
+                with patch(
+                    "scitex_io._load_modules._pdf_text_extractors.fitz"
+                ) as mock_fitz:
                     mock_doc = MagicMock()
                     mock_fitz.open.return_value = mock_doc
 
@@ -266,7 +265,7 @@ class TestLoadPdf:
 
     @patch("os.path.exists")
     @patch("os.path.getsize")
-    @patch("scitex_io._load_modules._pdf.fitz")
+    @patch("scitex_io._load_modules._pdf_text_extractors.fitz")
     @patch("scitex_io._load_modules._pdf.FITZ_AVAILABLE", True)
     def test_scientific_mode(self, mock_fitz, mock_getsize, mock_exists):
         """Test scientific extraction mode"""
@@ -291,7 +290,8 @@ class TestLoadPdf:
 
         # Mock file hash calculation
         with patch(
-            "scitex_io._load_modules._pdf._calculate_file_hash", return_value="abc123"
+            "scitex_io._load_modules._pdf_content_extractors._calculate_file_hash",
+            return_value="abc123",
         ):
             result = _load_pdf("scientific_paper.pdf", mode="scientific")
 
@@ -301,7 +301,7 @@ class TestLoadPdf:
         assert result["extraction_mode"] == "scientific"
 
     @patch("os.path.exists")
-    @patch("scitex_io._load_modules._pdf.fitz")
+    @patch("scitex_io._load_modules._pdf_content_extractors.fitz")
     @patch("scitex_io._load_modules._pdf.FITZ_AVAILABLE", True)
     def test_metadata_mode(self, mock_fitz, mock_exists):
         """Test metadata extraction mode"""
@@ -326,7 +326,7 @@ class TestLoadPdf:
 
         with patch("os.path.getsize", return_value=1024):
             with patch(
-                "scitex_io._load_modules._pdf._calculate_file_hash",
+                "scitex_io._load_modules._pdf_content_extractors._calculate_file_hash",
                 return_value="abc123",
             ):
                 result = _load_pdf("document.pdf", mode="metadata")
@@ -337,7 +337,7 @@ class TestLoadPdf:
         assert result["author"] == "Test Author"
 
     @patch("os.path.exists")
-    @patch("scitex_io._load_modules._pdf.PyPDF2")
+    @patch("scitex_io._load_modules._pdf_text_extractors.PyPDF2")
     @patch("scitex_io._load_modules._pdf.PYPDF2_AVAILABLE", True)
     @patch("scitex_io._load_modules._pdf.FITZ_AVAILABLE", False)
     @patch("scitex_io._load_modules._pdf.PDFPLUMBER_AVAILABLE", False)
@@ -362,7 +362,7 @@ class TestLoadPdf:
         assert "Sample PyPDF2 text" in result or "Sample" in result
 
     @patch("os.path.exists")
-    @patch("scitex_io._load_modules._pdf.fitz")
+    @patch("scitex_io._load_modules._pdf_text_extractors.fitz")
     @patch("scitex_io._load_modules._pdf.FITZ_AVAILABLE", True)
     def test_text_extraction_edge_cases(self, mock_fitz, mock_exists):
         """Test edge cases in text extraction"""
@@ -399,7 +399,7 @@ class TestLoadPdf:
         assert callable(_load_pdf)
 
     @patch("os.path.exists")
-    @patch("scitex_io._load_modules._pdf.fitz")
+    @patch("scitex_io._load_modules._pdf_text_extractors.fitz")
     @patch("scitex_io._load_modules._pdf.FITZ_AVAILABLE", True)
     def test_scientific_document_scenario(self, mock_fitz, mock_exists):
         """Test realistic scientific document processing scenario"""
@@ -440,8 +440,12 @@ class TestLoadPdf:
         assert isinstance(result, str)
         assert "Abstract" in result or "paper" in result.lower()
 
+    @pytest.mark.skip(
+        reason="Legacy API: metadata=True kwarg with tuple return was "
+        "replaced by mode='metadata'. Test asserts removed behavior."
+    )
     @patch("os.path.exists")
-    @patch("scitex_io._load_modules._pdf.fitz")
+    @patch("scitex_io._load_modules._pdf_text_extractors.fitz")
     @patch("scitex_io._load_modules._pdf.FITZ_AVAILABLE", True)
     def test_metadata_tuple_return(self, mock_fitz, mock_exists):
         """Test metadata=True returns tuple"""
@@ -468,7 +472,7 @@ class TestLoadPdf:
         # Second element is metadata (None if extraction failed)
 
     @patch("os.path.exists")
-    @patch("scitex_io._load_modules._pdf.fitz")
+    @patch("scitex_io._load_modules._pdf_text_extractors.fitz")
     @patch("scitex_io._load_modules._pdf.FITZ_AVAILABLE", True)
     def test_clean_text_option(self, mock_fitz, mock_exists):
         """Test clean_text option"""

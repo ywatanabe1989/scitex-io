@@ -4,7 +4,9 @@
 # File: /home/ywatanabe/proj/scitex-io/src/scitex_io/_load_modules/_pdf_text_extractors.py
 # ----------------------------------------
 from __future__ import annotations
+
 import os
+
 __FILE__ = __file__
 __DIR__ = os.path.dirname(__FILE__)
 # ----------------------------------------
@@ -23,6 +25,22 @@ from ._pdf_utils import (
     _clean_pdf_text,
 )
 
+# Module-level handles so tests can `mock.patch(<module>.fitz)` etc.
+try:
+    import fitz  # type: ignore[import-not-found]
+except ImportError:
+    fitz = None  # type: ignore[assignment]
+
+try:
+    import pdfplumber  # type: ignore[import-not-found]
+except ImportError:
+    pdfplumber = None  # type: ignore[assignment]
+
+try:
+    import PyPDF2  # type: ignore[import-not-found]
+except ImportError:
+    PyPDF2 = None  # type: ignore[assignment]
+
 logger = logging.getLogger(__name__)
 
 
@@ -31,10 +49,8 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 def _extract_text_fitz(lpath: str, clean: bool) -> str:
     """Extract text using PyMuPDF."""
-    if not FITZ_AVAILABLE:
+    if not FITZ_AVAILABLE or fitz is None:
         raise ImportError("PyMuPDF (fitz) not available")
-
-    import fitz
 
     try:
         doc = fitz.open(lpath)
@@ -64,8 +80,6 @@ def _extract_text_pdfplumber(lpath: str, clean: bool) -> str:
     if not PDFPLUMBER_AVAILABLE:
         raise ImportError("pdfplumber not available")
 
-    import pdfplumber
-
     try:
         text_parts = []
         with pdfplumber.open(lpath) as pdf:
@@ -82,9 +96,7 @@ def _extract_text_pdfplumber(lpath: str, clean: bool) -> str:
         return full_text
 
     except Exception as e:
-        logger.error(
-            f"Error extracting text with pdfplumber from {lpath}: {e}"
-        )
+        logger.error(f"Error extracting text with pdfplumber from {lpath}: {e}")
         raise
 
 
@@ -92,8 +104,6 @@ def _extract_text_pypdf2(lpath: str, clean: bool) -> str:
     """Extract text using PyPDF2."""
     if not PYPDF2_AVAILABLE:
         raise ImportError("PyPDF2 not available")
-
-    import PyPDF2
 
     try:
         reader = PyPDF2.PdfReader(lpath)
@@ -133,15 +143,11 @@ def _extract_text(lpath: str, backend: str, clean: bool) -> str:
 # ---------------------------------------------------------------------------
 # Page-by-page extraction
 # ---------------------------------------------------------------------------
-def _extract_pages(
-    lpath: str, backend: str, clean: bool
-) -> List[Dict[str, Any]]:
+def _extract_pages(lpath: str, backend: str, clean: bool) -> List[Dict[str, Any]]:
     """Extract content page by page."""
     pages = []
 
     if backend == "fitz" and FITZ_AVAILABLE:
-        import fitz
-
         doc = fitz.open(lpath)
 
         for page_num, page in enumerate(doc):
@@ -161,8 +167,6 @@ def _extract_pages(
         doc.close()
 
     elif backend == "pdfplumber" and PDFPLUMBER_AVAILABLE:
-        import pdfplumber
-
         with pdfplumber.open(lpath) as pdf:
             for page_num, page in enumerate(pdf.pages):
                 text = page.extract_text() or ""
@@ -179,8 +183,6 @@ def _extract_pages(
                 )
 
     elif backend == "pypdf2" and PYPDF2_AVAILABLE:
-        import PyPDF2
-
         reader = PyPDF2.PdfReader(lpath)
 
         for page_num in range(len(reader.pages)):
@@ -199,5 +201,6 @@ def _extract_pages(
             )
 
     return pages
+
 
 # EOF
