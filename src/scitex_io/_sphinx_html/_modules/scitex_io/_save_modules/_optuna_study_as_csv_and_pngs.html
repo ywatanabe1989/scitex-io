@@ -250,10 +250,19 @@
 <span class="c1"># File: ./scitex_repo/src/scitex/io/_save_optuna_study_as_csv_and_pngs.py</span>
 
 
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">optuna</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">_optuna</span>  <span class="c1"># noqa: F401</span>
+
+    <span class="n">OPTUNA_AVAILABLE</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="n">OPTUNA_AVAILABLE</span> <span class="o">=</span> <span class="kc">False</span>
+
+
 <div class="viewcode-block" id="save_optuna_study_as_csv_and_pngs">
 <a class="viewcode-back" href="../../../api/scitex_io.html#scitex_io.save_optuna_study_as_csv_and_pngs">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">save_optuna_study_as_csv_and_pngs</span><span class="p">(</span><span class="n">study</span><span class="p">,</span> <span class="n">sdir</span><span class="p">):</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">optuna</span>
+
     <span class="kn">from</span><span class="w"> </span><span class="nn">.._save</span><span class="w"> </span><span class="kn">import</span> <span class="n">save</span>
 
     <span class="c1">## Trials DataFrame</span>
