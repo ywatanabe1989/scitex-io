@@ -52,7 +52,8 @@ except ImportError:
     pdfplumber = None  # type: ignore[assignment]
 
 try:
-    import PyPDF2  # noqa: F401
+    # pypdf is the maintained successor to PyPDF2.
+    import pypdf as PyPDF2  # noqa: F401
 except ImportError:
     PyPDF2 = None  # type: ignore[assignment]
 from ._pdf_content_extractors import (

@@ -125,7 +125,6 @@ def _extract_images(
             "  pip install PyMuPDF"
         )
 
-
     images_info = []
 
     try:
@@ -362,8 +361,8 @@ def _extract_metadata_pdfplumber(lpath: str, metadata: Dict) -> None:
 
 
 def _extract_metadata_pypdf2(lpath: str, metadata: Dict) -> None:
-    """Populate metadata dict using PyPDF2 backend (in-place)."""
-    import PyPDF2
+    """Populate metadata dict using pypdf backend (in-place)."""
+    import pypdf as PyPDF2  # type: ignore[import-not-found]
 
     try:
         reader = PyPDF2.PdfReader(lpath)

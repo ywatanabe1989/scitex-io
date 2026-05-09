@@ -4,7 +4,9 @@
 # File: /home/ywatanabe/proj/scitex-io/src/scitex_io/_load_modules/_pdf_utils.py
 # ----------------------------------------
 from __future__ import annotations
+
 import os
+
 __FILE__ = __file__
 __DIR__ = os.path.dirname(__FILE__)
 # ----------------------------------------
@@ -24,24 +26,30 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 try:
     import fitz  # PyMuPDF - preferred for text and images
+
     FITZ_AVAILABLE = True
 except ImportError:
     FITZ_AVAILABLE = False
 
 try:
     import pdfplumber  # Best for table extraction
+
     PDFPLUMBER_AVAILABLE = True
 except ImportError:
     PDFPLUMBER_AVAILABLE = False
 
 try:
-    import PyPDF2  # Fallback option
+    # pypdf is the maintained successor to PyPDF2; their PdfReader API
+    # is source-compatible for the read paths we use here.
+    import pypdf as PyPDF2  # type: ignore[import-not-found]
+
     PYPDF2_AVAILABLE = True
 except ImportError:
     PYPDF2_AVAILABLE = False
 
 try:
     import pandas as pd
+
     PANDAS_AVAILABLE = True
 except ImportError:
     PANDAS_AVAILABLE = False
@@ -52,6 +60,7 @@ except ImportError:
 # ---------------------------------------------------------------------------
 class DotDict(dict):
     """Dictionary with dot notation access."""
+
     __getattr__ = dict.get
     __setattr__ = dict.__setitem__
     __delattr__ = dict.__delitem__
@@ -148,5 +157,6 @@ def _calculate_file_hash(lpath: str) -> str:
         for chunk in iter(lambda: f.read(4096), b""):
             hash_md5.update(chunk)
     return hash_md5.hexdigest()
+
 
 # EOF

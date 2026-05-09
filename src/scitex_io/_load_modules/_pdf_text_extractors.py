@@ -37,7 +37,8 @@ except ImportError:
     pdfplumber = None  # type: ignore[assignment]
 
 try:
-    import PyPDF2  # type: ignore[import-not-found]
+    # pypdf is the maintained successor to PyPDF2 (drop-in for PdfReader).
+    import pypdf as PyPDF2  # type: ignore[import-not-found]
 except ImportError:
     PyPDF2 = None  # type: ignore[assignment]
 
