@@ -305,6 +305,30 @@ server, enabling AI agents to save, load, and discover file formats autonomously
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">io_register_info</span></code></p></td>
 <td><p>Show how to register custom format handlers with examples</p></td>
 </tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">io_glob</span></code> / <code class="docutils literal notranslate"><span class="pre">io_parse_glob</span></code></p></td>
+<td><p>Natsort-ordered globbing; <code class="docutils literal notranslate"><span class="pre">parse_glob</span></code> extracts <code class="docutils literal notranslate"><span class="pre">{placeholder}</span></code> values</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">io_get_loader</span></code> / <code class="docutils literal notranslate"><span class="pre">io_get_saver</span></code></p></td>
+<td><p>Look up the registered handler function for a given extension</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">io_read_metadata</span></code> / <code class="docutils literal notranslate"><span class="pre">io_has_metadata</span></code> / <code class="docutils literal notranslate"><span class="pre">io_embed_metadata</span></code></p></td>
+<td><p>Inspect / verify / write provenance metadata embedded in PNG/JPEG by <code class="docutils literal notranslate"><span class="pre">io_save</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">io_get_cache_info</span></code> / <code class="docutils literal notranslate"><span class="pre">io_clear_load_cache</span></code> / <code class="docutils literal notranslate"><span class="pre">io_configure_cache</span></code></p></td>
+<td><p>Inspect, clear, or reconfigure the load-side cache</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">io_explore_h5</span></code> / <code class="docutils literal notranslate"><span class="pre">io_explore_zarr</span></code></p></td>
+<td><p>Print group/dataset trees for HDF5 and Zarr stores</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">io_has_h5_key</span></code> / <code class="docutils literal notranslate"><span class="pre">io_has_zarr_key</span></code></p></td>
+<td><p>Cheap existence check for a key inside an HDF5 file or Zarr store</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">io_json2md</span></code></p></td>
+<td><p>Render a JSON object as Markdown headings + bullet lists</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">io_skills_list</span></code> / <code class="docutils literal notranslate"><span class="pre">io_skills_get</span></code></p></td>
+<td><p>Discover and fetch the skill pages shipped with scitex-io</p></td>
+</tr>
 </tbody>
 </table>
 </section>
