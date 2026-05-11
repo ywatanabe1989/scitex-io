@@ -40,7 +40,7 @@ scitex-dev linter list-rules --category io   # show live rule definitions
 | Rule | Detects | Suggestion |
 |------|---------|------------|
 | STX-PA001 | Absolute path in `sio.save/load(...)` | Use `./relative/path.ext` — paths resolve to `script_out/` |
-| STX-PA002 | `open(path)` inside a `@stx.session` script | → `sio.save/load(...)` for auto-logging |
+| STX-PA002 | `open(path)` inside a `@scitex.session` script | → `sio.save/load(...)` for auto-logging |
 | STX-PA003 | `os.makedirs/mkdir`, `Path(...).mkdir` | Remove — `sio.save` auto-creates dirs (info-level) |
 | STX-PA004 | `os.chdir()` | Remove — run scripts from project root |
 | STX-PA005 | `sio.save(obj, "file.ext")` (no `./` prefix) | Use `./file.ext` for explicit relative intent (info-level) |
@@ -54,9 +54,12 @@ The linter accepts these forms interchangeably for save/load detection and PA ru
 ```python
 sio.save(arr, "./a.npy")           # canonical short alias (import scitex_io as sio)
 scitex_io.save(arr, "./a.npy")     # bare top-level (also: scitex_io.io.save(...))
-stx.io.save(arr, "./a.npy")        # via umbrella (import scitex as stx)
-scitex.io.save(arr, "./a.npy")     # via umbrella (full)
+scitex.io.save(arr, "./a.npy")     # via umbrella (import scitex)
 ```
+
+The linter also accepts the legacy short-alias form
+(`scitex` imported as `stx`) for backward compatibility, but new code
+should use bare `import scitex` per the general ecosystem rule.
 
 ## Custom format hint
 

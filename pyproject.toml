@@ -79,6 +79,16 @@ dev = [
     # `[dev]` extras completeness.
     "fastmcp>=2.0",       # tested via scitex_io._mcp_server
     "numcodecs",          # tested via [scientific] zarr/blosc paths
+    "pymatreader",        # tested via _load_modules/_matlab fallback path
+    "openpyxl",           # excel writes go through this engine
+    "pyarrow",            # parquet/feather backend
+    "torch",              # tested via _save_modules/_torch
+    "joblib",             # tested via _save_modules/_joblib
+    "PyPDF2",             # legacy pdf reader path
+    "pypdf",              # current pdf reader path
+    "markdown",           # md handler
+    "html2text",          # html2md handler
+    "ruamel.yaml",        # YAML round-trip tests
 ]
 docs = [
     "sphinx>=7.0",
