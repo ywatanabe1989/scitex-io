@@ -1,5 +1,5 @@
 <!-- ---
-!-- Timestamp: 2026-05-11 16:28:10
+!-- Timestamp: 2026-05-11 16:30:00
 !-- Author: ywatanabe
 !-- File: /home/ywatanabe/proj/scitex-io/README.md
 !-- --- -->
@@ -80,7 +80,7 @@ assert obj_loaded["df"].equals(df_orig) and obj_loaded["tag"] == "experiment-042
 
 
 <details>
-<summary><b>Native Supported Formats (30+) and Customization</b></summary>
+<summary><b>Supported Formats (30+) and Customization</b></summary>
 
 <br>
 
