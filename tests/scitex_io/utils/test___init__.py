@@ -1,5 +1,15 @@
 """Tests for scitex_io.utils package __init__ re-exports."""
 
+import pytest
+
+try:
+    from zarr.codecs import GzipCodec  # noqa: F401  -- zarr v3 marker
+except Exception:  # noqa: BLE001
+    pytest.skip(
+        "zarr v3 required (zarr.codecs.GzipCodec missing)",
+        allow_module_level=True,
+    )
+
 import scitex_io.utils as utils
 
 

@@ -4,14 +4,21 @@ from __future__ import annotations
 Exercises real h5py -> zarr round-trips against real files in tmp_path.
 """
 
-
 import os
 from pathlib import Path
 
 import h5py
 import numpy as np
 import pytest
-import zarr
+
+zarr = pytest.importorskip("zarr", reason="zarr not installed")
+try:
+    from zarr.codecs import GzipCodec  # noqa: F401  -- zarr v3 marker
+except Exception:  # noqa: BLE001
+    pytest.skip(
+        "zarr v3 required (zarr.codecs.GzipCodec missing)",
+        allow_module_level=True,
+    )
 
 from scitex_io.utils.h5_to_zarr import (
     _migrate_sequential,

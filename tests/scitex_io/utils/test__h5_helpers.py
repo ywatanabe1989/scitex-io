@@ -9,7 +9,18 @@ import warnings
 import h5py
 import numpy as np
 import pytest
-import zarr
+
+zarr = pytest.importorskip(
+    "zarr",
+    reason="zarr not installed",
+)
+try:
+    from zarr.codecs import GzipCodec  # noqa: F401  -- zarr v3 marker
+except Exception:  # noqa: BLE001 -- covers ImportError + runtime init errors
+    pytest.skip(
+        "zarr v3 required (zarr.codecs.GzipCodec missing)",
+        allow_module_level=True,
+    )
 
 from scitex_io.utils._h5_helpers import (
     copy_h5_attributes,
@@ -74,7 +85,7 @@ def test_infer_chunks_large_1d_split():
 def test_infer_chunks_multi_dim_remaining_elements_drops_to_one():
     # Force the branch where remaining_elements <= 1
     chunks = infer_chunks(
-        (1000, 1000, 1000), np.dtype("float64"), target_chunk_mb=0.001
+        (1_000, 1_000, 1_000), np.dtype("float64"), target_chunk_mb=0.001
     )
     assert chunks is not None
     assert len(chunks) == 3
@@ -316,7 +327,7 @@ def test_migrate_dataset_large_show_progress(tmp_path, capsys):
     p = tmp_path / "big.h5"
     with h5py.File(p, "w") as f:
         # ~1.1M elements > 1e6 threshold
-        f.create_dataset("big", data=np.zeros((1200, 1000), dtype="float32"))
+        f.create_dataset("big", data=np.zeros((1_200, 1_000), dtype="float32"))
     z_store = zarr.open(str(tmp_path / "big.zarr"), mode="w")
     with h5py.File(p, "r") as f:
         out = migrate_dataset(

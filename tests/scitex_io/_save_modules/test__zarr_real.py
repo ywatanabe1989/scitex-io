@@ -8,10 +8,17 @@ full save path: directory store, zip store, key paths, compressors,
 mixed-type dicts (str / scalar / array / object).
 """
 
-
 import numpy as np
 import pytest
-import zarr
+
+zarr = pytest.importorskip("zarr", reason="zarr not installed")
+try:
+    from zarr.codecs import GzipCodec  # noqa: F401  -- zarr v3 marker
+except Exception:  # noqa: BLE001
+    pytest.skip(
+        "zarr v3 required (zarr.codecs.GzipCodec missing)",
+        allow_module_level=True,
+    )
 
 from scitex_io._save_modules._zarr import _save_zarr
 
