@@ -153,18 +153,19 @@ extension via a plugin registry — just as OS does. Custom handlers
 can be available using `register_saver` / `register_loader`.
 
 ```mermaid
+%%{init: {'flowchart': {'nodeSpacing': 20, 'rankSpacing': 40, 'curve': 'linear'}, 'themeVariables': {'fontSize': '12px'}}}%%
 flowchart LR
-    A["scitex_io.save(obj, 'x.ext')"] --> B{Registry}
-    L["scitex_io.load('x.ext')"] --> B
-    B -->|.csv / .parquet / .feather| C[pandas / pyarrow]
-    B -->|.npy/.npz| D[numpy]
-    B -->|.h5 / .zarr| E[h5py / zarr]
-    B -->|.pkl / .joblib| F[pickle / joblib]
-    B -->|.pt / .pth| G[torch]
-    B -->|.png / .jpg / .svg| H[Pillow]
-    B -->|.yaml / .json| I[PyYAML / json]
-    B -->|.bib / .pdf / .docx / ...| J[30+ handlers]
-    B -.->|register_saver/loader| K[Your custom format]
+    A["save(obj, 'x.ext')"] --> B{Registry}
+    L["load('x.ext')"] --> B
+    B -->|.csv .parquet .feather| C[pandas]
+    B -->|.npy .npz| D[numpy]
+    B -->|.h5 .zarr| E[h5py / zarr]
+    B -->|.pkl .joblib| F[pickle / joblib]
+    B -->|.pt .pth| G[torch]
+    B -->|.png .jpg .svg| H[Pillow]
+    B -->|.yaml .json| I[PyYAML / json]
+    B -->|.bib .pdf .docx ...| J[30+ handlers]
+    B -.->|register_*| K[Custom format]
 ```
 
 ### 2. `save(obj, out.ext)` in `/path/to/script.py` → `/path/to/script_out/out.ext`
