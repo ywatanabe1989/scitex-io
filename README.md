@@ -34,10 +34,10 @@
 
 | # | Problem | Solution |
 |---|---------|----------|
-| 1 | **Format zoo** — save/load scattered across `pd.read_csv`, `np.load`, `pickle`, `json`, `h5py`, `torch.save`, `cv2.imread`, etc. Every format = a different API | **One call** — `stx.io.save(obj, "x.ext")` / `stx.io.load("x.ext")` routes by extension across 30+ formats; plugin registry lets users register custom handlers |
+| 1 | **Format zoo** — save/load scattered across `pd.read_csv`, `np.load`, `pickle`, `json`, `h5py`, `torch.save`, `cv2.imread`, etc. Every format = a different API | **One call** — `sio.save(obj, "x.ext")` / `sio.load("x.ext")` routes by extension across 30+ formats; plugin registry lets users register custom handlers |
 | 2 | **FileNotFoundError after save** — `save()` auto-routes to `{script}_out/` but `load()` resolves cwd-relative, so the naive round-trip breaks for new users | **Predictable paths** — `symlink_from_cwd=True` flag, `CONFIG.SDIR_RUN` session path, or absolute path on both sides — documented prominently in the skill |
 | 3 | **Hard-coded parameters scattered across scripts** — sample rates, thresholds, hyperparameters duplicated across files, impossible to track or share | **`load_configs()`** — loads all YAML files from `config/` into a single `DotDict` with dot-notation access; parameters version-controlled and centralized |
-| 4 | **Figure + data diverge / figures without provenance** — a saved PNG has no record of the underlying DataFrame, code, or session that produced it | **Auto-CSV export + embedded metadata** — `stx.io.save(fig, "plot.png")` writes `plot.png` + `plot.csv` + `plot.yaml` atomically; `embed_metadata()` writes timestamps/session IDs into the image itself |
+| 4 | **Figure + data diverge / figures without provenance** — a saved PNG has no record of the underlying DataFrame, code, or session that produced it | **Auto-CSV export + embedded metadata** — `sio.save(fig, "plot.png")` writes `plot.png` + `plot.csv` + `plot.yaml` atomically; `embed_metadata()` writes timestamps/session IDs into the image itself |
 
 <details>
 <summary><b>Supported Formats (30+)</b></summary>
@@ -102,13 +102,13 @@ auto-CSV+yaml sidecar atomically so plot data never drifts from the image.
 auto-routed based on the execution context — you never specify the
 output directory by hand:
 
-| Caller | `stx.io.save(df, "results.csv")` writes to |
+| Caller | `sio.save(df, "results.csv")` writes to |
 |---|---|
 | `/path/to/analysis.py` (script) | `/path/to/analysis_out/results.csv` |
 | `/path/to/exp.ipynb` (notebook) | `/path/to/exp_out/results.csv` |
 | `python -i` / IPython / REPL | `/tmp/{USER}/results.csv` |
 
-> **Absolute paths bypass routing.** `stx.io.save(df, "/data/x.csv")`
+> **Absolute paths bypass routing.** `sio.save(df, "/data/x.csv")`
 > writes to `/data/x.csv` as-is — the auto-routing rules above only
 > apply when the path is relative.
 
@@ -133,22 +133,22 @@ flowchart LR
 ## Demo
 
 ```python
-import scitex as stx
+import scitex_io as sio
 import pandas as pd, numpy as np
 
 # One call — any of 30+ formats, auto-dispatched by extension
-stx.io.save(pd.DataFrame({"x": [1, 2, 3]}), "data.csv")
-stx.io.save(np.array([1, 2, 3]),            "data.npy")
-stx.io.save({"lr": 1e-3, "epochs": 10},     "config.yaml")
-stx.io.save(fig,                            "plot.png")   # + plot.csv + plot.yaml
+sio.save(pd.DataFrame({"x": [1, 2, 3]}), "data.csv")
+sio.save(np.array([1, 2, 3]),            "data.npy")
+sio.save({"lr": 1e-3, "epochs": 10},     "config.yaml")
+sio.save(fig,                            "plot.png")   # + plot.csv + plot.yaml
 
 # One call to load — extension picks the right reader
-df  = stx.io.load("data.csv")
-arr = stx.io.load("data.npy")
-cfg = stx.io.load("config.yaml")
+df  = sio.load("data.csv")
+arr = sio.load("data.npy")
+cfg = sio.load("config.yaml")
 
 # Load every config/*.yaml as a DotDict (UPPER_CASE = constants)
-CONFIG = stx.io.load_configs()
+CONFIG = sio.load_configs()
 CONFIG.MODEL.HIDDEN_DIM            # 256
 ```
 
@@ -167,12 +167,12 @@ project/
 ```
 
 ```python
-CONFIG = stx.io.load_configs()           # loads ./config/*.yaml
+CONFIG = sio.load_configs()           # loads ./config/*.yaml
 CONFIG.PREPROCESS.SAMPLE_RATE            # 1000
 
 # Debug mode: DEBUG_ prefixed keys override their counterparts
 # In MODEL.yaml: { HIDDEN_DIM: 256, DEBUG_HIDDEN_DIM: 32 }
-CONFIG = stx.io.load_configs(IS_DEBUG=True)
+CONFIG = sio.load_configs(IS_DEBUG=True)
 CONFIG.MODEL.HIDDEN_DIM                  # 32 (debug value promoted)
 ```
 
@@ -184,11 +184,11 @@ CONFIG.MODEL.HIDDEN_DIM                  # 32 (debug value promoted)
 <br>
 
 ```python
-stx.io.embed_metadata("figure.png", {
+sio.embed_metadata("figure.png", {
     "experiment": "exp_042", "model": "resnet50",
     "accuracy": 0.94, "timestamp": "2026-03-11",
 })
-meta = stx.io.read_metadata("figure.png")
+meta = sio.read_metadata("figure.png")
 meta["experiment"]              # "exp_042"
 ```
 
@@ -207,13 +207,13 @@ Supports PNG (tEXt), JPEG (EXIF), SVG (XML metadata), PDF (XMP).
 #   Notebook exp.ipynb  → exp_out/results.csv
 #   Interactive/IPython → /tmp/{USER}/results.csv
 #   Absolute paths      → used as-is
-stx.io.save(df, "results.csv")
+sio.save(df, "results.csv")
 
-stx.io.save(df,  "results.csv", symlink_from_cwd=True)
-stx.io.save(fig, "fig1.png",    symlink_to="/data/latest/fig1.png")
-stx.io.save(fig, "plot.png",    no_csv=True)              # skip auto-CSV sidecar
-stx.io.save(df,  "results.csv", use_caller_path=True)     # resolve from caller script
-stx.io.save(df,  "results.csv", dry_run=True)             # print path, don't write
+sio.save(df,  "results.csv", symlink_from_cwd=True)
+sio.save(fig, "fig1.png",    symlink_to="/data/latest/fig1.png")
+sio.save(fig, "plot.png",    no_csv=True)              # skip auto-CSV sidecar
+sio.save(df,  "results.csv", use_caller_path=True)     # resolve from caller script
+sio.save(df,  "results.csv", dry_run=True)             # print path, don't write
 ```
 
 </details>
@@ -224,13 +224,13 @@ stx.io.save(df,  "results.csv", dry_run=True)             # print path, don't wr
 <br>
 
 ```python
-paths = stx.io.glob("data/**/*.csv")                        # natural sort: 1, 2, 10
-paths = stx.io.glob("results/{exp1,exp2}/*.npy")            # brace expansion
-paths, parsed = stx.io.parse_glob("sub_{id}/ses_{session}/*.vhdr")
+paths = sio.glob("data/**/*.csv")                        # natural sort: 1, 2, 10
+paths = sio.glob("results/{exp1,exp2}/*.npy")            # brace expansion
+paths, parsed = sio.parse_glob("sub_{id}/ses_{session}/*.vhdr")
 # parsed = [{'id': '001', 'session': 'pre'}, ...]
 
-dfs = stx.io.load("results/*.csv")                          # list of DataFrames
-data = stx.io.load("large.hdf5"); data = stx.io.load("large.hdf5")  # 2nd call: cache hit
+dfs = sio.load("results/*.csv")                          # list of DataFrames
+data = sio.load("large.hdf5"); data = sio.load("large.hdf5")  # 2nd call: cache hit
 ```
 
 </details>
@@ -251,8 +251,8 @@ def save_custom(obj, path, **kw):
 def load_custom(path, **kw):
     return open(path).read()
 
-stx.io.save("hello", "data.custom")
-assert stx.io.load("data.custom") == "hello"
+sio.save("hello", "data.custom")
+assert sio.load("data.custom") == "hello"
 ```
 
 </details>
@@ -370,23 +370,23 @@ Detected by [scitex-linter](https://github.com/ywatanabe1989/scitex-linter) when
 
 | Rule | Severity | Trigger |
 |------|----------|---------|
-| `STX-IO001` | warning | `np.save / savez / savez_compressed / savetxt` → use `stx.io.save()` |
-| `STX-IO002` | warning | `np.load / loadtxt / genfromtxt` → use `stx.io.load()` |
-| `STX-IO003` | warning | `pd.read_csv / parquet / excel / hdf / pickle / json / feather / orc / table` → use `stx.io.load()` |
-| `STX-IO004` | warning | `df.to_csv / parquet / excel / hdf / pickle / json / feather / html / orc` → use `stx.io.save()` |
-| `STX-IO005` | warning | `pickle.dump / dumps / load / loads` (incl. `cPickle`) → use `stx.io.save()/load()` |
-| `STX-IO006` | warning | `json.dump / dumps / load / loads` → use `stx.io.save()/load()` |
-| `STX-IO007` | warning | `.savefig(...)` → use `stx.io.save(fig, path)` for metadata embedding |
-| `STX-IO008` | warning | `torch.save / load` → use `stx.io.save()/load()` |
-| `STX-IO009` | warning | `joblib.dump / load` → use `stx.io.save()/load()` |
-| `STX-IO010` | warning | `yaml.dump / safe_dump / dump_all / load / safe_load / full_load` → use `stx.io.save()/load()` |
-| `STX-IO011` | warning | `scipy.io.savemat / loadmat` → use `stx.io.save()/load()` |
-| `STX-IO012` | warning | `cv2.imread / imwrite`, `PIL.Image.open`, `plt.imsave / imread`, `imageio.*` → use `stx.io.save()/load()` |
-| `STX-IO013` | warning | `h5py.File(...)` → use `stx.io.save()/load()` for HDF5 |
-| `STX-IO014` | warning | `stx.io.save / load` called with an extension that has no registered handler — register one with `register_saver/register_loader` |
+| `STX-IO001` | warning | `np.save / savez / savez_compressed / savetxt` → use `sio.save()` |
+| `STX-IO002` | warning | `np.load / loadtxt / genfromtxt` → use `sio.load()` |
+| `STX-IO003` | warning | `pd.read_csv / parquet / excel / hdf / pickle / json / feather / orc / table` → use `sio.load()` |
+| `STX-IO004` | warning | `df.to_csv / parquet / excel / hdf / pickle / json / feather / html / orc` → use `sio.save()` |
+| `STX-IO005` | warning | `pickle.dump / dumps / load / loads` (incl. `cPickle`) → use `sio.save()/load()` |
+| `STX-IO006` | warning | `json.dump / dumps / load / loads` → use `sio.save()/load()` |
+| `STX-IO007` | warning | `.savefig(...)` → use `sio.save(fig, path)` for metadata embedding |
+| `STX-IO008` | warning | `torch.save / load` → use `sio.save()/load()` |
+| `STX-IO009` | warning | `joblib.dump / load` → use `sio.save()/load()` |
+| `STX-IO010` | warning | `yaml.dump / safe_dump / dump_all / load / safe_load / full_load` → use `sio.save()/load()` |
+| `STX-IO011` | warning | `scipy.io.savemat / loadmat` → use `sio.save()/load()` |
+| `STX-IO012` | warning | `cv2.imread / imwrite`, `PIL.Image.open`, `plt.imsave / imread`, `imageio.*` → use `sio.save()/load()` |
+| `STX-IO013` | warning | `h5py.File(...)` → use `sio.save()/load()` for HDF5 |
+| `STX-IO014` | warning | `sio.save / load` called with an extension that has no registered handler — register one with `register_saver/register_loader` |
 | `STX-PA001` | warning | Absolute path passed to `stx.io` — prefer relative for reproducibility |
-| `STX-PA002` | warning | `open(...)` → use `stx.io.save()/load()` for auto-logging |
-| `STX-PA003` | info | `os.makedirs / mkdir` — `stx.io.save()` auto-creates directories |
+| `STX-PA002` | warning | `open(...)` → use `sio.save()/load()` for auto-logging |
+| `STX-PA003` | info | `os.makedirs / mkdir` — `sio.save()` auto-creates directories |
 | `STX-PA004` | warning | `os.chdir(...)` — scripts should run from project root |
 | `STX-PA005` | info | Relative path missing `./` prefix — use `./file.ext` for explicit intent |
 
