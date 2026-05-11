@@ -1,5 +1,5 @@
 <!-- ---
-!-- Timestamp: 2026-05-11 15:34:09
+!-- Timestamp: 2026-05-11 15:59:46
 !-- Author: ywatanabe
 !-- File: /home/ywatanabe/proj/scitex-io/README.md
 !-- --- -->
@@ -43,6 +43,34 @@
 | 1 | **Format zoo** — save/load scattered across `pd.read_csv`, `np.load`, `pickle`, `json`, `h5py`, `torch.save`, `cv2.imread`, etc. Every format = a different API | **One call** — `sio.save(obj, "x.ext")` / `sio.load("x.ext")` routes by extension across 30+ formats; plugin registry lets users register custom handlers |
 | 2 | **Outputs scattered, cwd-dependent, mkdir-heavy** — saves land in whatever cwd happens to be; nested paths need explicit `os.makedirs()`; outputs drift away from the script that produced them | **Caller-anchored relative paths** — `sio.save(df, "./sub/dir/results.csv")` resolves relative to the calling script and writes to `{caller}_out/sub/dir/results.csv`; intermediate dirs auto-created, no `mkdir` calls needed |
 | 3 | **Hard-coded parameters scattered across scripts** — sample rates, thresholds, hyperparameters duplicated across files, impossible to track or share | **`load_configs()`** — loads all YAML files from `config/` into a single `DotDict` with dot-notation access; parameters version-controlled and centralized |
+
+
+## Quick Start
+
+```python
+import scitex_io as sio
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Demo data
+df = pd.DataFrame({"x": [1, 2, 3]})
+arr = np.array([1, 2, 3])
+params = {"lr": 1e-3, "epochs": 10}
+fig, ax = plt.subplots(); ax.plot([1, 2, 3])
+
+# One call — any of 30+ formats, auto-dispatched by extension
+sio.save(df,     "data.csv")
+sio.save(arr,    "data.npy")
+sio.save(params, "config.yaml")
+sio.save(fig,    "plot.png")
+
+# One call to load — extension picks the right reader
+df     = sio.load("data.csv")
+arr    = sio.load("data.npy")
+params = sio.load("config.yaml")
+```
+
 
 <details>
 <summary><b>Native Supported Formats (30+)</b></summary>
@@ -159,6 +187,14 @@ UPPER/lower pair collide (e.g. `MODEL.yaml` next to `model.yaml`, or
 `HIDDEN_DIM` next to `hidden_dim`), the UPPER variant is prioritised
 and a `UserWarning` is emitted.
 
+```mermaid
+flowchart LR
+    P1["config/PREPROCESS.yaml<br/>(flat — multiple fields)<br/>SAMPLE_RATE: 1000<br/>BANDPASS_LOW: 0.5<br/>BANDPASS_HIGH: 40<br/>NOTCH: 50"] --> M{load_configs}
+    P2["config/MODEL.yaml<br/>(nested)<br/>ENCODER:<br/>&nbsp;&nbsp;HIDDEN_DIM: 256<br/>&nbsp;&nbsp;DROPOUT: 0.3<br/>HEAD:<br/>&nbsp;&nbsp;HIDDEN_DIM: 64<br/>&nbsp;&nbsp;N_CLASSES: 10"] --> M
+    P3["config/IS_DEBUG.yaml<br/>IS_DEBUG: true"] --> M
+    M --> C["CONFIG (DotDict)<br/>━━━━━━━━━━━━━━━━<br/>.PREPROCESS<br/>&nbsp;&nbsp;.SAMPLE_RATE → 1000<br/>&nbsp;&nbsp;.BANDPASS_LOW → 0.5<br/>.MODEL<br/>&nbsp;&nbsp;.ENCODER.HIDDEN_DIM → 256<br/>&nbsp;&nbsp;.HEAD.N_CLASSES → 10"]
+```
+
 <details>
 <summary><b>Debug mode for parameters</b></summary>
 
@@ -172,36 +208,6 @@ values. Equivalent triggers: `load_configs(IS_DEBUG=True)`, or running
 under `CI=True`.
 
 </details>
-
-```mermaid
-flowchart LR
-    P1["config/PREPROCESS.yaml<br/>(flat — multiple fields)<br/>SAMPLE_RATE: 1000<br/>BANDPASS_LOW: 0.5<br/>BANDPASS_HIGH: 40<br/>NOTCH: 50"] --> M{load_configs}
-    P2["config/MODEL.yaml<br/>(nested)<br/>ENCODER:<br/>&nbsp;&nbsp;HIDDEN_DIM: 256<br/>&nbsp;&nbsp;DROPOUT: 0.3<br/>HEAD:<br/>&nbsp;&nbsp;HIDDEN_DIM: 64<br/>&nbsp;&nbsp;N_CLASSES: 10"] --> M
-    P3["config/IS_DEBUG.yaml<br/>IS_DEBUG: true"] --> M
-    M --> C["CONFIG (DotDict)<br/>━━━━━━━━━━━━━━━━<br/>.PREPROCESS<br/>&nbsp;&nbsp;.SAMPLE_RATE → 1000<br/>&nbsp;&nbsp;.BANDPASS_LOW → 0.5<br/>.MODEL<br/>&nbsp;&nbsp;.ENCODER.HIDDEN_DIM → 256<br/>&nbsp;&nbsp;.HEAD.N_CLASSES → 10"]
-```
-
-## Demo
-
-```python
-import scitex_io as sio
-import pandas as pd, numpy as np
-
-# One call — any of 30+ formats, auto-dispatched by extension
-sio.save(pd.DataFrame({"x": [1, 2, 3]}), "data.csv")
-sio.save(np.array([1, 2, 3]),            "data.npy")
-sio.save({"lr": 1e-3, "epochs": 10},     "config.yaml")
-sio.save(fig,                            "plot.png")
-
-# One call to load — extension picks the right reader
-df  = sio.load("data.csv")
-arr = sio.load("data.npy")
-cfg = sio.load("config.yaml")
-
-# Load every config/*.yaml as a DotDict (UPPER_CASE = constants)
-CONFIG = sio.load_configs()
-CONFIG.MODEL.HIDDEN_DIM            # 256
-```
 
 <details>
 <summary><b>Project configuration (<code>load_configs</code>) — full example</b></summary>
