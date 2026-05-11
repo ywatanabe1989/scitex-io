@@ -414,7 +414,7 @@ Supports PNG (tEXt), JPEG (EXIF), SVG (XML metadata), PDF (XMP).
 ## Four Interfaces
 
 <details>
-<summary><strong>Python API</strong></summary>
+<summary><strong>Python API ⭐⭐⭐</strong></summary>
 
 <br>
 
@@ -435,7 +435,7 @@ embed_metadata("fig.png", d) # Embed provenance into figure
 </details>
 
 <details>
-<summary><strong>CLI Commands</strong></summary>
+<summary><strong>CLI Commands ⭐</strong></summary>
 
 <br>
 
@@ -457,7 +457,7 @@ scitex-io mcp list-tools -vv        # List MCP tools with parameters
 </details>
 
 <details>
-<summary><strong>MCP Server</strong></summary>
+<summary><strong>MCP Server ⭐</strong></summary>
 
 <br>
 
@@ -487,7 +487,7 @@ scitex-io mcp start
 </details>
 
 <details>
-<summary><strong>Skills</strong></summary>
+<summary><strong>Skills ⭐⭐</strong></summary>
 
 <br>
 
