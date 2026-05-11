@@ -1,5 +1,5 @@
 <!-- ---
-!-- Timestamp: 2026-05-11 16:33:16
+!-- Timestamp: 2026-05-11 16:46:56
 !-- Author: ywatanabe
 !-- File: /home/ywatanabe/proj/scitex-io/README.md
 !-- --- -->
@@ -286,6 +286,99 @@ values.
 
 </details>
 
+## Linter for Migration and Hooks
+
+`scitex-io` ships 14 IO-specific (`STX-IO001..014`) and 5 path-handling
+(`STX-PA001..005`) lint rules. They are detected automatically by
+[`scitex-dev`](https://github.com/ywatanabe1989/scitex-dev)'s linter,
+which is already a hard dependency of `scitex-io` — no extra install
+needed.
+
+```bash
+scitex-dev linter check-files src/           # lint a tree
+scitex-dev linter list-rules --category io   # show live rule definitions
+```
+
+<details>
+<summary><b>Rule reference (STX-IO001..014 + STX-PA001..005)</b></summary>
+
+<br>
+
+| Rule | Severity | Trigger |
+|------|----------|---------|
+| `STX-IO001` | warning | `np.save / savez / savez_compressed / savetxt` → use `sio.save()` |
+| `STX-IO002` | warning | `np.load / loadtxt / genfromtxt` → use `sio.load()` |
+| `STX-IO003` | warning | `pd.read_csv / parquet / excel / hdf / pickle / json / feather / orc / table` → use `sio.load()` |
+| `STX-IO004` | warning | `df.to_csv / parquet / excel / hdf / pickle / json / feather / html / orc` → use `sio.save()` |
+| `STX-IO005` | warning | `pickle.dump / dumps / load / loads` (incl. `cPickle`) → use `sio.save()/load()` |
+| `STX-IO006` | warning | `json.dump / dumps / load / loads` → use `sio.save()/load()` |
+| `STX-IO007` | warning | `.savefig(...)` → use `sio.save(fig, path)` for metadata embedding |
+| `STX-IO008` | warning | `torch.save / load` → use `sio.save()/load()` |
+| `STX-IO009` | warning | `joblib.dump / load` → use `sio.save()/load()` |
+| `STX-IO010` | warning | `yaml.dump / safe_dump / dump_all / load / safe_load / full_load` → use `sio.save()/load()` |
+| `STX-IO011` | warning | `scipy.io.savemat / loadmat` → use `sio.save()/load()` |
+| `STX-IO012` | warning | `cv2.imread / imwrite`, `PIL.Image.open`, `plt.imsave / imread`, `imageio.*` → use `sio.save()/load()` |
+| `STX-IO013` | warning | `h5py.File(...)` → use `sio.save()/load()` for HDF5 |
+| `STX-IO014` | warning | `sio.save / load` called with an extension that has no registered handler — register one with `register_saver/register_loader` |
+| `STX-PA001` | warning | Absolute path passed to `sio.*` — prefer relative for reproducibility |
+| `STX-PA002` | warning | `open(...)` → use `sio.save()/load()` for auto-logging |
+| `STX-PA003` | info | `os.makedirs / mkdir` — `sio.save()` auto-creates directories |
+| `STX-PA004` | warning | `os.chdir(...)` — scripts should run from project root |
+| `STX-PA005` | info | Relative path missing `./` prefix — use `./file.ext` for explicit intent |
+
+</details>
+
+<details>
+<summary><b>Claude Code Integration as a Hook</b></summary>
+
+<br>
+
+Wire `scitex-io`'s lint rules into Claude Code so every `Edit` / `Write`
+to a Python file is checked automatically — errors block the turn,
+warnings surface as feedback.
+
+> Reference implementation:
+> [`examples/scitex_io_lint.sh`](./examples/scitex_io_lint.sh) — a
+> self-contained PostToolUse hook (~15 lines) that you can copy into
+> `~/.claude/hooks/post-tool-use/` (or into your project's
+> `.claude/hooks/`).
+
+**1. Install the hook script**:
+
+```bash
+cp examples/scitex_io_lint.sh ~/.claude/hooks/post-tool-use/
+chmod +x ~/.claude/hooks/post-tool-use/scitex_io_lint.sh
+```
+
+**2. Wire it up** — add to `~/.claude/settings.json` (or
+`<project>/.claude/settings.json` for project-scoped):
+
+```json
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          { "type": "command",
+            "command": "~/.claude/hooks/post-tool-use/scitex_io_lint.sh" }
+        ]
+      }
+    ]
+  }
+}
+```
+
+After that, every time Claude Code edits a `.py` file, an
+`STX-IO001..014` / `STX-PA001..005` `error` blocks the turn and Claude
+sees the rule message inline — agents converge on the canonical
+`sio.save() / sio.load()` patterns instead of `np.save / pd.read_csv /
+pickle.dump / …`.
+
+</details>
+
+## Etc.
+
 <details>
 <summary><b>Glob, parse, cache</b></summary>
 
@@ -424,109 +517,6 @@ scitex-io skills get supported-formats  # Get all format tables
 Also available via MCP: `io_skills_list()` / `io_skills_get(name)`.
 
 </details>
-
-## Lint Rules
-
-`scitex-io` ships 14 IO-specific (`STX-IO001..014`) and 5 path-handling
-(`STX-PA001..005`) lint rules. They are detected automatically by
-[`scitex-dev`](https://github.com/ywatanabe1989/scitex-dev)'s linter,
-which is already a hard dependency of `scitex-io` — no extra install
-needed.
-
-```bash
-scitex-dev linter check-files src/           # lint a tree
-scitex-dev linter list-rules --category io   # show live rule definitions
-```
-
-<details>
-<summary><b>Rule reference (STX-IO001..014 + STX-PA001..005)</b></summary>
-
-<br>
-
-| Rule | Severity | Trigger |
-|------|----------|---------|
-| `STX-IO001` | warning | `np.save / savez / savez_compressed / savetxt` → use `sio.save()` |
-| `STX-IO002` | warning | `np.load / loadtxt / genfromtxt` → use `sio.load()` |
-| `STX-IO003` | warning | `pd.read_csv / parquet / excel / hdf / pickle / json / feather / orc / table` → use `sio.load()` |
-| `STX-IO004` | warning | `df.to_csv / parquet / excel / hdf / pickle / json / feather / html / orc` → use `sio.save()` |
-| `STX-IO005` | warning | `pickle.dump / dumps / load / loads` (incl. `cPickle`) → use `sio.save()/load()` |
-| `STX-IO006` | warning | `json.dump / dumps / load / loads` → use `sio.save()/load()` |
-| `STX-IO007` | warning | `.savefig(...)` → use `sio.save(fig, path)` for metadata embedding |
-| `STX-IO008` | warning | `torch.save / load` → use `sio.save()/load()` |
-| `STX-IO009` | warning | `joblib.dump / load` → use `sio.save()/load()` |
-| `STX-IO010` | warning | `yaml.dump / safe_dump / dump_all / load / safe_load / full_load` → use `sio.save()/load()` |
-| `STX-IO011` | warning | `scipy.io.savemat / loadmat` → use `sio.save()/load()` |
-| `STX-IO012` | warning | `cv2.imread / imwrite`, `PIL.Image.open`, `plt.imsave / imread`, `imageio.*` → use `sio.save()/load()` |
-| `STX-IO013` | warning | `h5py.File(...)` → use `sio.save()/load()` for HDF5 |
-| `STX-IO014` | warning | `sio.save / load` called with an extension that has no registered handler — register one with `register_saver/register_loader` |
-| `STX-PA001` | warning | Absolute path passed to `sio.*` — prefer relative for reproducibility |
-| `STX-PA002` | warning | `open(...)` → use `sio.save()/load()` for auto-logging |
-| `STX-PA003` | info | `os.makedirs / mkdir` — `sio.save()` auto-creates directories |
-| `STX-PA004` | warning | `os.chdir(...)` — scripts should run from project root |
-| `STX-PA005` | info | Relative path missing `./` prefix — use `./file.ext` for explicit intent |
-
-</details>
-
-## Claude Code Integration as a Hook
-
-Wire `scitex-io`'s lint rules into Claude Code so every `Edit` / `Write`
-to a Python file is checked automatically — errors block the turn,
-warnings surface as feedback.
-
-> Reference implementation:
-> [`~/.claude/hooks/post-tool-use/run_lint.sh`](https://github.com/ywatanabe1989/.dotfiles/blob/main/src/.claude/to_claude/hooks/post-tool-use/run_lint.sh)
-> already drives this. Below is a minimal standalone version you can
-> drop into your own `~/.claude/hooks/`.
-
-**1. Hook script** — `~/.claude/hooks/post-tool-use/scitex_io_lint.sh`:
-
-```bash
-#!/usr/bin/env bash
-# PostToolUse hook: run scitex-dev linter on the edited file.
-#   exit 2 = block (Claude must fix)
-#   exit 0 = pass (warnings still shown on stderr)
-
-INPUT=$(cat)
-FILE=$(echo "$INPUT" | python3 -c \
-  "import json,sys;print(json.load(sys.stdin).get('tool_input',{}).get('file_path',''))")
-[[ -f "$FILE" && "$FILE" == *.py ]] || exit 0
-
-# Errors block, warnings inform.
-scitex-dev linter check-files "$FILE" --category io --severity error   --no-color >&2 || exit 2
-scitex-dev linter check-files "$FILE" --category io --severity warning --no-color >&2 || true
-exit 0
-```
-
-**2. Wire it up** — add to `~/.claude/settings.json` (or
-`<project>/.claude/settings.json` for project-scoped):
-
-```json
-{
-  "hooks": {
-    "PostToolUse": [
-      {
-        "matcher": "Edit|Write|MultiEdit",
-        "hooks": [
-          { "type": "command",
-            "command": "~/.claude/hooks/post-tool-use/scitex_io_lint.sh" }
-        ]
-      }
-    ]
-  }
-}
-```
-
-**3. Make it executable**:
-
-```bash
-chmod +x ~/.claude/hooks/post-tool-use/scitex_io_lint.sh
-```
-
-After that, every time Claude Code edits a `.py` file, an
-`STX-IO001..014` / `STX-PA001..005` `error` blocks the turn and Claude
-sees the rule message inline — agents converge on the canonical
-`sio.save() / sio.load()` patterns instead of `np.save / pd.read_csv /
-pickle.dump / …`.
 
 ## Part of SciTeX
 
