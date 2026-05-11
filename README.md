@@ -1,5 +1,5 @@
 <!-- ---
-!-- Timestamp: 2026-05-11 16:02:36
+!-- Timestamp: 2026-05-11 16:08:48
 !-- Author: ywatanabe
 !-- File: /home/ywatanabe/proj/scitex-io/README.md
 !-- --- -->
@@ -57,21 +57,25 @@ import matplotlib.pyplot as plt
 df_orig = pd.DataFrame({"x": [1, 2, 3]})
 arr_orig = np.array([1, 2, 3])
 params_orig = {"lr": 1e-3, "epochs": 10}
+obj_orig = {"df": df_orig, "arr": arr_orig, "tag": "experiment-042"}
 
 # Unified Saving API
 sio.save(df_orig, "data.csv")
 sio.save(arr_orig, "data.npy")
 sio.save(params_orig, "config.yaml")
+sio.save(obj_orig, "bundle.pkl")
 
 # Unified Loading API
 df_loaded = sio.load("data.csv")
 arr_loaded = sio.load("data.npy")
 params_loaded = sio.load("config.yaml")
+obj_loaded = sio.load("bundle.pkl")
 
 # Round-trip check
 assert df_loaded.equals(df_orig)
 assert np.array_equal(arr_loaded, arr_orig)
 assert params_loaded == params_orig
+assert obj_loaded["df"].equals(df_orig) and obj_loaded["tag"] == "experiment-042"
 ```
 
 
@@ -100,6 +104,21 @@ assert params_loaded == params_orig
 Need a format not listed above? Register a custom handler with
 `register_saver` / `register_loader` and `sio.save()` / `sio.load()`
 will dispatch to it by extension just like a built-in.
+
+```python
+from scitex_io import register_saver, register_loader
+
+@register_saver(".custom")
+def save_custom(obj, path, **kw):
+    open(path, "w").write(str(obj))
+
+@register_loader(".custom")
+def load_custom(path, **kw):
+    return open(path).read()
+
+sio.save("hello", "data.custom")
+assert sio.load("data.custom") == "hello"
+```
 
 </details>
 
@@ -190,6 +209,25 @@ UPPER/lower pair collide (e.g. `MODEL.yaml` next to `model.yaml`, or
 `HIDDEN_DIM` next to `hidden_dim`), the UPPER variant is prioritised
 and a `UserWarning` is emitted.
 
+```
+project/
+  config/
+    PATHS.yaml          # DATA_DIR: /data/experiment_01
+    PREPROCESS.yaml     # SAMPLE_RATE: 1000, BANDPASS: [0.5, 40]
+    MODEL.yaml          # HIDDEN_DIM: 256, DROPOUT: 0.3
+    IS_DEBUG.yaml       # IS_DEBUG: true
+```
+
+```python
+CONFIG = sio.load_configs()           # loads ./config/*.yaml
+CONFIG.PREPROCESS.SAMPLE_RATE            # 1000
+
+# Debug mode: DEBUG_ prefixed keys override their counterparts
+# In MODEL.yaml: { HIDDEN_DIM: 256, DEBUG_HIDDEN_DIM: 32 }
+CONFIG = sio.load_configs(IS_DEBUG=True)
+CONFIG.MODEL.HIDDEN_DIM                  # 32 (debug value promoted)
+```
+
 ```mermaid
 flowchart LR
     P1["config/PREPROCESS.yaml<br/>(flat — multiple fields)<br/>SAMPLE_RATE: 1000<br/>BANDPASS_LOW: 0.5<br/>BANDPASS_HIGH: 40<br/>NOTCH: 50"] --> M{load_configs}
@@ -209,32 +247,6 @@ Any `DEBUG_*` sibling overrides its non-debug counterpart at load time
 `IS_DEBUG.yaml` flips the whole project between production and debug
 values. Equivalent triggers: `load_configs(IS_DEBUG=True)`, or running
 under `CI=True`.
-
-</details>
-
-<details>
-<summary><b>Project configuration (<code>load_configs</code>) — full example</b></summary>
-
-<br>
-
-```
-project/
-  config/
-    PATHS.yaml          # DATA_DIR: /data/experiment_01
-    PREPROCESS.yaml     # SAMPLE_RATE: 1000, BANDPASS: [0.5, 40]
-    MODEL.yaml          # HIDDEN_DIM: 256, DROPOUT: 0.3
-    IS_DEBUG.yaml       # IS_DEBUG: true
-```
-
-```python
-CONFIG = sio.load_configs()           # loads ./config/*.yaml
-CONFIG.PREPROCESS.SAMPLE_RATE            # 1000
-
-# Debug mode: DEBUG_ prefixed keys override their counterparts
-# In MODEL.yaml: { HIDDEN_DIM: 256, DEBUG_HIDDEN_DIM: 32 }
-CONFIG = sio.load_configs(IS_DEBUG=True)
-CONFIG.MODEL.HIDDEN_DIM                  # 32 (debug value promoted)
-```
 
 </details>
 
@@ -297,28 +309,6 @@ meta["experiment"]              # "exp_042"
 ```
 
 Supports PNG (tEXt), JPEG (EXIF), SVG (XML metadata), PDF (XMP).
-
-</details>
-
-<details>
-<summary><b>Custom format registration</b></summary>
-
-<br>
-
-```python
-from scitex_io import register_saver, register_loader
-
-@register_saver(".custom")
-def save_custom(obj, path, **kw):
-    open(path, "w").write(str(obj))
-
-@register_loader(".custom")
-def load_custom(path, **kw):
-    return open(path).read()
-
-sio.save("hello", "data.custom")
-assert sio.load("data.custom") == "hello"
-```
 
 </details>
 
