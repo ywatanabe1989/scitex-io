@@ -143,21 +143,32 @@ Intermediate directories (`sub/dir/`) are created automatically — no
 
 Scientific projects benefit from keeping parameters — sample rates,
 hyperparameters, paths, thresholds — out of the scripts that consume
-them to keep single source of truth.
+them, as a single source of truth.
 
-`load_configs()` collects every YAML under `./config/` into one nested
-`DotDict`. Filename stems become top-level keys; YAML keys become
-attributes. Every key is normalised to UPPER_CASE at load time, so
-`model.yaml` with `hidden_dim: 256` lands at `CONFIG.MODEL.HIDDEN_DIM`
-regardless of source casing — and your code always reads the same
-shape. If two siblings fold to the same UPPER key (e.g. `MODEL.yaml`
-next to `model.yaml`, or `HIDDEN_DIM` next to `hidden_dim`),
-`load_configs()` emits a `UserWarning` pointing at the conflict and
-keeps the value from the UPPER variant, dropping the lowercase one.
+`CONFIG = load_configs()` collects every YAML under
+`<project-root>/config/` into one nested `DotDict`. Parameters are
+then accessible as `CONFIG.YAML_FILE_NAME.FIELD_NAME`.
 
-Debug mode promotes any `DEBUG_*` sibling over its non-debug
-counterpart, so a single `IS_DEBUG.yaml` flips the whole project
-between production and debug values.
+YAML filenames and field names are recognised in UPPER_CASE, so
+`<project-root>/config/model.yaml` with `hidden_dim: 256` lands at
+`CONFIG.MODEL.HIDDEN_DIM` regardless of source casing. When an
+UPPER/lower pair collide (e.g. `MODEL.yaml` next to `model.yaml`, or
+`HIDDEN_DIM` next to `hidden_dim`), the UPPER variant is prioritised
+and a `UserWarning` is emitted.
+
+<details>
+<summary><b>Debug mode for parameters</b></summary>
+
+<br>
+
+When debugging or developing, flipping parameters speeds up iteration.
+Any `DEBUG_*` sibling overrides its non-debug counterpart at load time
+(e.g. `CONFIG.MY.DEBUG_PARAM` replaces `CONFIG.MY.PARAM`), so a single
+`IS_DEBUG.yaml` flips the whole project between production and debug
+values. Equivalent triggers: `load_configs(IS_DEBUG=True)`, or running
+under `CI=True`.
+
+</details>
 
 ```mermaid
 flowchart LR
