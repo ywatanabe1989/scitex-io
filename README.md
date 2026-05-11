@@ -72,12 +72,12 @@ For MCP server support:
 pip install scitex-io[mcp]
 ```
 
-## How it works
+## Architecture
 
 ```mermaid
 flowchart LR
-    A["save(obj, 'x.ext')"] --> B{Registry}
-    L["load('x.ext')"] --> B
+    A["scitex_io.save(obj, 'x.ext')"] --> B{Registry}
+    L["scitex_io.load('x.ext')"] --> B
     B -->|.csv| C[pandas]
     B -->|.npy/.npz| D[numpy]
     B -->|.h5 / .zarr| E[h5py / zarr]
@@ -92,6 +92,38 @@ flowchart LR
 One call routes by extension to the right handler; the registry is the
 extension point — see "Custom Format Registration" below. Figures get an
 auto-CSV+yaml sidecar atomically so plot data never drifts from the image.
+
+**Where does the file actually go?** Relative paths in `save()` are
+auto-routed based on the execution context — you never specify the
+output directory by hand:
+
+```
+caller                          stx.io.save(df, "results.csv") writes to…
+─────────────                   ──────────────────────────────────────────
+analysis.py                     ./analysis_out/results.csv
+exp.ipynb                       ./exp_out/results.csv
+python -i / IPython / REPL      /tmp/{USER}/results.csv
+absolute path, e.g. /data/x.csv /data/x.csv (used as-is)
+```
+
+Opt-in extras: `symlink_from_cwd=True` drops a symlink at
+`./results.csv` pointing into the auto-routed location; `symlink_to=…`
+plants a symlink at a custom path; `dry_run=True` prints the resolved
+path without writing.
+
+**Project configuration** — `load_configs()` collects every YAML under
+`./config/` into one nested `DotDict`. UPPER_CASE filenames become
+top-level keys; UPPER_CASE keys inside become constants. Debug mode
+promotes any `DEBUG_*` sibling over its non-debug counterpart:
+
+```mermaid
+flowchart LR
+    P1["config/PATHS.yaml<br/>DATA_DIR: /data/exp_01"] --> M{load_configs}
+    P2["config/MODEL.yaml<br/>HIDDEN_DIM: 256<br/>DEBUG_HIDDEN_DIM: 32"] --> M
+    P3["config/PREPROCESS.yaml<br/>SAMPLE_RATE: 1000"] --> M
+    P4["config/IS_DEBUG.yaml<br/>IS_DEBUG: true"] --> M
+    M --> C["CONFIG (DotDict)<br/>CONFIG.PATHS.DATA_DIR<br/>CONFIG.MODEL.HIDDEN_DIM → 32<br/>CONFIG.PREPROCESS.SAMPLE_RATE"]
+```
 
 ## Demo
 
