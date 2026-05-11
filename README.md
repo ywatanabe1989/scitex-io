@@ -1,5 +1,5 @@
 <!-- ---
-!-- Timestamp: 2026-05-11 16:31:12
+!-- Timestamp: 2026-05-11 16:33:16
 !-- Author: ywatanabe
 !-- File: /home/ywatanabe/proj/scitex-io/README.md
 !-- --- -->
@@ -266,14 +266,6 @@ CONFIG.PREPROCESS.SAMPLE_RATE            # 1000
 # In MODEL.yaml: { HIDDEN_DIM: 256, DEBUG_HIDDEN_DIM: 32 }
 CONFIG = sio.load_configs(IS_DEBUG=True)
 CONFIG.MODEL.HIDDEN_DIM                  # 32 (debug value promoted)
-```
-
-```mermaid
-flowchart LR
-    P1["config/PREPROCESS.yaml<br/>(flat — multiple fields)<br/>SAMPLE_RATE: 1000<br/>BANDPASS_LOW: 0.5<br/>BANDPASS_HIGH: 40<br/>NOTCH: 50"] --> M{load_configs}
-    P2["config/MODEL.yaml<br/>(nested)<br/>ENCODER:<br/>&nbsp;&nbsp;HIDDEN_DIM: 256<br/>&nbsp;&nbsp;DROPOUT: 0.3<br/>HEAD:<br/>&nbsp;&nbsp;HIDDEN_DIM: 64<br/>&nbsp;&nbsp;N_CLASSES: 10"] --> M
-    P3["config/IS_DEBUG.yaml<br/>IS_DEBUG: true"] --> M
-    M --> C["CONFIG (DotDict)<br/>━━━━━━━━━━━━━━━━<br/>.PREPROCESS<br/>&nbsp;&nbsp;.SAMPLE_RATE → 1000<br/>&nbsp;&nbsp;.BANDPASS_LOW → 0.5<br/>.MODEL<br/>&nbsp;&nbsp;.ENCODER.HIDDEN_DIM → 256<br/>&nbsp;&nbsp;.HEAD.N_CLASSES → 10"]
 ```
 
 <details>
