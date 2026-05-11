@@ -37,9 +37,9 @@
 
 | # | Problem | Solution |
 |---|---------|----------|
-| 1 | **Format zoo** — save/load scattered across `pd.read_csv`, `np.load`, `pickle`, `json`, `h5py`, `torch.save`, `cv2.imread`, etc. Every format = a different API | **One call** — `sio.save(obj, "x.ext")` / `sio.load("x.ext")` routes by extension across 30+ formats; plugin registry lets users register custom handlers |
-| 2 | **Outputs scattered, cwd-dependent, mkdir-heavy** — saves land in whatever cwd happens to be; nested paths need explicit `os.makedirs()`; outputs drift away from the script that produced them | **Caller-anchored relative paths** — `sio.save(df, "./sub/dir/results.csv")` resolves relative to the calling script and writes to `{caller}_out/sub/dir/results.csv`; intermediate dirs auto-created, no `mkdir` calls needed |
-| 3 | **Hard-coded parameters scattered across scripts** — sample rates, thresholds, hyperparameters duplicated across files, impossible to track or share | **`load_configs()`** — loads all YAML files from `config/` into a single `DotDict` with dot-notation access; parameters version-controlled and centralized |
+| 1 | **Format zoo** — every format has its own API (`pd.read_csv`, `np.load`, `pickle`, `h5py`, `torch.save`, …). | **One call** — `sio.save(obj, "x.ext")` / `sio.load("x.ext")` dispatches across 30+ formats. |
+| 2 | **Outputs scatter** — saves land relative to cwd, drift away from the script that produced them. | **Caller-anchored paths** — `sio.save(df, "results.csv")` writes to `{caller}_out/results.csv`. |
+| 3 | **Magic numbers everywhere** — hyperparameters, paths, thresholds duplicated across scripts. | **Centralized config** — `load_configs()` merges every `config/*.yaml` into one `DotDict`. |
 
 
 ## Quick Start
