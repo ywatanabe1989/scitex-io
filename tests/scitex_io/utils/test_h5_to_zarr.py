@@ -172,3 +172,39 @@ def test_migrate_h5_to_zarr_batch_parallel(tmp_path):
     assert len(results) == 2
     for r in results:
         assert Path(r).exists()
+
+
+def test_migrate_h5_to_zarr_batch_parallel_default_workers(tmp_path):
+    """Trigger the n_workers=None default-branch (parallel)."""
+    h5_paths = [_build_h5(tmp_path / f"q{i}.h5") for i in range(2)]
+    out_dir = tmp_path / "qout"
+    results = migrate_h5_to_zarr_batch(
+        h5_paths, output_dir=out_dir, parallel=True, overwrite=True
+    )
+    assert len(results) == 2
+
+
+def test_migrate_h5_to_zarr_chunks_tuple(tmp_path):
+    """chunks tuple is passed through to migrate_dataset for a single-dataset file."""
+    # Use a single-dataset H5 file so the tuple shape matches.
+    h5p = tmp_path / "ct.h5"
+    with h5py.File(h5p, "w") as f:
+        f.create_dataset("flat", data=np.arange(24).reshape(4, 6), dtype="int32")
+    out = migrate_h5_to_zarr(
+        h5p,
+        zarr_path=tmp_path / "ct.zarr",
+        chunks=(2, 3),
+        show_progress=False,
+    )
+    assert Path(out).exists()
+
+
+def test_migrate_h5_to_zarr_chunks_false(tmp_path):
+    h5_path = _build_h5(tmp_path / "cf.h5")
+    out = migrate_h5_to_zarr(
+        h5_path,
+        zarr_path=tmp_path / "cf.zarr",
+        chunks=False,
+        show_progress=False,
+    )
+    assert Path(out).exists()

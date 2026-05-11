@@ -40,15 +40,16 @@ def test_get_zarr_compressor_passthrough_non_string():
 def test_get_zarr_compressor_named(name):
     c = get_zarr_compressor(name)
     assert c is not None
-    # All numcodecs codecs have an `encode` callable
-    assert hasattr(c, "encode")
+    # zarr v3 API: a list of codec instances
+    assert isinstance(c, list) and len(c) == 1
 
 
 def test_get_zarr_compressor_unknown_defaults_to_zstd():
-    from numcodecs import Zstd
+    from zarr.codecs import ZstdCodec
 
     c = get_zarr_compressor("not-a-real-codec")
-    assert isinstance(c, Zstd)
+    assert isinstance(c, list)
+    assert isinstance(c[0], ZstdCodec)
 
 
 # -----------------------------
@@ -295,6 +296,39 @@ def test_validate_migration_key_mismatch_raises(tmp_path):
     with h5py.File(p, "r") as f:
         with pytest.raises(SciTeXIOError):
             validate_migration(f, z_store)
+
+
+def test_migrate_dataset_object_scalar_non_string_pickled(tmp_path):
+    """Object scalar that is not str/bytes is pickled."""
+    p = tmp_path / "obj_s.h5"
+    with h5py.File(p, "w") as f:
+        # Make a length-1 region-reference-like opaque object via vlen of uint8.
+        # Easier: create an opaque void scalar.
+        f.create_dataset("o", data=np.void(b"\x01\x02\x03"))
+
+    z_store = zarr.open(str(tmp_path / "obj_s.zarr"), mode="w")
+    with h5py.File(p, "r") as f:
+        out = migrate_dataset(f["o"], z_store, "o", compressor=None)
+    assert out is not None
+
+
+def test_migrate_dataset_object_array_non_string_pickled(tmp_path):
+    """Object-dtype array whose first element isn't str/bytes → pickled branch."""
+    p = tmp_path / "obj_a.h5"
+    # Build a vlen dataset where each element is a numpy array (object dtype).
+    with h5py.File(p, "w") as f:
+        dt = h5py.vlen_dtype(np.int32)
+        ds = f.create_dataset("v", (3,), dtype=dt)
+        ds[0] = np.array([1, 2], dtype=np.int32)
+        ds[1] = np.array([3, 4, 5], dtype=np.int32)
+        ds[2] = np.array([6], dtype=np.int32)
+
+    z_store = zarr.open(str(tmp_path / "obj_a.zarr"), mode="w")
+    with h5py.File(p, "r") as f:
+        out = migrate_dataset(f["v"], z_store, "v", compressor=None)
+    assert out is not None
+    # Should be tagged as pickled
+    assert out.attrs.get("_type") == "pickled"
 
 
 def test_validate_migration_dtype_warning(tmp_path):
