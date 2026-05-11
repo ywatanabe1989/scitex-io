@@ -69,10 +69,6 @@
 uv pip install "scitex-io[all]"
 ```
 
-Requires Python ≥ 3.10. `uv` resolves SciTeX's transitive deps in parallel
-(~1 min vs. ~30 min with plain pip on `[all]`). Plain `pip install
-"scitex-io[all]"` also works.
-
 <details>
 <summary><b>Per-module extras</b></summary>
 
