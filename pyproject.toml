@@ -89,6 +89,8 @@ dev = [
     "markdown",           # md handler
     "html2text",          # html2md handler
     "ruamel.yaml",        # YAML round-trip tests
+    "kaleido",            # plotly static image export (png/jpeg/svg/pdf)
+    "python-docx",        # .docx loader tests
 ]
 docs = [
     "sphinx>=7.0",
