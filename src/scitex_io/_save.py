@@ -220,8 +220,19 @@ def save(
                     or ("<stdin>" in script_path)
                     or env_type in ["ipython", "interactive"]
                 ):
-                    script_path = f"/tmp/{_os.getenv('USER')}"
-                    sdir = script_path
+                    # Interactive sessions (IPython / REPL / `python -i`)
+                    # have no script to anchor _out/ to, so route writes
+                    # into the canonical scitex local-state cache:
+                    #   $SCITEX_DIR/io/runtime/cache/  (default ~/.scitex)
+                    # See scitex-dev skills/general/
+                    #   01_ecosystem_06_local-state-directories.md
+                    _scitex_dir = _os.environ.get(
+                        "SCITEX_DIR",
+                        _os.path.join(_os.path.expanduser("~"), ".scitex"),
+                    )
+                    sdir = _os.path.join(_scitex_dir, "io", "runtime", "cache")
+                    _os.makedirs(sdir, exist_ok=True)
+                    script_path = sdir
                 else:
                     sdir = _os.path.join(_os.getcwd(), "output")
                 spath = _os.path.join(sdir, specified_path)

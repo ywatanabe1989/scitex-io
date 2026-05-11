@@ -56,7 +56,7 @@ When `specified_path` is relative, the output directory is auto-determined:
 |---------|-----------------|---------|
 | Script `analysis.py` | `analysis_out/{path}` | `analysis_out/results.csv` |
 | Notebook `exp.ipynb` | `exp_out/{path}` | `exp_out/fig.png` |
-| Interactive/IPython | `/tmp/{USER}/{path}` | `/tmp/ywatanabe/data.csv` |
+| Interactive/IPython | `$SCITEX_DIR/io/runtime/cache/{path}` (default `~/.scitex/io/runtime/cache/`) | `~/.scitex/io/runtime/cache/data.csv` |
 | Absolute path | Used as-is | `/data/output/results.csv` |
 
 ```python

@@ -18,7 +18,7 @@ location based on caller context:
 | Script | `{script_name}_out/{path}` (e.g. `analysis_out/results.csv`) |
 | `@stx.session` | `{script_name}_out/FINISHED_{status}/{session_id}/{path}` |
 | Jupyter (`*.ipynb`) | `{notebook_dir}/{notebook_base}_out/{path}` (see "Jupyter notebook routing" below) |
-| Interactive REPL | `/tmp/{USER}/{path}` |
+| Interactive REPL | `$SCITEX_DIR/io/runtime/cache/{path}` (default `~/.scitex/io/runtime/cache/`) |
 | Absolute path | Used as-is, no routing |
 
 ### The round-trip gotcha (important for new users + agents)

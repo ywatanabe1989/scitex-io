@@ -115,17 +115,23 @@ flowchart LR
     B -.->|register_saver/loader| K[Your custom format]
 ```
 
-### 2. Output paths anchored to the caller
+### 2. Output paths → `"./relative/path/to/results.csv"`
 
 Relative paths in `save()` resolve **relative to the calling script /
 notebook**, not the working directory — you never hand-write the output
 directory and outputs land beside their producer.
 
-| Caller | `sio.save(df, "results.csv")` writes to |
+The argument to `save()` may be a bare filename **or any relative
+path** (`"sub/dir/results.csv"`, `"./sub/dir/results.csv"` — both work);
+the whole thing is appended under the caller's output anchor.
+
+| Caller | `sio.save(df, "sub/dir/results.csv")` writes to |
 |---|---|
-| `/path/to/analysis.py` (script) | `/path/to/analysis_out/results.csv` |
-| `/path/to/exp.ipynb` (notebook) | `/path/to/exp_out/results.csv` |
-| `python -i` / IPython / REPL | `/tmp/{USER}/results.csv` |
+| `/path/to/analysis.py` (script) | `/path/to/analysis_out/sub/dir/results.csv` |
+| `/path/to/exp.ipynb` (notebook) | `/path/to/exp_out/sub/dir/results.csv` |
+| `python -i` / IPython / REPL | `~/.scitex/io/runtime/cache/sub/dir/results.csv` |
+
+Intermediate directories (`sub/dir/`) are created automatically.
 
 > **Absolute paths bypass routing.** `sio.save(df, "/data/x.csv")`
 > writes to `/data/x.csv` as-is — the auto-routing rules above only
