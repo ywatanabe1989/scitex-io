@@ -792,7 +792,16 @@ and standard item access for all keys (including integers, etc.).</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="scitex_io.save_mp4">
 <span class="sig-prename descclassname"><span class="pre">scitex_io.</span></span><span class="sig-name descname"><span class="pre">save_mp4</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fig</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spath_mp4</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#scitex_io.save_mp4" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Create an MP4 animation from a matplotlib figure.</p>
+<p>matplotlib is lazy-imported inside the function body so that
+<code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">scitex.io</span></code> (and the parent <code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">scitex</span></code>) does not
+fail on venvs without matplotlib installed (todo#443, same class
+as #279 / #441 / #442). Without lazy-import, the eager top-level
+<code class="docutils literal notranslate"><span class="pre">from</span> <span class="pre">matplotlib</span> <span class="pre">import</span> <span class="pre">animation</span></code> propagated <code class="docutils literal notranslate"><span class="pre">ModuleNotFoundError</span></code>
+up the <code class="docutils literal notranslate"><span class="pre">_save_modules.__init__</span></code> walk and broke any caller of
+<code class="docutils literal notranslate"><span class="pre">scitex.io.save(dict,</span> <span class="pre">&quot;out.json&quot;)</span></code> who had no business needing
+matplotlib.</p>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="scitex_io.save_listed_dfs_as_csv">
