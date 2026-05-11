@@ -44,10 +44,15 @@ dependencies = [
     "click>=8.0.0",
     "rich>=13.0.0",
     "scitex-dev>=0.11.7",
-    "scitex-dev>=0.11.7",
     # scitex_io._save imports scitex_logging at module top (also _bibtex
     # load/save modules) — the runtime needs it.
     "scitex-logging>=0.1.0",
+    # `scitex_io.glob` documents natural sorting as part of its contract;
+    # the previous try/import fallback to `sorted` silently degraded to
+    # lexical order, breaking `test_glob_natural_sorting` and any user
+    # who relied on `file1.txt, file2.txt, …, file10.txt` ordering.
+    # Make natsort a hard runtime dep so the documented behaviour holds.
+    "natsort>=8.0",
 ]
 
 [project.optional-dependencies]
