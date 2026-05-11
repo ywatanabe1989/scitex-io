@@ -104,8 +104,8 @@ output directory by hand:
 
 | Caller | `stx.io.save(df, "results.csv")` writes to |
 |---|---|
-| `analysis.py` (script) | `./analysis_out/results.csv` |
-| `exp.ipynb` (notebook) | `./exp_out/results.csv` |
+| `/path/to/analysis.py` (script) | `/path/to/analysis_out/results.csv` |
+| `/path/to/exp.ipynb` (notebook) | `/path/to/exp_out/results.csv` |
 | `python -i` / IPython / REPL | `/tmp/{USER}/results.csv` |
 
 > **Absolute paths bypass routing.** `stx.io.save(df, "/data/x.csv")`
