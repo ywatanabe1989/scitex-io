@@ -92,13 +92,13 @@ uv pip install -e ".[dev]"               # editable install for contributors
 
 ## How it works
 
-### 1. Routing by extension
+### 1. Format detection by extension
 
-One `save()` / `load()` call dispatches on the file extension through a
-plugin registry — every format is a small handler module, and
-`register_saver` / `register_loader` is the user-facing extension point.
-Figures additionally emit a CSV + figrecipe-YAML sidecar so plot data
-never drifts from the image.
+`save()` / `load()` pick the right reader/writer from the file
+extension via a plugin registry — every format is a small handler
+module, and `register_saver` / `register_loader` is the user-facing
+extension point. Figures additionally emit a CSV + figrecipe-YAML
+sidecar so plot data never drifts from the image.
 
 ```mermaid
 flowchart LR
