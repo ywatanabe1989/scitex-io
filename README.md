@@ -1,5 +1,5 @@
 <!-- ---
-!-- Timestamp: 2026-05-11 16:08:48
+!-- Timestamp: 2026-05-11 16:11:57
 !-- Author: ywatanabe
 !-- File: /home/ywatanabe/proj/scitex-io/README.md
 !-- --- -->
@@ -178,18 +178,18 @@ Relative paths in `save()` resolve **relative to the calling script /
 notebook**, not the working directory — you never hand-write the output
 directory and outputs land beside their producer.
 
-The argument to `save()` may be a bare filename **or any relative
-path** (`"sub/dir/results.csv"`, `"./sub/dir/results.csv"` — both work);
-the whole thing is appended under the caller's output anchor.
-
 | Caller | `sio.save(df, "sub/dir/results.csv")` writes to |
 |---|---|
 | `/path/to/analysis.py` (script) | `/path/to/analysis_out/sub/dir/results.csv` |
 | `/path/to/exp.ipynb` (notebook) | `/path/to/exp_out/sub/dir/results.csv` |
 | `python -i` / IPython / REPL | `~/.scitex/io/runtime/cache/sub/dir/results.csv` |
 
-Intermediate directories (`sub/dir/`) are created automatically — no
-`os.makedirs()` / `Path.mkdir()` calls needed on the caller side.
+> **Bare filename or any relative path** — `"results.csv"`,
+> `"sub/dir/results.csv"`, and `"./sub/dir/results.csv"` all work; the
+> whole path is appended under the caller's output anchor.
+>
+> **Intermediate directories created automatically** — no
+> `os.makedirs()` / `Path.mkdir()` calls needed on the caller side.
 
 ### 3. Centralized project configuration
 
@@ -201,13 +201,15 @@ them, as a single source of truth.
 `<project-root>/config/` into one nested `DotDict`. Parameters are
 then accessible as `CONFIG.YAML_FILE_NAME.FIELD_NAME`.
 
-YAML filenames and field names are recognised in UPPER_CASE,
-following Python's convention for user-defined parameters, so
-`<project-root>/config/model.yaml` with `hidden_dim: 256` lands at
-`CONFIG.MODEL.HIDDEN_DIM` regardless of source casing. When an
-UPPER/lower pair collide (e.g. `MODEL.yaml` next to `model.yaml`, or
-`HIDDEN_DIM` next to `hidden_dim`), the UPPER variant is prioritised
-and a `UserWarning` is emitted.
+> **UPPER_CASE normalisation.** YAML filenames and field names are
+> recognised in UPPER_CASE, following Python's convention for
+> user-defined parameters. `model.yaml` with `hidden_dim: 256` lands
+> at `CONFIG.MODEL.HIDDEN_DIM` regardless of source casing.
+>
+> **Conflict handling.** When an UPPER/lower pair collide (e.g.
+> `MODEL.yaml` next to `model.yaml`, or `HIDDEN_DIM` next to
+> `hidden_dim`), the UPPER variant is prioritised and a `UserWarning`
+> is emitted pointing at the conflict.
 
 ```
 project/
@@ -245,8 +247,11 @@ When debugging or developing, flipping parameters speeds up iteration.
 Any `DEBUG_*` sibling overrides its non-debug counterpart at load time
 (e.g. `CONFIG.MY.DEBUG_PARAM` replaces `CONFIG.MY.PARAM`), so a single
 `IS_DEBUG.yaml` flips the whole project between production and debug
-values. Equivalent triggers: `load_configs(IS_DEBUG=True)`, or running
-under `CI=True`.
+values.
+
+> **Equivalent triggers** — these three all enable debug mode:
+> `IS_DEBUG.yaml` with `IS_DEBUG: true`, `load_configs(IS_DEBUG=True)`,
+> or running under `CI=True`.
 
 </details>
 
@@ -255,18 +260,18 @@ under `CI=True`.
 
 <br>
 
-**Absolute paths bypass auto-routing.** `sio.save(df, "/data/x.csv")`
-writes to `/data/x.csv` as-is — caller-anchored routing (§2) only
-applies when the path is relative.
+> **Absolute paths bypass auto-routing.** `sio.save(df, "/data/x.csv")`
+> writes to `/data/x.csv` as-is — caller-anchored routing (§2) only
+> applies when the path is relative.
 
 ```python
 sio.save(df, "/data/x.csv")                            # absolute → used as-is
 ```
 
-**Symlinks and dry-run.** `symlink_from_cwd=True`
-drops a symlink at `./results.csv` pointing into the auto-routed
-location; `symlink_to=…` plants a symlink at a custom path;
-`dry_run=True` prints the resolved path without writing.
+> **Symlinks and dry-run.** `symlink_from_cwd=True` drops a symlink at
+> `./results.csv` pointing into the auto-routed location;
+> `symlink_to=…` plants a symlink at a custom path; `dry_run=True`
+> prints the resolved path without writing.
 
 ```python
 sio.save(df,  "results.csv", symlink_from_cwd=True)
