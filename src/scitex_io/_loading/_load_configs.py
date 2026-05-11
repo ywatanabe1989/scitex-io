@@ -11,12 +11,51 @@ __FILE__ = "./src/scitex/io/_load_configs.py"
 __DIR__ = os.path.dirname(__FILE__)
 # ----------------------------------------
 
+import warnings
 from pathlib import Path
 from typing import Optional, Union
 
 from .._glob import glob
 from .._utils import DotDict
 from ._load import load
+
+
+def _resolve_case_conflicts(d, path="CONFIG"):
+    """Drop case-conflicting siblings, preferring the UPPER_CASE variant.
+
+    Walks a (possibly nested) dict/DotDict in place. For any pair of
+    sibling keys that collide once upper-cased (e.g. ``hidden_dim`` +
+    ``HIDDEN_DIM``), keep the upper variant, drop the other, and emit
+    a ``UserWarning`` pointing at the conflict location.
+
+    UPPER_CASE is the project convention for config constants — see
+    ``load_configs`` docstring and the scitex-io README §3.
+    """
+    if not isinstance(d, (dict, DotDict)):
+        return d
+    by_upper: dict[str, list[str]] = {}
+    for k in list(d.keys()):
+        if isinstance(k, str):
+            by_upper.setdefault(k.upper(), []).append(k)
+    for upper, variants in by_upper.items():
+        if len(variants) <= 1:
+            continue
+        upper_present = upper in variants
+        keep = upper if upper_present else max(variants, key=str.isupper)
+        for v in variants:
+            if v != keep:
+                warnings.warn(
+                    f"load_configs: case conflict at {path}.* — "
+                    f"{variants!r} fold to {upper!r}; keeping {keep!r}, "
+                    f"dropping {v!r}. Use UPPER_CASE for config constants.",
+                    UserWarning,
+                    stacklevel=3,
+                )
+                d.pop(v, None)
+    for k, v in list(d.items()):
+        if isinstance(v, (dict, DotDict)):
+            _resolve_case_conflicts(v, path=f"{path}.{k}")
+    return d
 
 
 def load_configs(
@@ -96,6 +135,12 @@ def load_configs(
                 if config := load(lpath):
                     filename = Path(lpath).stem
                     CONFIGS[filename] = apply_debug_values(config, IS_DEBUG)
+
+        # UPPER_CASE convention: warn + drop case-conflicting siblings,
+        # preferring the UPPER variant. Applies to filename-level keys
+        # (e.g. MODEL.yaml + model.yaml) and recursively to keys inside
+        # each YAML.
+        _resolve_case_conflicts(CONFIGS)
 
         return DotDict(CONFIGS)
 

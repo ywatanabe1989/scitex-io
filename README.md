@@ -1,5 +1,5 @@
 <!-- ---
-!-- Timestamp: 2026-05-11 15:30:15
+!-- Timestamp: 2026-05-11 15:34:09
 !-- Author: ywatanabe
 !-- File: /home/ywatanabe/proj/scitex-io/README.md
 !-- --- -->
@@ -45,7 +45,7 @@
 | 3 | **Hard-coded parameters scattered across scripts** — sample rates, thresholds, hyperparameters duplicated across files, impossible to track or share | **`load_configs()`** — loads all YAML files from `config/` into a single `DotDict` with dot-notation access; parameters version-controlled and centralized |
 
 <details>
-<summary><b>Supported Formats (30+)</b></summary>
+<summary><b>Native Supported Formats (30+)</b></summary>
 
 <br>
 
@@ -65,6 +65,8 @@
 | Web | `.html` |
 | Bibliography | `.bib` |
 | EEG | `.vhdr`, `.vmrk`, `.edf`, `.bdf`, `.gdf`, `.cnt`, `.egi`, `.eeg`, `.set`, `.con` |
+
+Beyond them, custom formats can be registered. # revise this english
 
 </details>
 
@@ -144,10 +146,17 @@ hyperparameters, paths, thresholds — out of the scripts that consume
 them to keep single source of truth.
 
 `load_configs()` collects every YAML under `./config/` into one nested
-`DotDict`. UPPER_CASE filenames become top-level keys and UPPER_CASE
-keys inside become constants. Debug mode promotes any `DEBUG_*` sibling
-over its non-debug counterpart, so a single `IS_DEBUG.yaml` flips the
-whole project between production and debug values.
+`DotDict`. **Use UPPER_CASE for filenames and keys** — Python's
+convention for constants. Lowercase still parses, but if a YAML file or
+key collides with its UPPER_CASE sibling (e.g. `model.yaml` next to
+`MODEL.yaml`, or `hidden_dim` next to `HIDDEN_DIM`), `load_configs()`
+emits a `UserWarning` and drops the lowercase variant. In your own
+source, always reference the UPPER_CASE form
+(`CONFIG.MODEL.HIDDEN_DIM`).
+
+Debug mode promotes any `DEBUG_*` sibling over its non-debug
+counterpart, so a single `IS_DEBUG.yaml` flips the whole project
+between production and debug values.
 
 ```mermaid
 flowchart LR
