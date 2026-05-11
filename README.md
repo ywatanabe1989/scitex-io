@@ -160,7 +160,7 @@ flowchart LR
     P1["config/PREPROCESS.yaml<br/>(flat — multiple fields)<br/>SAMPLE_RATE: 1000<br/>BANDPASS_LOW: 0.5<br/>BANDPASS_HIGH: 40<br/>NOTCH: 50"] --> M{load_configs}
     P2["config/MODEL.yaml<br/>(nested)<br/>ENCODER:<br/>&nbsp;&nbsp;HIDDEN_DIM: 256<br/>&nbsp;&nbsp;DROPOUT: 0.3<br/>HEAD:<br/>&nbsp;&nbsp;HIDDEN_DIM: 64<br/>&nbsp;&nbsp;N_CLASSES: 10"] --> M
     P3["config/IS_DEBUG.yaml<br/>IS_DEBUG: true"] --> M
-    M --> C["CONFIG (DotDict)<br/>CONFIG.PREPROCESS.SAMPLE_RATE → 1000<br/>CONFIG.PREPROCESS.BANDPASS_LOW → 0.5<br/>CONFIG.MODEL.ENCODER.HIDDEN_DIM → 256<br/>CONFIG.MODEL.HEAD.N_CLASSES → 10"]
+    M --> C["CONFIG (DotDict)<br/>━━━━━━━━━━━━━━━━<br/>.PREPROCESS<br/>&nbsp;&nbsp;.SAMPLE_RATE → 1000<br/>&nbsp;&nbsp;.BANDPASS_LOW → 0.5<br/>.MODEL<br/>&nbsp;&nbsp;.ENCODER.HIDDEN_DIM → 256<br/>&nbsp;&nbsp;.HEAD.N_CLASSES → 10"]
 ```
 
 ## Demo
