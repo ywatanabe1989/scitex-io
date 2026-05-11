@@ -131,7 +131,8 @@ the whole thing is appended under the caller's output anchor.
 | `/path/to/exp.ipynb` (notebook) | `/path/to/exp_out/sub/dir/results.csv` |
 | `python -i` / IPython / REPL | `~/.scitex/io/runtime/cache/sub/dir/results.csv` |
 
-Intermediate directories (`sub/dir/`) are created automatically.
+Intermediate directories (`sub/dir/`) are created automatically — no
+`os.makedirs()` / `Path.mkdir()` calls needed on the caller side.
 
 > **Absolute paths bypass routing.** `sio.save(df, "/data/x.csv")`
 > writes to `/data/x.csv` as-is — the auto-routing rules above only
