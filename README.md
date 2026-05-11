@@ -1,5 +1,5 @@
 <!-- ---
-!-- Timestamp: 2026-05-11 16:46:56
+!-- Timestamp: 2026-05-11 16:50:42
 !-- Author: ywatanabe
 !-- File: /home/ywatanabe/proj/scitex-io/README.md
 !-- --- -->
@@ -286,7 +286,7 @@ values.
 
 </details>
 
-## Linter for Migration and Hooks
+### 4. Linter for Migration and Hooks
 
 `scitex-io` ships 14 IO-specific (`STX-IO001..014`) and 5 path-handling
 (`STX-PA001..005`) lint rules. They are detected automatically by
@@ -377,7 +377,7 @@ pickle.dump / …`.
 
 </details>
 
-## Etc.
+### 5. Etc.
 
 <details>
 <summary><b>Glob, parse, cache</b></summary>
