@@ -4,7 +4,6 @@ from __future__ import annotations
 Exercises real h5py + zarr code paths against real files in tmp_path.
 """
 
-
 import warnings
 
 import h5py
@@ -99,7 +98,7 @@ def test_copy_h5_attributes_various_types(tmp_path):
         ds.attrs["np_arr"] = np.array([1, 2, 3])
 
     z_store = zarr.open(str(zp), mode="w")
-    z_arr = z_store.create_dataset("d", shape=(4,), dtype="int64")
+    z_arr = z_store.create_array("d", shape=(4,), dtype="int64")
 
     with h5py.File(h5p, "r") as f:
         copy_h5_attributes(f["d"], z_arr)
@@ -274,7 +273,7 @@ def test_validate_migration_shape_mismatch_raises(tmp_path):
 
     z_path = tmp_path / "v2.zarr"
     z_store = zarr.open(str(z_path), mode="w")
-    z_store.create_dataset("a", shape=(5,), dtype="int64")
+    z_store.create_array("a", shape=(5,), dtype="int64")
 
     with h5py.File(p, "r") as f:
         with pytest.raises(SciTeXIOError):
@@ -291,7 +290,7 @@ def test_validate_migration_key_mismatch_raises(tmp_path):
 
     z_path = tmp_path / "v3.zarr"
     z_store = zarr.open(str(z_path), mode="w")
-    z_store.create_dataset("a", shape=(3,), dtype="int64")
+    z_store.create_array("a", shape=(3,), dtype="int64")
 
     with h5py.File(p, "r") as f:
         with pytest.raises(SciTeXIOError):

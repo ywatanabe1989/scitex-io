@@ -107,7 +107,10 @@ def _normalize_chunks(chunks, shape):
         return "auto"
     if chunks is False or chunks is None:
         # No chunking → one chunk for the whole array.
-        return shape if shape else "auto"
+        # zarr v3 rejects 0 in any chunk dim, so clamp zero-length dims to 1.
+        if not shape:
+            return "auto"
+        return tuple(max(1, d) for d in shape)
     return chunks
 
 
