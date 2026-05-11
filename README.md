@@ -1,5 +1,5 @@
 <!-- ---
-!-- Timestamp: 2026-05-11 15:18:56
+!-- Timestamp: 2026-05-11 15:26:32
 !-- Author: ywatanabe
 !-- File: /home/ywatanabe/proj/scitex-io/README.md
 !-- --- -->
@@ -101,10 +101,10 @@ uv pip install -e ".[dev]"               # editable install for contributors
 ### 1. Format detection by extension
 
 `save()` / `load()` pick the right reader/writer from the file
-extension via a plugin registry — every format is a small handler
-module, and `register_saver` / `register_loader` is the user-facing
-extension point. Figures additionally emit a CSV + figrecipe-YAML
-sidecar so plot data never drifts from the image.
+extension via a plugin registry — just as OS does. Custom handlers
+can be available using `register_saver` / `register_loader`.
+Figures additionally emit a CSV + [figrecipe](https://github.com/ywatanabe1989/figrecipe)-styled 
+plot data.
 
 ```mermaid
 flowchart LR
@@ -140,20 +140,11 @@ the whole thing is appended under the caller's output anchor.
 Intermediate directories (`sub/dir/`) are created automatically — no
 `os.makedirs()` / `Path.mkdir()` calls needed on the caller side.
 
-> **Absolute paths bypass routing.** `sio.save(df, "/data/x.csv")`
-> writes to `/data/x.csv` as-is — the auto-routing rules above only
-> apply when the path is relative.
-
-Opt-in extras: `symlink_from_cwd=True` drops a symlink at
-`./results.csv` pointing into the auto-routed location; `symlink_to=…`
-plants a symlink at a custom path; `dry_run=True` prints the resolved
-path without writing.
-
 ### 3. Centralized project configuration
 
 Scientific projects benefit from keeping parameters — sample rates,
 hyperparameters, paths, thresholds — out of the scripts that consume
-them: one place to edit, one place to diff, one place to version.
+them to keep single source of truth.
 
 `load_configs()` collects every YAML under `./config/` into one nested
 `DotDict`. UPPER_CASE filenames become top-level keys and UPPER_CASE
@@ -218,18 +209,24 @@ CONFIG.MODEL.HIDDEN_DIM                  # 32 (debug value promoted)
 </details>
 
 <details>
-<summary><b>Advanced <code>save()</code> — auto-routing, symlinks, dry-run</b></summary>
+<summary><b>Advanced <code>save()</code> — absolute paths, symlinks, dry-run</b></summary>
 
 <br>
 
-```python
-# Auto path routing — relative paths resolve based on execution context:
-#   Script analysis.py  → analysis_out/results.csv
-#   Notebook exp.ipynb  → exp_out/results.csv
-#   Interactive/IPython → /tmp/{USER}/results.csv
-#   Absolute paths      → used as-is
-sio.save(df, "results.csv")
+**Absolute paths bypass auto-routing.** `sio.save(df, "/data/x.csv")`
+writes to `/data/x.csv` as-is — caller-anchored routing (§2) only
+applies when the path is relative.
 
+```python
+sio.save(df, "/data/x.csv")                            # absolute → used as-is
+```
+
+**Symlinks, dry-run, CSV-sidecar opt-out.** `symlink_from_cwd=True`
+drops a symlink at `./results.csv` pointing into the auto-routed
+location; `symlink_to=…` plants a symlink at a custom path;
+`dry_run=True` prints the resolved path without writing.
+
+```python
 sio.save(df,  "results.csv", symlink_from_cwd=True)
 sio.save(fig, "fig1.png",    symlink_to="/data/latest/fig1.png")
 sio.save(fig, "plot.png",    no_csv=True)              # skip auto-CSV sidecar
