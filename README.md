@@ -375,19 +375,36 @@ True
 A figure save additionally emits the underlying CSV + a figrecipe YAML
 sidecar, keeping figure-and-data atomically in sync.
 
-## Lint Rules
+<details>
+<summary><b>Lint Rules (STX-IO001..014 + STX-PA001..005)</b></summary>
 
-Detected by [scitex-linter](https://github.com/ywatanabe1989/scitex-linter) when this package is installed.
+<br>
 
-| Rule | Severity | Message |
+Detected by [scitex-linter](https://github.com/ywatanabe1989/scitex-linter) when this package is installed. Run `scitex-linter list-rules --plugin io` to see live definitions.
+
+| Rule | Severity | Trigger |
 |------|----------|---------|
-| `STX-IO001` | warning | `np.save()` detected — use `stx.io.save()` for provenance tracking |
-| `STX-IO002` | warning | `np.load()` detected — use `stx.io.load()` for provenance tracking |
-| `STX-IO003` | warning | `pd.read_csv()` detected — use `stx.io.load()` for provenance tracking |
-| `STX-IO004` | warning | `.to_csv()` detected — use `stx.io.save()` for provenance tracking |
-| `STX-IO005` | warning | `pickle.dump()` detected — use `stx.io.save()` for provenance tracking |
-| `STX-IO006` | warning | `json.dump()` detected — use `stx.io.save()` for provenance tracking |
-| `STX-IO007` | warning | `.savefig()` detected — use `stx.io.save(fig, path)` for metadata embedding |
+| `STX-IO001` | warning | `np.save / savez / savez_compressed / savetxt` → use `stx.io.save()` |
+| `STX-IO002` | warning | `np.load / loadtxt / genfromtxt` → use `stx.io.load()` |
+| `STX-IO003` | warning | `pd.read_csv / parquet / excel / hdf / pickle / json / feather / orc / table` → use `stx.io.load()` |
+| `STX-IO004` | warning | `df.to_csv / parquet / excel / hdf / pickle / json / feather / html / orc` → use `stx.io.save()` |
+| `STX-IO005` | warning | `pickle.dump / dumps / load / loads` (incl. `cPickle`) → use `stx.io.save()/load()` |
+| `STX-IO006` | warning | `json.dump / dumps / load / loads` → use `stx.io.save()/load()` |
+| `STX-IO007` | warning | `.savefig(...)` → use `stx.io.save(fig, path)` for metadata embedding |
+| `STX-IO008` | warning | `torch.save / load` → use `stx.io.save()/load()` |
+| `STX-IO009` | warning | `joblib.dump / load` → use `stx.io.save()/load()` |
+| `STX-IO010` | warning | `yaml.dump / safe_dump / dump_all / load / safe_load / full_load` → use `stx.io.save()/load()` |
+| `STX-IO011` | warning | `scipy.io.savemat / loadmat` → use `stx.io.save()/load()` |
+| `STX-IO012` | warning | `cv2.imread / imwrite`, `PIL.Image.open`, `plt.imsave / imread`, `imageio.*` → use `stx.io.save()/load()` |
+| `STX-IO013` | warning | `h5py.File(...)` → use `stx.io.save()/load()` for HDF5 |
+| `STX-IO014` | warning | `stx.io.save / load` called with an extension that has no registered handler — register one with `register_saver/register_loader` |
+| `STX-PA001` | warning | Absolute path passed to `stx.io` — prefer relative for reproducibility |
+| `STX-PA002` | warning | `open(...)` → use `stx.io.save()/load()` for auto-logging |
+| `STX-PA003` | info | `os.makedirs / mkdir` — `stx.io.save()` auto-creates directories |
+| `STX-PA004` | warning | `os.chdir(...)` — scripts should run from project root |
+| `STX-PA005` | info | Relative path missing `./` prefix — use `./file.ext` for explicit intent |
+
+</details>
 
 ## Part of SciTeX
 
