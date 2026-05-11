@@ -1,5 +1,5 @@
 <!-- ---
-!-- Timestamp: 2026-05-11 15:26:32
+!-- Timestamp: 2026-05-11 15:30:15
 !-- Author: ywatanabe
 !-- File: /home/ywatanabe/proj/scitex-io/README.md
 !-- --- -->
@@ -43,7 +43,6 @@
 | 1 | **Format zoo** — save/load scattered across `pd.read_csv`, `np.load`, `pickle`, `json`, `h5py`, `torch.save`, `cv2.imread`, etc. Every format = a different API | **One call** — `sio.save(obj, "x.ext")` / `sio.load("x.ext")` routes by extension across 30+ formats; plugin registry lets users register custom handlers |
 | 2 | **Outputs scattered, cwd-dependent, mkdir-heavy** — saves land in whatever cwd happens to be; nested paths need explicit `os.makedirs()`; outputs drift away from the script that produced them | **Caller-anchored relative paths** — `sio.save(df, "./sub/dir/results.csv")` resolves relative to the calling script and writes to `{caller}_out/sub/dir/results.csv`; intermediate dirs auto-created, no `mkdir` calls needed |
 | 3 | **Hard-coded parameters scattered across scripts** — sample rates, thresholds, hyperparameters duplicated across files, impossible to track or share | **`load_configs()`** — loads all YAML files from `config/` into a single `DotDict` with dot-notation access; parameters version-controlled and centralized |
-| 4 | **Figure + data diverge / figures without provenance** — a saved PNG has no record of the underlying DataFrame, code, or session that produced it | **Auto-CSV export + embedded metadata** — `sio.save(fig, "plot.png")` writes `plot.png` + `plot.csv` + `plot.yaml` atomically; `embed_metadata()` writes timestamps/session IDs into the image itself |
 
 <details>
 <summary><b>Supported Formats (30+)</b></summary>
@@ -103,8 +102,6 @@ uv pip install -e ".[dev]"               # editable install for contributors
 `save()` / `load()` pick the right reader/writer from the file
 extension via a plugin registry — just as OS does. Custom handlers
 can be available using `register_saver` / `register_loader`.
-Figures additionally emit a CSV + [figrecipe](https://github.com/ywatanabe1989/figrecipe)-styled 
-plot data.
 
 ```mermaid
 flowchart LR
@@ -115,7 +112,7 @@ flowchart LR
     B -->|.h5 / .zarr| E[h5py / zarr]
     B -->|.pkl / .joblib| F[pickle / joblib]
     B -->|.pt / .pth| G[torch]
-    B -->|.png / .jpg / .svg| H[Pillow + auto-CSV + metadata]
+    B -->|.png / .jpg / .svg| H[Pillow]
     B -->|.yaml / .json| I[PyYAML / json]
     B -->|.bib / .pdf / .docx / ...| J[30+ handlers]
     B -.->|register_saver/loader| K[Your custom format]
@@ -170,7 +167,7 @@ import pandas as pd, numpy as np
 sio.save(pd.DataFrame({"x": [1, 2, 3]}), "data.csv")
 sio.save(np.array([1, 2, 3]),            "data.npy")
 sio.save({"lr": 1e-3, "epochs": 10},     "config.yaml")
-sio.save(fig,                            "plot.png")   # + plot.csv + plot.yaml
+sio.save(fig,                            "plot.png")
 
 # One call to load — extension picks the right reader
 df  = sio.load("data.csv")
@@ -221,7 +218,7 @@ applies when the path is relative.
 sio.save(df, "/data/x.csv")                            # absolute → used as-is
 ```
 
-**Symlinks, dry-run, CSV-sidecar opt-out.** `symlink_from_cwd=True`
+**Symlinks and dry-run.** `symlink_from_cwd=True`
 drops a symlink at `./results.csv` pointing into the auto-routed
 location; `symlink_to=…` plants a symlink at a custom path;
 `dry_run=True` prints the resolved path without writing.
@@ -229,7 +226,6 @@ location; `symlink_to=…` plants a symlink at a custom path;
 ```python
 sio.save(df,  "results.csv", symlink_from_cwd=True)
 sio.save(fig, "fig1.png",    symlink_to="/data/latest/fig1.png")
-sio.save(fig, "plot.png",    no_csv=True)              # skip auto-CSV sidecar
 sio.save(df,  "results.csv", use_caller_path=True)     # resolve from caller script
 sio.save(df,  "results.csv", dry_run=True)             # print path, don't write
 ```
