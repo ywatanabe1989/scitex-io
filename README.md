@@ -29,8 +29,7 @@
 <a href="https://codecov.io/gh/ywatanabe1989/scitex-io"><img src="https://codecov.io/gh/ywatanabe1989/scitex-io/graph/badge.svg" alt="Coverage"></a>
 </p>
 <p align="center">
-<a href="https://scitex-io.readthedocs.io/en/latest/"><img src="https://readthedocs.org/projects/scitex-io/badge/?version=latest" alt="Docs"></a>
-<a href="https://www.gnu.org/licenses/agpl-3.0"><img src="https://img.shields.io/badge/license-AGPL_v3-blue.svg" alt="License: AGPL v3"></a>
+<a href="https://scitex-io.readthedocs.io/en/latest/"><img src="https://readthedocs.org/projects/scitex-io/badge/?version=latest" alt="Read the Docs"></a>
 <!-- scitex-badges:end -->
 </p>
 
