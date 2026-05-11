@@ -1,11 +1,11 @@
 """Tests for scitex_io.utils._compat compatibility layer.
 
+from __future__ import annotations
 Exercises both branches: the real-import branch (default, since scitex_logging
 is installed) and the fallback branch (forced via sys.modules patching +
 importlib.reload).
 """
 
-from __future__ import annotations
 
 import importlib
 import sys

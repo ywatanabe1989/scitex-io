@@ -1,15 +1,15 @@
 """Real round-trip tests for scitex_io._save_modules._hdf5.
 
+from __future__ import annotations
 Exercises the SWMR-enabled HDF5 save path with real h5py files in tmp_path.
 """
 
-from __future__ import annotations
-
 import os
 
-import h5py
 import numpy as np
 import pytest
+
+h5py = pytest.importorskip("h5py")
 
 from scitex_io._save_modules._hdf5 import SWMRFile, _save_dataset, _save_hdf5
 

@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 """Real-PDF tests for the PDF load pipeline.
 
+from __future__ import annotations
 We use real PDFs (built with matplotlib + pypdf) and avoid mocks so that
 the actual source code paths in ``_pdf``, ``_pdf_text_extractors`` and
 ``_pdf_content_extractors`` are exercised end-to-end.
@@ -11,7 +12,6 @@ this venv. The pypdf-backed paths are the ones meant to be reachable
 here. We do NOT use ``pytest.importorskip`` to dodge code paths.
 """
 
-from __future__ import annotations
 
 import os
 from pathlib import Path

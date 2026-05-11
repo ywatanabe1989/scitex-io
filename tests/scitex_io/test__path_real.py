@@ -1,7 +1,7 @@
 """Tests for scitex_io._path helpers."""
 
-from __future__ import annotations
 
+from __future__ import annotations
 import os
 from pathlib import Path
 

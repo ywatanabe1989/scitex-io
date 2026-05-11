@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 """Tests for the less-exercised branches of `scitex_io._save.save`.
 
+from __future__ import annotations
 These cover code paths that the round-trip / dispatcher tests don't
 naturally hit: Path-object inputs, f-string path expansion, the
 jupyter / script / interactive env detection, dry-run output, symlink
@@ -9,7 +10,6 @@ side effects, the error envelope, and `_save_modules/__init__.py`
 dispatcher edge cases.
 """
 
-from __future__ import annotations
 
 import os
 from pathlib import Path

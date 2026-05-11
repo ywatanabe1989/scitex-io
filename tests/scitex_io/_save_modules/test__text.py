@@ -1,3 +1,4 @@
+from __future__ import annotations
 # Smoke test (TODO: real coverage).
 def test_placeholder():
     assert True
@@ -41,3 +42,55 @@ if __name__ == "__main__":
 # --------------------------------------------------------------------------------
 # End of Source Code from: /home/ywatanabe/proj/scitex-code/src/scitex/io/_save_modules/_text.py
 # --------------------------------------------------------------------------------
+
+
+# === merged from test__small_handlers.py ===
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""Round-trip tests for the small save-handler modules:
+  _yaml, _plotly, _text, _csv, _pickle, _joblib, _torch,
+  _optuna_study_as_csv_and_pngs
+
+Each test uses real I/O — no mocks. Deps are installed in [dev] extras.
+"""
+
+
+import pickle
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
+import pytest
+
+from scitex_io._save_modules._csv import _save_csv
+from scitex_io._save_modules._joblib import _save_joblib
+from scitex_io._save_modules._pickle import _save_pickle
+from scitex_io._save_modules._text import _save_text
+from scitex_io._save_modules._torch import _save_torch
+from scitex_io._save_modules._yaml import _convert_paths_to_strings, _save_yaml
+
+# --- _yaml.py ---------------------------------------------------------------
+
+
+class TestSaveText:
+    def test_string_round_trip(self, tmp_path):
+        out = tmp_path / "note.txt"
+        _save_text("hello world\nline 2\n", str(out))
+        assert out.read_text() == "hello world\nline 2\n"
+
+    def test_empty_string(self, tmp_path):
+        out = tmp_path / "empty.txt"
+        _save_text("", str(out))
+        assert out.read_text() == ""
+
+    def test_via_sio_save(self, tmp_path):
+        import scitex_io as sio
+
+        out = tmp_path / "note.txt"
+        sio.save("hi", str(out), verbose=False)
+        assert out.read_text() == "hi"
+
+
+# --- _csv.py ---------------------------------------------------------------
+
+

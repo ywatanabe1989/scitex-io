@@ -1,9 +1,9 @@
 """Tests for scitex_io.utils.h5_to_zarr public migration API.
 
+from __future__ import annotations
 Exercises real h5py -> zarr round-trips against real files in tmp_path.
 """
 
-from __future__ import annotations
 
 import os
 from pathlib import Path

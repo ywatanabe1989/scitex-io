@@ -2,10 +2,10 @@
 # -*- coding: utf-8 -*-
 """Real-PDF tests for ``_pdf_text_extractors``.
 
+from __future__ import annotations
 We don't mock pypdf. We build real PDFs and verify the extractor output.
 """
 
-from __future__ import annotations
 
 from pathlib import Path
 

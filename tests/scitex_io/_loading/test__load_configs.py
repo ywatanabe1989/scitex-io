@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 """Tests for scitex_io._loading._load_configs.
 
+from __future__ import annotations
 `load_configs` normalises every filename stem + every nested key to
 UPPER_CASE on load (introduced 2026-05). The tests below exercise:
 
@@ -13,7 +14,6 @@ UPPER_CASE on load (introduced 2026-05). The tests below exercise:
   * Empty / missing / error paths
 """
 
-from __future__ import annotations
 
 import os
 import tempfile

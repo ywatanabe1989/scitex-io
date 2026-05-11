@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Real-coverage tests for scitex_io._save_modules._csv._save_csv."""
 
+from __future__ import annotations
 import numpy as np
 import pandas as pd
 
@@ -157,3 +158,73 @@ def test_hash_unhashable_obj(tmp_path):
     except ValueError:
         # Acceptable: Boom doesn't fit any branch and final fallback fails
         pass
+
+
+# === merged from test__small_handlers.py ===
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""Round-trip tests for the small save-handler modules:
+  _yaml, _plotly, _text, _csv, _pickle, _joblib, _torch,
+  _optuna_study_as_csv_and_pngs
+
+Each test uses real I/O — no mocks. Deps are installed in [dev] extras.
+"""
+
+
+import pickle
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
+import pytest
+
+from scitex_io._save_modules._csv import _save_csv
+from scitex_io._save_modules._joblib import _save_joblib
+from scitex_io._save_modules._pickle import _save_pickle
+from scitex_io._save_modules._text import _save_text
+from scitex_io._save_modules._torch import _save_torch
+from scitex_io._save_modules._yaml import _convert_paths_to_strings, _save_yaml
+
+# --- _yaml.py ---------------------------------------------------------------
+
+
+class TestSaveCsv:
+    def test_dataframe(self, tmp_path):
+        out = tmp_path / "df.csv"
+        df = pd.DataFrame({"x": [1, 2, 3], "y": [0.5, 1.5, 2.5]})
+        _save_csv(df, str(out))
+        back = pd.read_csv(out)
+        pd.testing.assert_frame_equal(back, df)
+
+    def test_dict_of_lists(self, tmp_path):
+        out = tmp_path / "d.csv"
+        _save_csv({"a": [1, 2], "b": [3, 4]}, str(out))
+        back = pd.read_csv(out)
+        assert list(back.columns) == ["a", "b"]
+        assert back["a"].tolist() == [1, 2]
+        assert back["b"].tolist() == [3, 4]
+
+    def test_ndarray_2d(self, tmp_path):
+        out = tmp_path / "arr.csv"
+        arr = np.array([[1, 2], [3, 4]])
+        _save_csv(arr, str(out))
+        # Reads back with default int column names "0","1".
+        back = pd.read_csv(out)
+        assert back.shape == (2, 2)
+
+    def test_list_of_scalars(self, tmp_path):
+        out = tmp_path / "scalars.csv"
+        _save_csv([1, 2, 3, 4], str(out))
+        # Single column CSV is fine.
+        back = pd.read_csv(out)
+        assert back.iloc[:, 0].tolist() == [2, 3, 4] or back.iloc[:, 0].tolist() == [
+            1,
+            2,
+            3,
+            4,
+        ]
+
+
+# --- _pickle.py ------------------------------------------------------------
+
+

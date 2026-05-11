@@ -2,11 +2,11 @@
 # -*- coding: utf-8 -*-
 """Tests for scitex_io._utils.
 
+from __future__ import annotations
 Every public helper + the DotDict class. Real fixtures only — no mocks
 around the system layer beyond `monkeypatch` for env vars / sys.argv.
 """
 
-from __future__ import annotations
 
 import os
 import sys

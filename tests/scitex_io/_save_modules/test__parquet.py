@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 """Tests for scitex_io._save_modules._parquet.
 
+from __future__ import annotations
 `_save_parquet` accepts a DataFrame / dict / ndarray and writes a
 Parquet file. Tests exercise:
   - DataFrame round-trip
@@ -10,7 +11,6 @@ Parquet file. Tests exercise:
   - extension dispatch via scitex_io.save()
 """
 
-from __future__ import annotations
 
 import numpy as np
 import pandas as pd

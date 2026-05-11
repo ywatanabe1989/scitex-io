@@ -2,12 +2,12 @@
 # -*- coding: utf-8 -*-
 """Real-file round-trip tests for scitex_io._save_modules._zarr.
 
+from __future__ import annotations
 The existing test__zarr.py is a placeholder. This file exercises the
 full save path: directory store, zip store, key paths, compressors,
 mixed-type dicts (str / scalar / array / object).
 """
 
-from __future__ import annotations
 
 import numpy as np
 import pytest

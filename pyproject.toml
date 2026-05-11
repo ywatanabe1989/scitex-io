@@ -66,6 +66,9 @@ scientific = [
     "numcodecs",
     "matplotlib",
 ]
+optuna = [
+    "optuna",
+]
 dev = [
     "pytest>=7.0",
     "pytest-cov",
@@ -91,6 +94,7 @@ dev = [
     "ruamel.yaml",        # YAML round-trip tests
     "kaleido",            # plotly static image export (png/jpeg/svg/pdf)
     "python-docx",        # .docx loader tests
+    "optuna",             # tested via _load_modules/_optuna + _save_modules/_optuna_study
 ]
 docs = [
     "sphinx>=7.0",

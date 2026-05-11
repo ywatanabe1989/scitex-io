@@ -1,9 +1,9 @@
 """Tests for scitex_io.utils._h5_helpers.
 
+from __future__ import annotations
 Exercises real h5py + zarr code paths against real files in tmp_path.
 """
 
-from __future__ import annotations
 
 import warnings
 

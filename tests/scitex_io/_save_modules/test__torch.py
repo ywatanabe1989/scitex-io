@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from __future__ import annotations
 # Time-stamp: "2025-01-08 09:30:00 (ywatanabe)"
 # File: ./scitex_repo/tests/scitex/io/_save_modules/test__torch.py
 
@@ -77,3 +78,57 @@ if __name__ == "__main__":
 # --------------------------------------------------------------------------------
 # End of Source Code from: /home/ywatanabe/proj/scitex-code/src/scitex/io/_save_modules/_torch.py
 # --------------------------------------------------------------------------------
+
+
+# === merged from test__small_handlers.py ===
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""Round-trip tests for the small save-handler modules:
+  _yaml, _plotly, _text, _csv, _pickle, _joblib, _torch,
+  _optuna_study_as_csv_and_pngs
+
+Each test uses real I/O — no mocks. Deps are installed in [dev] extras.
+"""
+
+
+import pickle
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
+import pytest
+
+from scitex_io._save_modules._csv import _save_csv
+from scitex_io._save_modules._joblib import _save_joblib
+from scitex_io._save_modules._pickle import _save_pickle
+from scitex_io._save_modules._text import _save_text
+from scitex_io._save_modules._torch import _save_torch
+from scitex_io._save_modules._yaml import _convert_paths_to_strings, _save_yaml
+
+# --- _yaml.py ---------------------------------------------------------------
+
+
+class TestSaveTorch:
+    def test_tensor(self, tmp_path):
+        import torch
+
+        out = tmp_path / "t.pt"
+        t = torch.tensor([1.0, 2.0, 3.0])
+        _save_torch(t, str(out))
+        back = torch.load(out, weights_only=False)
+        assert torch.equal(back, t)
+
+    def test_state_dict(self, tmp_path):
+        import torch
+
+        out = tmp_path / "sd.pt"
+        sd = {"weight": torch.zeros(2, 2), "bias": torch.ones(2)}
+        _save_torch(sd, str(out))
+        back = torch.load(out, weights_only=False)
+        assert torch.equal(back["weight"], torch.zeros(2, 2))
+        assert torch.equal(back["bias"], torch.ones(2))
+
+
+# --- _plotly.py ------------------------------------------------------------
+
+

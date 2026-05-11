@@ -24,35 +24,21 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 # Optional library availability flags
 # ---------------------------------------------------------------------------
-try:
-    import fitz  # PyMuPDF - preferred for text and images
+from scitex_dev import try_import_optional
 
-    FITZ_AVAILABLE = True
-except ImportError:
-    FITZ_AVAILABLE = False
+fitz = try_import_optional("fitz")  # PyMuPDF - preferred for text and images
+FITZ_AVAILABLE = fitz is not None
 
-try:
-    import pdfplumber  # Best for table extraction
+pdfplumber = try_import_optional("pdfplumber")  # Best for table extraction
+PDFPLUMBER_AVAILABLE = pdfplumber is not None
 
-    PDFPLUMBER_AVAILABLE = True
-except ImportError:
-    PDFPLUMBER_AVAILABLE = False
+# pypdf is the maintained successor to PyPDF2; their PdfReader API
+# is source-compatible for the read paths we use here.
+PyPDF2 = try_import_optional("pypdf")  # type: ignore[import-not-found]
+PYPDF2_AVAILABLE = PyPDF2 is not None
 
-try:
-    # pypdf is the maintained successor to PyPDF2; their PdfReader API
-    # is source-compatible for the read paths we use here.
-    import pypdf as PyPDF2  # type: ignore[import-not-found]
-
-    PYPDF2_AVAILABLE = True
-except ImportError:
-    PYPDF2_AVAILABLE = False
-
-try:
-    import pandas as pd
-
-    PANDAS_AVAILABLE = True
-except ImportError:
-    PANDAS_AVAILABLE = False
+pd = try_import_optional("pandas")
+PANDAS_AVAILABLE = pd is not None
 
 
 # ---------------------------------------------------------------------------

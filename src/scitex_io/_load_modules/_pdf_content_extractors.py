@@ -20,6 +20,9 @@ import logging
 import re
 from typing import Any, Dict, List
 
+# Module-level handle so tests can `mock.patch(<module>.fitz)`.
+from scitex_dev import try_import_optional
+
 from ._pdf_text_extractors import _extract_text
 from ._pdf_utils import (
     FITZ_AVAILABLE,
@@ -30,11 +33,7 @@ from ._pdf_utils import (
     _clean_pdf_text,
 )
 
-# Module-level handle so tests can `mock.patch(<module>.fitz)`.
-try:
-    import fitz  # type: ignore[import-not-found]
-except ImportError:
-    fitz = None  # type: ignore[assignment]
+fitz = try_import_optional("fitz")
 
 logger = logging.getLogger(__name__)
 
@@ -69,7 +68,15 @@ def _extract_tables(
     try:
         with pdfplumber.open(lpath) as pdf:
             for page_num, page in enumerate(pdf.pages):
-                tables = page.extract_tables(**table_settings)
+                # pdfplumber's Page.extract_tables() takes a single
+                # `table_settings` dict — NOT **kwargs. The previous
+                # `**table_settings` unpack raised TypeError for any
+                # non-empty settings dict.
+                tables = (
+                    page.extract_tables(table_settings=table_settings)
+                    if table_settings
+                    else page.extract_tables()
+                )
 
                 if tables:
                     dfs = []

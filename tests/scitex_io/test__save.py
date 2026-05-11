@@ -1,5 +1,6 @@
 """Unit tests for ``scitex_io.save`` path-resolution and feature flags.
 
+from __future__ import annotations
 Routing matrix (covered):
 
 | env_type      | input shape          | output sdir                          |
@@ -15,7 +16,6 @@ Patching: ``detect_environment`` is imported lazily inside ``save``
 from ``scitex_io._utils`` — patch that fully-qualified name.
 """
 
-from __future__ import annotations
 
 import sys
 from pathlib import Path

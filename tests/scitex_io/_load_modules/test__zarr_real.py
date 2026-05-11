@@ -1,7 +1,7 @@
 """Real round-trip tests for scitex_io._load_modules._zarr (zarr v3)."""
 
-from __future__ import annotations
 
+from __future__ import annotations
 import pickle
 
 import numpy as np

@@ -18,6 +18,9 @@ Text extraction functions for PDF loading.
 import logging
 from typing import Any, Dict, List
 
+# Module-level handles so tests can `mock.patch(<module>.fitz)` etc.
+from scitex_dev import try_import_optional
+
 from ._pdf_utils import (
     FITZ_AVAILABLE,
     PDFPLUMBER_AVAILABLE,
@@ -25,22 +28,10 @@ from ._pdf_utils import (
     _clean_pdf_text,
 )
 
-# Module-level handles so tests can `mock.patch(<module>.fitz)` etc.
-try:
-    import fitz  # type: ignore[import-not-found]
-except ImportError:
-    fitz = None  # type: ignore[assignment]
-
-try:
-    import pdfplumber  # type: ignore[import-not-found]
-except ImportError:
-    pdfplumber = None  # type: ignore[assignment]
-
-try:
-    # pypdf is the maintained successor to PyPDF2 (drop-in for PdfReader).
-    import pypdf as PyPDF2  # type: ignore[import-not-found]
-except ImportError:
-    PyPDF2 = None  # type: ignore[assignment]
+fitz = try_import_optional("fitz")
+pdfplumber = try_import_optional("pdfplumber")
+# pypdf is the maintained successor to PyPDF2 (drop-in for PdfReader).
+PyPDF2 = try_import_optional("pypdf")
 
 logger = logging.getLogger(__name__)
 

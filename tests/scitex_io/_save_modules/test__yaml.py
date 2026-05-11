@@ -1,3 +1,4 @@
+from __future__ import annotations
 # Smoke test (TODO: real coverage).
 def test_placeholder():
     assert True
@@ -86,3 +87,96 @@ if __name__ == "__main__":
 # --------------------------------------------------------------------------------
 # End of Source Code from: /home/ywatanabe/proj/scitex-code/src/scitex/io/_save_modules/_yaml.py
 # --------------------------------------------------------------------------------
+
+
+# === merged from test__small_handlers.py ===
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""Round-trip tests for the small save-handler modules:
+  _yaml, _plotly, _text, _csv, _pickle, _joblib, _torch,
+  _optuna_study_as_csv_and_pngs
+
+Each test uses real I/O — no mocks. Deps are installed in [dev] extras.
+"""
+
+
+import pickle
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
+import pytest
+
+from scitex_io._save_modules._csv import _save_csv
+from scitex_io._save_modules._joblib import _save_joblib
+from scitex_io._save_modules._pickle import _save_pickle
+from scitex_io._save_modules._text import _save_text
+from scitex_io._save_modules._torch import _save_torch
+from scitex_io._save_modules._yaml import _convert_paths_to_strings, _save_yaml
+
+# --- _yaml.py ---------------------------------------------------------------
+
+
+class TestSaveYaml:
+    def test_dict_round_trip(self, tmp_path):
+        from ruamel.yaml import YAML
+
+        out = tmp_path / "data.yaml"
+        _save_yaml({"a": 1, "b": [1, 2, 3]}, str(out))
+        yaml = YAML()
+        with open(out) as f:
+            loaded = yaml.load(f)
+        assert loaded["a"] == 1
+        assert list(loaded["b"]) == [1, 2, 3]
+
+    def test_path_objects_converted_to_strings(self, tmp_path):
+        from ruamel.yaml import YAML
+
+        out = tmp_path / "data.yaml"
+        _save_yaml({"path": Path("/etc/hostname")}, str(out))
+        yaml = YAML()
+        with open(out) as f:
+            loaded = yaml.load(f)
+        assert loaded["path"] == "/etc/hostname"
+        assert isinstance(loaded["path"], str)
+
+    def test_convert_paths_recursive(self):
+        nested = {
+            "p": Path("/a"),
+            "list": [Path("/b"), {"deep": Path("/c")}],
+            "tuple": (Path("/d"), 1),
+            "primitive": 42,
+        }
+        out = _convert_paths_to_strings(nested)
+        assert out["p"] == "/a"
+        assert out["list"][0] == "/b"
+        assert out["list"][1]["deep"] == "/c"
+        assert isinstance(out["tuple"], tuple)
+        assert out["tuple"][0] == "/d"
+        assert out["primitive"] == 42
+
+    def test_convert_dotdict_to_dict(self):
+        from scitex_io._utils import DotDict
+
+        d = DotDict({"a": 1, "p": Path("/x")})
+        out = _convert_paths_to_strings(d)
+        assert isinstance(out, dict)
+        assert out["a"] == 1
+        assert out["p"] == "/x"
+
+    def test_via_sio_save(self, tmp_path):
+        import scitex_io as sio
+
+        out = tmp_path / "via_save.yaml"
+        sio.save({"x": 1}, str(out), verbose=False)
+        from ruamel.yaml import YAML
+
+        yaml = YAML()
+        with open(out) as f:
+            loaded = yaml.load(f)
+        assert loaded["x"] == 1
+
+
+# --- _text.py ---------------------------------------------------------------
+
+

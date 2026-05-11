@@ -1,7 +1,7 @@
 """Tests for scitex_io._cli._main: root group, deprecations, recursive help."""
 
-from __future__ import annotations
 
+from __future__ import annotations
 import pytest
 from click.testing import CliRunner
 

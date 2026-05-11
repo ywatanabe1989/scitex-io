@@ -1,7 +1,7 @@
 """Real round-trip tests for scitex_io._save_modules._excel."""
 
-from __future__ import annotations
 
+from __future__ import annotations
 import numpy as np
 import pandas as pd
 import pytest

@@ -2,6 +2,8 @@
 """Real-fixture tests for scitex_io._load_modules._docx._load_docx."""
 
 import pytest
+
+pytest.importorskip("docx")
 from docx import Document
 
 from scitex_io._load_modules._docx import _load_docx

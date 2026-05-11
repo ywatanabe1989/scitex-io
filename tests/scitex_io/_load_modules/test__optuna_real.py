@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Real tests for scitex_io._load_modules._optuna using a tiny live study."""
 
+import pytest
 
-import optuna
+optuna = pytest.importorskip("optuna")
 import yaml
 
 from scitex_io._load_modules._optuna import (

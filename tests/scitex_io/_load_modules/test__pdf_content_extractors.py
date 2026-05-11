@@ -2,12 +2,12 @@
 # -*- coding: utf-8 -*-
 """Real-PDF tests for ``_pdf_content_extractors``.
 
+from __future__ import annotations
 Builds real PDFs and exercises section parsing, metadata extraction
 (pypdf2 backend), and the unavailable-library branches of the table /
 image / fitz / pdfplumber paths.
 """
 
-from __future__ import annotations
 
 from pathlib import Path
 

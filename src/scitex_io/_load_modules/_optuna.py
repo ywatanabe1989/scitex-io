@@ -3,14 +3,12 @@
 # Time-stamp: "2024-11-14 07:55:45 (ywatanabe)"
 # File: ./scitex_repo/src/scitex/io/_load_modules/_optuna.py
 
+from scitex_dev import try_import_optional
+
 from ._yaml import _load_yaml
 
-try:
-    import optuna as _optuna  # noqa: F401
-
-    OPTUNA_AVAILABLE = True
-except ImportError:
-    OPTUNA_AVAILABLE = False
+optuna = try_import_optional("optuna", extra="optuna", pkg="scitex-io")
+OPTUNA_AVAILABLE = optuna is not None
 
 
 def load_yaml_as_an_optuna_dict(fpath_yaml, trial):

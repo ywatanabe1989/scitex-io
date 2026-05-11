@@ -1,7 +1,7 @@
 """Real round-trip tests for scitex_io._save_modules._tex."""
 
-from __future__ import annotations
 
+from __future__ import annotations
 import pandas as pd
 
 from scitex_io._save_modules._tex import (

@@ -1,7 +1,7 @@
 """Real round-trip tests for scitex_io bibtex save+load."""
 
-from __future__ import annotations
 
+from __future__ import annotations
 from scitex_io._load_modules._bibtex import (
     _load_bibtex,
     _parse_bibtex_content,
