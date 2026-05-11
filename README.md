@@ -150,7 +150,7 @@ them, as a single source of truth.
 then accessible as `CONFIG.YAML_FILE_NAME.FIELD_NAME`.
 
 YAML filenames and field names are recognised in UPPER_CASE,
-following Python's convention for constants, so
+following Python's convention for user-defined parameters, so
 `<project-root>/config/model.yaml` with `hidden_dim: 256` lands at
 `CONFIG.MODEL.HIDDEN_DIM` regardless of source casing. When an
 UPPER/lower pair collide (e.g. `MODEL.yaml` next to `model.yaml`, or
