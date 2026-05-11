@@ -73,24 +73,49 @@ def load_configs(
     verbose=False,
     config_dir: Optional[Union[str, Path]] = None,
 ):
-    """Load YAML configuration files from specified directory.
+    """Load and merge every YAML under ``config_dir`` into one ``DotDict``.
+
+    Filename stems become top-level keys; YAML keys become nested
+    attributes. Every key (filename stem and every nested key) is
+    normalised to UPPER_CASE at load time so the in-memory tree is
+    case-stable regardless of source casing — ``model.yaml`` with
+    ``hidden_dim: 256`` lands at ``CONFIG.MODEL.HIDDEN_DIM``.
+
+    If two siblings fold to the same UPPER key (e.g. ``MODEL.yaml``
+    next to ``model.yaml``, or ``HIDDEN_DIM`` next to ``hidden_dim``),
+    a ``UserWarning`` is emitted pointing at the conflict, the
+    UPPER variant's value is kept, and the lowercase one is dropped.
+
+    Debug mode promotes any ``DEBUG_<KEY>`` sibling over its non-debug
+    counterpart, so a single ``IS_DEBUG.yaml`` flips the whole project
+    between production and debug values. Equivalent triggers:
+    ``IS_DEBUG.yaml`` with ``IS_DEBUG: true``, the ``IS_DEBUG=True``
+    kwarg, or running under ``CI=True``.
 
     Parameters
     ----------
     IS_DEBUG : bool, optional
-        Debug mode flag. If None, reads from IS_DEBUG.yaml
+        Force debug mode. If ``None`` (default), inferred from
+        ``IS_DEBUG.yaml`` inside ``config_dir`` or from the ``CI``
+        env var.
     show : bool
-        Show configuration changes
+        Echo the ``DEBUG_<KEY> -> <KEY>`` substitutions to stdout.
     verbose : bool
-        Print detailed information
+        Print detailed information.
     config_dir : Union[str, Path], optional
-        Directory containing configuration files. Can be a string or pathlib.Path object.
-        Defaults to "./config" if None
+        Directory containing the YAML files. Defaults to ``"./config"``.
 
     Returns
     -------
     DotDict
-        Merged configuration dictionary
+        Merged configuration tree with UPPER_CASE keys throughout.
+
+    Examples
+    --------
+    >>> CONFIG = load_configs()                       # ./config/*.yaml
+    >>> CONFIG.MODEL.HIDDEN_DIM                       # 256
+    >>> CONFIG = load_configs(IS_DEBUG=True)
+    >>> CONFIG.MODEL.HIDDEN_DIM                       # 32 (DEBUG_ promoted)
     """
 
     def apply_debug_values(config, IS_DEBUG):
