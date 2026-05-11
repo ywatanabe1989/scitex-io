@@ -266,41 +266,50 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">._load</span><span class="w"> </span><span class="kn">import</span> <span class="n">load</span>
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">_resolve_case_conflicts</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s2">&quot;CONFIG&quot;</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Drop case-conflicting siblings, preferring the UPPER_CASE variant.</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_normalize_to_upper</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s2">&quot;CONFIG&quot;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Normalize every key in a config tree to UPPER_CASE.</span>
 
-<span class="sd">    Walks a (possibly nested) dict/DotDict in place. For any pair of</span>
-<span class="sd">    sibling keys that collide once upper-cased (e.g. ``hidden_dim`` +</span>
-<span class="sd">    ``HIDDEN_DIM``), keep the upper variant, drop the other, and emit</span>
-<span class="sd">    a ``UserWarning`` pointing at the conflict location.</span>
+<span class="sd">    Walks a (possibly nested) dict/DotDict in place and renames every</span>
+<span class="sd">    string key to its ``str.upper()`` form so the loaded config is</span>
+<span class="sd">    case-stable regardless of how filenames and YAML keys were written.</span>
 
-<span class="sd">    UPPER_CASE is the project convention for config constants — see</span>
-<span class="sd">    ``load_configs`` docstring and the scitex-io README §3.</span>
+<span class="sd">    If two siblings fold to the same UPPER key (e.g. ``MODEL`` +</span>
+<span class="sd">    ``model``, or ``HIDDEN_DIM`` + ``hidden_dim``), keep the value</span>
+<span class="sd">    associated with the already-UPPER variant and drop the lowercase</span>
+<span class="sd">    one, emitting a ``UserWarning`` pointing at the conflict location.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="p">(</span><span class="nb">dict</span><span class="p">,</span> <span class="n">DotDict</span><span class="p">)):</span>
         <span class="k">return</span> <span class="n">d</span>
+
     <span class="n">by_upper</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
             <span class="n">by_upper</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">k</span><span class="o">.</span><span class="n">upper</span><span class="p">(),</span> <span class="p">[])</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+
     <span class="k">for</span> <span class="n">upper</span><span class="p">,</span> <span class="n">variants</span> <span class="ow">in</span> <span class="n">by_upper</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">variants</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="k">continue</span>
-        <span class="n">upper_present</span> <span class="o">=</span> <span class="n">upper</span> <span class="ow">in</span> <span class="n">variants</span>
-        <span class="n">keep</span> <span class="o">=</span> <span class="n">upper</span> <span class="k">if</span> <span class="n">upper_present</span> <span class="k">else</span> <span class="nb">max</span><span class="p">(</span><span class="n">variants</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="nb">str</span><span class="o">.</span><span class="n">isupper</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">variants</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">v</span> <span class="o">!=</span> <span class="n">keep</span><span class="p">:</span>
-                <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;load_configs: case conflict at </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">.* — &quot;</span>
-                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">variants</span><span class="si">!r}</span><span class="s2"> fold to </span><span class="si">{</span><span class="n">upper</span><span class="si">!r}</span><span class="s2">; keeping </span><span class="si">{</span><span class="n">keep</span><span class="si">!r}</span><span class="s2">, &quot;</span>
-                    <span class="sa">f</span><span class="s2">&quot;dropping </span><span class="si">{</span><span class="n">v</span><span class="si">!r}</span><span class="s2">. Use UPPER_CASE for config constants.&quot;</span><span class="p">,</span>
-                    <span class="ne">UserWarning</span><span class="p">,</span>
-                    <span class="n">stacklevel</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
-                <span class="p">)</span>
-                <span class="n">d</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">variants</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">keep</span> <span class="o">=</span> <span class="n">upper</span> <span class="k">if</span> <span class="n">upper</span> <span class="ow">in</span> <span class="n">variants</span> <span class="k">else</span> <span class="n">variants</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">variants</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">v</span> <span class="o">!=</span> <span class="n">keep</span><span class="p">:</span>
+                    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;load_configs: case conflict at </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">.* — &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">variants</span><span class="si">!r}</span><span class="s2"> fold to </span><span class="si">{</span><span class="n">upper</span><span class="si">!r}</span><span class="s2">; keeping value &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;from </span><span class="si">{</span><span class="n">keep</span><span class="si">!r}</span><span class="s2">, dropping </span><span class="si">{</span><span class="n">v</span><span class="si">!r}</span><span class="s2">.&quot;</span><span class="p">,</span>
+                        <span class="ne">UserWarning</span><span class="p">,</span>
+                        <span class="n">stacklevel</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+                    <span class="p">)</span>
+                    <span class="n">d</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="c1"># After de-duplication, rename keep → upper if needed.</span>
+            <span class="k">if</span> <span class="n">keep</span> <span class="o">!=</span> <span class="n">upper</span><span class="p">:</span>
+                <span class="n">d</span><span class="p">[</span><span class="n">upper</span><span class="p">]</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">keep</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="p">(</span><span class="n">only</span><span class="p">,)</span> <span class="o">=</span> <span class="n">variants</span>
+            <span class="k">if</span> <span class="n">only</span> <span class="o">!=</span> <span class="n">upper</span><span class="p">:</span>
+                <span class="n">d</span><span class="p">[</span><span class="n">upper</span><span class="p">]</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">only</span><span class="p">)</span>
+
     <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">items</span><span class="p">()):</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="p">(</span><span class="nb">dict</span><span class="p">,</span> <span class="n">DotDict</span><span class="p">)):</span>
-            <span class="n">_resolve_case_conflicts</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">_normalize_to_upper</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">d</span>
 
 
@@ -384,11 +393,12 @@
                     <span class="n">filename</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">lpath</span><span class="p">)</span><span class="o">.</span><span class="n">stem</span>
                     <span class="n">CONFIGS</span><span class="p">[</span><span class="n">filename</span><span class="p">]</span> <span class="o">=</span> <span class="n">apply_debug_values</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">IS_DEBUG</span><span class="p">)</span>
 
-        <span class="c1"># UPPER_CASE convention: warn + drop case-conflicting siblings,</span>
-        <span class="c1"># preferring the UPPER variant. Applies to filename-level keys</span>
-        <span class="c1"># (e.g. MODEL.yaml + model.yaml) and recursively to keys inside</span>
-        <span class="c1"># each YAML.</span>
-        <span class="n">_resolve_case_conflicts</span><span class="p">(</span><span class="n">CONFIGS</span><span class="p">)</span>
+        <span class="c1"># Normalise every filename-level key (from YAML stem) and every</span>
+        <span class="c1"># nested key to UPPER_CASE so the loaded config is case-stable</span>
+        <span class="c1"># regardless of source casing. Conflicts (e.g. MODEL.yaml +</span>
+        <span class="c1"># model.yaml, HIDDEN_DIM + hidden_dim) warn and drop the</span>
+        <span class="c1"># lowercase variant in favour of the UPPER one.</span>
+        <span class="n">_normalize_to_upper</span><span class="p">(</span><span class="n">CONFIGS</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">DotDict</span><span class="p">(</span><span class="n">CONFIGS</span><span class="p">)</span>
 
