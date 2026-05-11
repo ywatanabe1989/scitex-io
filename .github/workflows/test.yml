@@ -36,7 +36,8 @@ jobs:
         run: |
           python -m pytest "$GITHUB_WORKSPACE/tests/" -v --tb=short --timeout=120 \
             --cov=src/${{ steps.pkg.outputs.import_name }} \
-            --cov-report=xml --cov-report=term
+            --cov-report=xml --cov-report=term \
+            --cov-fail-under=90
       - name: Upload coverage reports to Codecov
         if: always() && matrix.python-version == '3.12'
         uses: codecov/codecov-action@v5
