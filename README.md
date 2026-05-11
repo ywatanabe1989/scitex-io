@@ -102,14 +102,15 @@ auto-CSV+yaml sidecar atomically so plot data never drifts from the image.
 auto-routed based on the execution context — you never specify the
 output directory by hand:
 
-```
-caller                          stx.io.save(df, "results.csv") writes to…
-─────────────                   ──────────────────────────────────────────
-analysis.py                     ./analysis_out/results.csv
-exp.ipynb                       ./exp_out/results.csv
-python -i / IPython / REPL      /tmp/{USER}/results.csv
-absolute path, e.g. /data/x.csv /data/x.csv (used as-is)
-```
+| Caller | `stx.io.save(df, "results.csv")` writes to |
+|---|---|
+| `analysis.py` (script) | `./analysis_out/results.csv` |
+| `exp.ipynb` (notebook) | `./exp_out/results.csv` |
+| `python -i` / IPython / REPL | `/tmp/{USER}/results.csv` |
+
+> **Absolute paths bypass routing.** `stx.io.save(df, "/data/x.csv")`
+> writes to `/data/x.csv` as-is — the auto-routing rules above only
+> apply when the path is relative.
 
 Opt-in extras: `symlink_from_cwd=True` drops a symlink at
 `./results.csv` pointing into the auto-routed location; `symlink_to=…`
