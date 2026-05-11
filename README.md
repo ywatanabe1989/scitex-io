@@ -466,6 +466,67 @@ scitex-dev linter list-rules --category io   # show live rule definitions
 
 </details>
 
+## Claude Code Integration as a Hook
+
+Wire `scitex-io`'s lint rules into Claude Code so every `Edit` / `Write`
+to a Python file is checked automatically — errors block the turn,
+warnings surface as feedback.
+
+> Reference implementation:
+> [`~/.claude/hooks/post-tool-use/run_lint.sh`](https://github.com/ywatanabe1989/.dotfiles/blob/main/src/.claude/to_claude/hooks/post-tool-use/run_lint.sh)
+> already drives this. Below is a minimal standalone version you can
+> drop into your own `~/.claude/hooks/`.
+
+**1. Hook script** — `~/.claude/hooks/post-tool-use/scitex_io_lint.sh`:
+
+```bash
+#!/usr/bin/env bash
+# PostToolUse hook: run scitex-dev linter on the edited file.
+#   exit 2 = block (Claude must fix)
+#   exit 0 = pass (warnings still shown on stderr)
+
+INPUT=$(cat)
+FILE=$(echo "$INPUT" | python3 -c \
+  "import json,sys;print(json.load(sys.stdin).get('tool_input',{}).get('file_path',''))")
+[[ -f "$FILE" && "$FILE" == *.py ]] || exit 0
+
+# Errors block, warnings inform.
+scitex-dev linter check-files "$FILE" --category io --severity error   --no-color >&2 || exit 2
+scitex-dev linter check-files "$FILE" --category io --severity warning --no-color >&2 || true
+exit 0
+```
+
+**2. Wire it up** — add to `~/.claude/settings.json` (or
+`<project>/.claude/settings.json` for project-scoped):
+
+```json
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          { "type": "command",
+            "command": "~/.claude/hooks/post-tool-use/scitex_io_lint.sh" }
+        ]
+      }
+    ]
+  }
+}
+```
+
+**3. Make it executable**:
+
+```bash
+chmod +x ~/.claude/hooks/post-tool-use/scitex_io_lint.sh
+```
+
+After that, every time Claude Code edits a `.py` file, an
+`STX-IO001..014` / `STX-PA001..005` `error` blocks the turn and Claude
+sees the rule message inline — agents converge on the canonical
+`sio.save() / sio.load()` patterns instead of `np.save / pd.read_csv /
+pickle.dump / …`.
+
 ## Part of SciTeX
 
 `scitex-io` is part of [**SciTeX**](https://scitex.ai). Install via
