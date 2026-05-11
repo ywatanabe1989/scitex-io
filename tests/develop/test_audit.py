@@ -23,17 +23,5 @@ def test_audit_all_clean():
             # 28/32 Python APIs unmapped to MCP tools — surface mapping
             # backlog tracked under /overhaul-scitex.
             "§6",
-            # codecov.yml MUST live at repo root per codecov.io contract;
-            # whitelist is in .scitex/dev/config.yaml but the file may not
-            # be reachable in fresh CI checkouts where the runner ignores
-            # dotfiles. Skip until config.yaml lands consistently.
-            "PS-103",
-            # `*_real.py` tests are intentional integration counterparts
-            # to mock-based `test_*.py` files (e.g. test__hdf5_real.py vs
-            # test__hdf5.py). PS-204 expects a `_real.py` src file to
-            # match; that mirror doesn't exist by design. Tracked for
-            # rework: either rename or add a config-based orphan
-            # whitelist to scitex-dev.
-            "PS-204",
         ),
     )
