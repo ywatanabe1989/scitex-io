@@ -250,12 +250,10 @@
 <span class="c1"># File: ./scitex_repo/src/scitex/io/_save_optuna_study_as_csv_and_pngs.py</span>
 
 
-<span class="k">try</span><span class="p">:</span>
-    <span class="kn">import</span><span class="w"> </span><span class="nn">optuna</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">_optuna</span>  <span class="c1"># noqa: F401</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scitex_dev</span><span class="w"> </span><span class="kn">import</span> <span class="n">try_import_optional</span>
 
-    <span class="n">OPTUNA_AVAILABLE</span> <span class="o">=</span> <span class="kc">True</span>
-<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
-    <span class="n">OPTUNA_AVAILABLE</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="n">optuna</span> <span class="o">=</span> <span class="n">try_import_optional</span><span class="p">(</span><span class="s2">&quot;optuna&quot;</span><span class="p">,</span> <span class="n">extra</span><span class="o">=</span><span class="s2">&quot;optuna&quot;</span><span class="p">,</span> <span class="n">pkg</span><span class="o">=</span><span class="s2">&quot;scitex-io&quot;</span><span class="p">)</span>
+<span class="n">OPTUNA_AVAILABLE</span> <span class="o">=</span> <span class="n">optuna</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
 
 
 <div class="viewcode-block" id="save_optuna_study_as_csv_and_pngs">
