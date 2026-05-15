@@ -1,4 +1,4 @@
-name: Test
+name: tests
 
 on:
   push:
@@ -11,6 +11,7 @@ on:
 
 jobs:
   test:
+    name: pytest-matrix-on-ubuntu-py${{ matrix.python-version }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
