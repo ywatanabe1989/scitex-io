@@ -21,6 +21,9 @@ class TestFlushBasic:
 
     def test_flush_normal_operation(self):
         """Test flush in normal operation."""
+        # Arrange
+        # Act
+        # Assert
         from scitex_io import flush
 
         # Create mock objects
@@ -41,6 +44,9 @@ class TestFlushBasic:
 
     def test_flush_default_sys(self):
         """Test flush with default sys parameter."""
+        # Arrange
+        # Act
+        # Assert
         from scitex_io import flush
 
         # Mock the actual sys module's stdout and stderr
@@ -59,6 +65,9 @@ class TestFlushBasic:
 
     def test_flush_with_none_sys(self):
         """Test flush behavior when sys is None."""
+        # Arrange
+        # Act
+        # Assert
         from scitex_io import flush
 
         with patch("os.sync") as mock_sync:
@@ -72,6 +81,9 @@ class TestFlushErrorHandling:
 
     def test_flush_stdout_error(self):
         """Test flush when stdout.flush() raises an error."""
+        # Arrange
+        # Act
+        # Assert
         from scitex_io import flush
 
         # Create mock sys with failing stdout
@@ -86,6 +98,9 @@ class TestFlushErrorHandling:
 
     def test_flush_stderr_error(self):
         """Test flush when stderr.flush() raises an error."""
+        # Arrange
+        # Act
+        # Assert
         from scitex_io import flush
 
         # Create mock sys with failing stderr
@@ -100,6 +115,9 @@ class TestFlushErrorHandling:
 
     def test_flush_sync_error(self):
         """Test flush when os.sync() raises an error."""
+        # Arrange
+        # Act
+        # Assert
         from scitex_io import flush
 
         mock_sys = Mock()
@@ -117,6 +135,7 @@ class TestFlushWithRealIO:
 
     def test_flush_with_buffered_output(self, capsys):
         """Test flush actually flushes buffered output."""
+        # Arrange
         from scitex_io import flush
 
         # Write to stdout without newline (usually buffered)
@@ -127,33 +146,57 @@ class TestFlushWithRealIO:
             flush()
 
         # Check output appeared
+        # Act
         captured = capsys.readouterr()
+        # Assert
         assert "test output" in captured.out
 
-    def test_flush_with_string_io(self):
-        """Test flush with StringIO objects."""
+    def test_flush_with_string_io_stdout_io_getvalue_stdout_data(self):
+        # Arrange
+        # Arrange
         from scitex_io import flush
-
         # Create StringIO objects
         stdout_io = io.StringIO()
         stderr_io = io.StringIO()
-
         # Create mock sys with StringIO
         mock_sys = Mock()
         mock_sys.stdout = stdout_io
         mock_sys.stderr = stderr_io
-
         # Write some data
         stdout_io.write("stdout data")
         stderr_io.write("stderr data")
-
+        # Act
         with patch("os.sync"):
             # Flush should work with StringIO
             flush(sys=mock_sys)
-
-        # Verify data is still there (StringIO doesn't lose data on flush)
+        # Act
+        # Assert
+        # Assert
         assert stdout_io.getvalue() == "stdout data"
+
+    def test_flush_with_string_io_stderr_io_getvalue_stderr_data(self):
+        # Arrange
+        # Arrange
+        from scitex_io import flush
+        # Create StringIO objects
+        stdout_io = io.StringIO()
+        stderr_io = io.StringIO()
+        # Create mock sys with StringIO
+        mock_sys = Mock()
+        mock_sys.stdout = stdout_io
+        mock_sys.stderr = stderr_io
+        # Write some data
+        stdout_io.write("stdout data")
+        stderr_io.write("stderr data")
+        # Act
+        with patch("os.sync"):
+            # Flush should work with StringIO
+            flush(sys=mock_sys)
+        # Act
+        # Assert
+        # Assert
         assert stderr_io.getvalue() == "stderr data"
+
 
 
 class TestFlushEdgeCases:
@@ -161,6 +204,9 @@ class TestFlushEdgeCases:
 
     def test_flush_closed_stdout(self):
         """Test flush with closed stdout."""
+        # Arrange
+        # Act
+        # Assert
         from scitex_io import flush
 
         # Create mock sys with closed stdout
@@ -178,6 +224,9 @@ class TestFlushEdgeCases:
 
     def test_flush_missing_flush_method(self):
         """Test flush when stdout/stderr don't have flush method."""
+        # Arrange
+        # Act
+        # Assert
         from scitex_io import flush
 
         # Create mock sys with object lacking flush
@@ -190,10 +239,10 @@ class TestFlushEdgeCases:
             with pytest.raises(AttributeError):
                 flush(sys=mock_sys)
 
-    def test_flush_with_custom_sys_object(self):
-        """Test flush with custom sys-like object."""
+    def test_flush_with_custom_sys_object_custom_sys_stdout_flushed(self):
+        # Arrange
+        # Arrange
         from scitex_io import flush
-
         # Create custom sys-like object
         class CustomSys:
             def __init__(self):
@@ -201,42 +250,86 @@ class TestFlushEdgeCases:
                 self.stderr = Mock()
                 self.stdout_flushed = False
                 self.stderr_flushed = False
-
                 # Setup flush methods
                 self.stdout.flush = lambda: setattr(self, "stdout_flushed", True)
                 self.stderr.flush = lambda: setattr(self, "stderr_flushed", True)
-
         custom_sys = CustomSys()
-
+        # Act
         with patch("os.sync"):
             flush(sys=custom_sys)
-
-        # Verify custom flush methods were called
+        # Act
+        # Assert
+        # Assert
         assert custom_sys.stdout_flushed
+
+    def test_flush_with_custom_sys_object_custom_sys_stderr_flushed(self):
+        # Arrange
+        # Arrange
+        from scitex_io import flush
+        # Create custom sys-like object
+        class CustomSys:
+            def __init__(self):
+                self.stdout = Mock()
+                self.stderr = Mock()
+                self.stdout_flushed = False
+                self.stderr_flushed = False
+                # Setup flush methods
+                self.stdout.flush = lambda: setattr(self, "stdout_flushed", True)
+                self.stderr.flush = lambda: setattr(self, "stderr_flushed", True)
+        custom_sys = CustomSys()
+        # Act
+        with patch("os.sync"):
+            flush(sys=custom_sys)
+        # Act
+        # Assert
+        # Assert
         assert custom_sys.stderr_flushed
+
 
 
 class TestFlushIntegration:
     """Test flush integration with other parts of the system."""
 
-    def test_flush_after_print(self, capsys):
-        """Test flush after print statements."""
+    def test_flush_after_print_line_1_in_captured_out(self, capsys):
+        # Arrange
+        # Arrange
         from scitex_io import flush
-
         # Print some data
         print("Line 1", end="")  # No newline, might be buffered
         print("Line 2", file=sys.stderr, end="")  # To stderr
-
         with patch("os.sync"):
             flush()
-
         # Check both outputs appeared
+        # Act
         captured = capsys.readouterr()
+        # Act
+        # Assert
+        # Assert
         assert "Line 1" in captured.out
+
+    def test_flush_after_print_line_2_in_captured_err(self, capsys):
+        # Arrange
+        # Arrange
+        from scitex_io import flush
+        # Print some data
+        print("Line 1", end="")  # No newline, might be buffered
+        print("Line 2", file=sys.stderr, end="")  # To stderr
+        with patch("os.sync"):
+            flush()
+        # Check both outputs appeared
+        # Act
+        captured = capsys.readouterr()
+        # Act
+        # Assert
+        # Assert
         assert "Line 2" in captured.err
+
 
     def test_flush_multiple_times(self):
         """Test calling flush multiple times."""
+        # Arrange
+        # Act
+        # Assert
         from scitex_io import flush
 
         mock_sys = Mock()
@@ -255,6 +348,7 @@ class TestFlushIntegration:
 
     def test_flush_thread_safety(self):
         """Test that flush can be called from multiple threads."""
+        # Arrange
         import threading
 
         from scitex_io import flush
@@ -276,10 +370,12 @@ class TestFlushIntegration:
         threads = [threading.Thread(target=flush_in_thread) for _ in range(5)]
         for t in threads:
             t.start()
+        # Act
         for t in threads:
             t.join()
 
         # No errors should occur
+        # Assert
         assert len(errors) == 0
 
 

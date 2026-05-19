@@ -1,6 +1,12 @@
 from __future__ import annotations
 # Smoke test (TODO: real coverage).
-def test_placeholder():
+def test_placeholder_true_case():
+    # Arrange
+    # Act
+    # Assert
+    # Arrange
+    # Act
+    # Assert
     assert True
 
 # Add your tests here
@@ -95,20 +101,32 @@ from scitex_io._save_modules._yaml import _convert_paths_to_strings, _save_yaml
 
 
 class TestSavePickle:
-    def test_arbitrary_object(self, tmp_path):
+    def test_arbitrary_object_back_a_1_2_3(self, tmp_path):
+        # Arrange
+        # Arrange
         out = tmp_path / "obj.pkl"
         obj = {"a": [1, 2, 3], "b": np.array([4, 5])}
         _save_pickle(obj, str(out))
+        # Act
+        # Act
         with open(out, "rb") as f:
             back = pickle.load(f)
+        # Assert
+        # Assert
         assert back["a"] == [1, 2, 3]
         np.testing.assert_array_equal(back["b"], np.array([4, 5]))
 
     def test_via_sio_save_pkl_gz(self, tmp_path):
+        # Arrange
+        # Arrange
         import scitex_io as sio
 
         out = tmp_path / "obj.pkl.gz"
+        # Act
+        # Act
         sio.save({"x": 1}, str(out), verbose=False)
+        # Assert
+        # Assert
         assert out.is_file() and out.stat().st_size > 0
 
 

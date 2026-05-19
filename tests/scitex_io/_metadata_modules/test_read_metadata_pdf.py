@@ -22,21 +22,35 @@ def _make_pdf(path):
 
 
 def test_read_returns_none_when_no_metadata(tmp_path):
+    # Arrange
+    # Act
+    # Arrange
+    # Act
     p = _make_pdf(tmp_path / "no_meta.pdf")
+    # Assert
+    # Assert
     assert read_metadata_pdf(str(p)) is None
 
 
 def test_read_json_round_trip(tmp_path):
+    # Arrange
+    # Arrange
     p = _make_pdf(tmp_path / "with_meta.pdf")
     payload = {"abc": 123, "nested": {"x": 1}}
     embed_metadata_pdf(
         str(p), json.dumps(payload), metadata={"title": "T", "author": "A"}
     )
+    # Act
+    # Act
     out = read_metadata_pdf(str(p))
+    # Assert
+    # Assert
     assert out == payload
 
 
 def test_read_non_json_subject_falls_back_to_field_dict(tmp_path):
+    # Arrange
+    # Arrange
     p = _make_pdf(tmp_path / "plain.pdf")
     # Write a Subject that isn't JSON so the parser falls into the
     # "build from available fields" branch.
@@ -57,7 +71,11 @@ def test_read_non_json_subject_falls_back_to_field_dict(tmp_path):
     with open(p, "wb") as f:
         writer.write(f)
 
+    # Act
+    # Act
     out = read_metadata_pdf(str(p))
+    # Assert
+    # Assert
     assert out == {
         "title": "T2",
         "author": "A2",

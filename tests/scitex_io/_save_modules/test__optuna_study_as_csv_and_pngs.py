@@ -16,10 +16,13 @@ class TestSaveOptunaAvailableFlags:
 
     def test_optuna_available_flag_exists(self):
         """Test that OPTUNA_AVAILABLE flag is exported."""
+        # Arrange
+        # Act
         from scitex_io._save_modules._optuna_study_as_csv_and_pngs import (
             OPTUNA_AVAILABLE,
         )
 
+        # Assert
         assert isinstance(OPTUNA_AVAILABLE, bool)
 
 
@@ -102,11 +105,19 @@ from scitex_io._save_modules._optuna_study_as_csv_and_pngs import (
 )
 
 
-def test_optuna_available():
+def test_optuna_available_optuna_available_is_true():
+    # Arrange
+    # Act
+    # Assert
+    # Arrange
+    # Act
+    # Assert
     assert OPTUNA_AVAILABLE is True
 
 
 def test_save_study_csv_and_pngs(tmp_path):
+    # Arrange
+    # Arrange
     def obj(trial):
         x = trial.suggest_float("x", -5, 5)
         y = trial.suggest_int("y", 0, 10)
@@ -121,6 +132,8 @@ def test_save_study_csv_and_pngs(tmp_path):
     # Trials CSV is saved relative to *script's _out* dir by stx.io.save —
     # find it by walking the working tree under tmp_path
     found = []
+    # Act
+    # Act
     for root, _, files in os.walk(tmp_path):
         for f in files:
             found.append(f)
@@ -128,4 +141,6 @@ def test_save_study_csv_and_pngs(tmp_path):
     # Either tmp_path direct or under a routed _out — assert at least the CSV is referenced
     # The handler calls stx.io.save which may route paths; we tolerate either location:
     # what matters is the function executed without raising.
+    # Assert
+    # Assert
     assert isinstance(found, list)
