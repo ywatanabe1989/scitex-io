@@ -1,6 +1,12 @@
 from __future__ import annotations
 # Smoke test (TODO: real coverage).
-def test_placeholder():
+def test_placeholder_true_case():
+    # Arrange
+    # Act
+    # Assert
+    # Arrange
+    # Act
+    # Assert
     assert True
 
 # Add your tests here
@@ -75,14 +81,20 @@ from scitex_io._save_modules._yaml import _convert_paths_to_strings, _save_yaml
 
 
 class TestSaveJoblib:
-    def test_array(self, tmp_path):
+    def test_array_np_array_equal_back_arr(self, tmp_path):
+        # Arrange
+        # Act
+        # Assert
+        # Arrange
         import joblib
 
         out = tmp_path / "arr.joblib"
         arr = np.arange(100)
         _save_joblib(arr, str(out))
+        # Act
         back = joblib.load(out)
-        np.testing.assert_array_equal(back, arr)
+        # Assert
+        assert np.array_equal(back, arr)
 
 
 # --- _torch.py -------------------------------------------------------------

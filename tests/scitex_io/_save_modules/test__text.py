@@ -1,6 +1,12 @@
 from __future__ import annotations
 # Smoke test (TODO: real coverage).
-def test_placeholder():
+def test_placeholder_true_case():
+    # Arrange
+    # Act
+    # Assert
+    # Arrange
+    # Act
+    # Assert
     assert True
 
 # Add your tests here
@@ -74,20 +80,38 @@ from scitex_io._save_modules._yaml import _convert_paths_to_strings, _save_yaml
 
 class TestSaveText:
     def test_string_round_trip(self, tmp_path):
+        # Arrange
+        # Arrange
         out = tmp_path / "note.txt"
+        # Act
+        # Act
         _save_text("hello world\nline 2\n", str(out))
+        # Assert
+        # Assert
         assert out.read_text() == "hello world\nline 2\n"
 
-    def test_empty_string(self, tmp_path):
+    def test_empty_string_out_read_text(self, tmp_path):
+        # Arrange
+        # Arrange
         out = tmp_path / "empty.txt"
+        # Act
+        # Act
         _save_text("", str(out))
+        # Assert
+        # Assert
         assert out.read_text() == ""
 
     def test_via_sio_save(self, tmp_path):
+        # Arrange
+        # Arrange
         import scitex_io as sio
 
         out = tmp_path / "note.txt"
+        # Act
+        # Act
         sio.save("hi", str(out), verbose=False)
+        # Assert
+        # Assert
         assert out.read_text() == "hi"
 
 

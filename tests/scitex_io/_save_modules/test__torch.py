@@ -18,14 +18,20 @@ class TestSaveTorchAvailableFlags:
 
     def test_torch_available_flag_exists(self):
         """Test that TORCH_AVAILABLE flag is exported."""
+        # Arrange
+        # Act
         from scitex_io._save_modules._torch import TORCH_AVAILABLE
 
+        # Assert
         assert isinstance(TORCH_AVAILABLE, bool)
 
     def test_torch_available_is_true_when_torch_installed(self):
         """Test that TORCH_AVAILABLE is True when torch is installed."""
+        # Arrange
+        # Act
         from scitex_io._save_modules._torch import TORCH_AVAILABLE
 
+        # Assert
         assert TORCH_AVAILABLE is True
 
 
@@ -109,24 +115,49 @@ from scitex_io._save_modules._yaml import _convert_paths_to_strings, _save_yaml
 
 
 class TestSaveTorch:
-    def test_tensor(self, tmp_path):
+    def test_tensor_torch_equal_back_t(self, tmp_path):
+        # Arrange
+        # Arrange
         import torch
 
         out = tmp_path / "t.pt"
         t = torch.tensor([1.0, 2.0, 3.0])
         _save_torch(t, str(out))
+        # Act
+        # Act
         back = torch.load(out, weights_only=False)
+        # Assert
+        # Assert
         assert torch.equal(back, t)
 
-    def test_state_dict(self, tmp_path):
+    def test_state_dict_torch_equal_back_weight_torch_zeros_2_2(self, tmp_path):
+        # Arrange
+        # Arrange
         import torch
-
         out = tmp_path / "sd.pt"
         sd = {"weight": torch.zeros(2, 2), "bias": torch.ones(2)}
         _save_torch(sd, str(out))
+        # Act
         back = torch.load(out, weights_only=False)
+        # Act
+        # Assert
+        # Assert
         assert torch.equal(back["weight"], torch.zeros(2, 2))
+
+    def test_state_dict_torch_equal_back_bias_torch_ones_2(self, tmp_path):
+        # Arrange
+        # Arrange
+        import torch
+        out = tmp_path / "sd.pt"
+        sd = {"weight": torch.zeros(2, 2), "bias": torch.ones(2)}
+        _save_torch(sd, str(out))
+        # Act
+        back = torch.load(out, weights_only=False)
+        # Act
+        # Assert
+        # Assert
         assert torch.equal(back["bias"], torch.ones(2))
+
 
 
 # --- _plotly.py ------------------------------------------------------------

@@ -116,45 +116,222 @@ EXPECTED_LOAD_EXTS = [
 
 
 @pytest.mark.parametrize("ext", EXPECTED_SAVE_EXTS)
-def test_saver_registered_and_callable(ext):
+def test_saver_registered_and_callable_fn_is_not_none(ext):
+    # Arrange
+    # Arrange
+    # Act
     fn = get_saver(ext)
+    # Act
+    # Assert
+    # Assert
     assert fn is not None, f"Saver missing for {ext}"
+
+
+@pytest.mark.parametrize("ext", EXPECTED_SAVE_EXTS)
+def test_saver_registered_and_callable_callable_fn(ext):
+    # Arrange
+    # Arrange
+    # Act
+    fn = get_saver(ext)
+    # Act
+    # Assert
+    # Assert
     assert callable(fn)
-    # Builtin tier is populated
+
+
+@pytest.mark.parametrize("ext", EXPECTED_SAVE_EXTS)
+def test_saver_registered_and_callable_ext_in_builtin_savers(ext):
+    # Arrange
+    # Arrange
+    # Act
+    fn = get_saver(ext)
+    # Act
+    # Assert
+    # Assert
     assert ext in _builtin_savers
 
 
+
+
 @pytest.mark.parametrize("ext", EXPECTED_LOAD_EXTS)
-def test_loader_registered_and_callable(ext):
+def test_loader_registered_and_callable_fn_is_not_none(ext):
+    # Arrange
+    # Arrange
+    # Act
     fn = get_loader(ext)
+    # Act
+    # Assert
+    # Assert
     assert fn is not None, f"Loader missing for {ext}"
+
+
+@pytest.mark.parametrize("ext", EXPECTED_LOAD_EXTS)
+def test_loader_registered_and_callable_callable_fn(ext):
+    # Arrange
+    # Arrange
+    # Act
+    fn = get_loader(ext)
+    # Act
+    # Assert
+    # Assert
     assert callable(fn)
+
+
+@pytest.mark.parametrize("ext", EXPECTED_LOAD_EXTS)
+def test_loader_registered_and_callable_ext_in_builtin_loaders(ext):
+    # Arrange
+    # Arrange
+    # Act
+    fn = get_loader(ext)
+    # Act
+    # Assert
+    # Assert
     assert ext in _builtin_loaders
 
 
-def test_module_exposes_saver_map_via_imports():
+
+
+def test_module_exposes_saver_map_via_imports_bh_save_csv_is_not_none():
     # The module imported all save_<fmt> functions at top
+    # Arrange
+    # Act
+    # Assert
+    # Arrange
+    # Act
+    # Assert
     assert bh.save_csv is not None
+
+
+def test_module_exposes_saver_map_via_imports_bh_save_npy_is_not_none():
+    # The module imported all save_<fmt> functions at top
+    # Arrange
+    # Act
+    # Assert
+    # Arrange
+    # Act
+    # Assert
     assert bh.save_npy is not None
+
+
+def test_module_exposes_saver_map_via_imports_bh_save_json_is_not_none():
+    # The module imported all save_<fmt> functions at top
+    # Arrange
+    # Act
+    # Assert
+    # Arrange
+    # Act
+    # Assert
     assert bh.save_json is not None
+
+
+def test_module_exposes_saver_map_via_imports_bh_save_hdf5_is_not_none():
+    # The module imported all save_<fmt> functions at top
+    # Arrange
+    # Act
+    # Assert
+    # Arrange
+    # Act
+    # Assert
     assert bh.save_hdf5 is not None
+
+
+def test_module_exposes_saver_map_via_imports_bh_save_zarr_is_not_none():
+    # The module imported all save_<fmt> functions at top
+    # Arrange
+    # Act
+    # Assert
+    # Arrange
+    # Act
+    # Assert
     assert bh.save_zarr is not None
 
 
-def test_loader_funcs_present():
+
+
+def test_loader_funcs_present_bh_load_json_is_not_none():
+    # Arrange
+    # Act
+    # Assert
+    # Arrange
+    # Act
+    # Assert
     assert bh._load_json is not None
+
+
+def test_loader_funcs_present_bh_load_yaml_is_not_none():
+    # Arrange
+    # Act
+    # Assert
+    # Arrange
+    # Act
+    # Assert
     assert bh._load_yaml is not None
+
+
+def test_loader_funcs_present_bh_load_hdf5_is_not_none():
+    # Arrange
+    # Act
+    # Assert
+    # Arrange
+    # Act
+    # Assert
     assert bh._load_hdf5 is not None
+
+
+def test_loader_funcs_present_bh_load_zarr_is_not_none():
+    # Arrange
+    # Act
+    # Assert
+    # Arrange
+    # Act
+    # Assert
     assert bh._load_zarr is not None
+
+
+def test_loader_funcs_present_bh_load_pdf_is_not_none():
+    # Arrange
+    # Act
+    # Assert
+    # Arrange
+    # Act
+    # Assert
     assert bh._load_pdf is not None
+
+
+def test_loader_funcs_present_bh_load_docx_is_not_none():
+    # Arrange
+    # Act
+    # Assert
+    # Arrange
+    # Act
+    # Assert
     assert bh._load_docx is not None
 
 
-def test_reimport_idempotent():
-    """Re-importing must not raise; registry stays populated."""
+
+
+def test_reimport_idempotent_get_saver_csv_is_not_none():
+    # Arrange
+    # Arrange
+    # Act
     importlib.reload(bh)
+    # Act
+    # Assert
+    # Assert
     assert get_saver(".csv") is not None
+
+
+def test_reimport_idempotent_get_loader_json_is_not_none():
+    # Arrange
+    # Arrange
+    # Act
+    importlib.reload(bh)
+    # Act
+    # Assert
+    # Assert
     assert get_loader(".json") is not None
+
+
 
 
 # ---------------------------------------------------------------------------
@@ -203,30 +380,39 @@ def _reload_with_poisoned(monkeypatch, dotted: str):
 def test_saver_missing_optional_emits_warning(monkeypatch):
     """Poison _save_modules._parquet so the saver = None branch + the
     saver-loop ImportWarning both fire."""
+    # Arrange
     captured = _reload_with_poisoned(monkeypatch, "scitex_io._save_modules._parquet")
     # At least one ImportWarning about a saver-for-extension should fire.
     msgs = [str(item.message) for item in captured]
+    # Act
     saver_warns = [m for m in msgs if "saver" in m and "not registered" in m]
+    # Assert
     assert saver_warns, f"expected ImportWarning about parquet saver; got: {msgs!r}"
 
 
 def test_loader_missing_optional_emits_warning(monkeypatch):
     """Poison the markdown loader module so the loader = None +
     warn-and-skip branches in the loader loop both run."""
+    # Arrange
     captured = _reload_with_poisoned(monkeypatch, "scitex_io._load_modules._markdown")
     msgs = [str(item.message) for item in captured]
+    # Act
     loader_warns = [m for m in msgs if "loader" in m and "not registered" in m]
+    # Assert
     assert loader_warns, f"expected ImportWarning about a loader; got: {msgs!r}"
 
 
 def test_recover_after_poisoned_import(monkeypatch):
     """After the poisoned reload + monkeypatch teardown, a clean
     reload re-registers everything."""
+    # Arrange
     _reload_with_poisoned(monkeypatch, "scitex_io._save_modules._parquet")
     monkeypatch.undo()  # remove the meta_path finder
     importlib.import_module("scitex_io._builtin_handlers")
     importlib.reload(sys.modules["scitex_io._builtin_handlers"])
+    # Act
     from scitex_io._registry import get_saver as _gs
 
     # After clean re-register, parquet saver should be back.
+    # Assert
     assert _gs(".parquet") is not None
