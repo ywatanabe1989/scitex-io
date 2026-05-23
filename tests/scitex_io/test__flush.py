@@ -82,17 +82,21 @@ def test_flush_preserves_stderr_content():
 def test_flush_with_none_sys_emits_user_warning():
     # Arrange
     _calls, sync_fn = _recording_sync()
+    # Act
     ctx = pytest.warns(UserWarning, match="flush needs sys")
-    # Act / Assert
+    # Assert
     with ctx:
         flush(sys=None, sync_fn=sync_fn)
 
 
 def test_flush_with_none_sys_skips_sync_fn():
     # Arrange
+    import warnings
+
     calls, sync_fn = _recording_sync()
     # Act
-    with pytest.warns(UserWarning):
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
         flush(sys=None, sync_fn=sync_fn)
     # Assert
     assert calls["n"] == 0
@@ -130,8 +134,9 @@ def test_flush_propagates_stdout_flush_error():
     # Arrange
     fake = types.SimpleNamespace(stdout=_ExplodingStream(), stderr=io.StringIO())
     _calls, sync_fn = _recording_sync()
+    # Act
     ctx = pytest.raises(OSError, match="flush boom")
-    # Act / Assert
+    # Assert
     with ctx:
         flush(sys=fake, sync_fn=sync_fn)
 
@@ -140,8 +145,9 @@ def test_flush_propagates_stderr_flush_error():
     # Arrange
     fake = types.SimpleNamespace(stdout=io.StringIO(), stderr=_ExplodingStream())
     _calls, sync_fn = _recording_sync()
+    # Act
     ctx = pytest.raises(OSError, match="flush boom")
-    # Act / Assert
+    # Assert
     with ctx:
         flush(sys=fake, sync_fn=sync_fn)
 
@@ -153,8 +159,9 @@ def test_flush_propagates_sync_fn_error():
     def boom():
         raise OSError("sync boom")
 
+    # Act
     ctx = pytest.raises(OSError, match="sync boom")
-    # Act / Assert
+    # Assert
     with ctx:
         flush(sys=fake, sync_fn=boom)
 

@@ -222,18 +222,15 @@ class TestDotDictBasics:
         # Assert
         assert d.x == 5
 
-    def test_attr_set_and_del_raises_attributeerror(self):
-        # Arrange
+    def test_attr_del_twice_raises_attributeerror(self):
         # Arrange
         d = DotDict()
-        # Act
         d.x = 5
-        # Assert
-        assert d.x == 5
         del d.x
         # Act
+        ctx = pytest.raises(AttributeError)
         # Assert
-        with pytest.raises(AttributeError):
+        with ctx:
             del d.x  # already gone
 
 
@@ -257,31 +254,19 @@ class TestDotDictBasics:
         # Assert
         assert d[42] == "answer"
 
-    def test_item_access_d_new_equals_n_7(self):
+    def test_item_set_string_key_visible_as_attribute(self):
         # Arrange
-        # Arrange
-        # Act
         d = DotDict({"a": 1, 42: "answer"})
-        # Assert
-        assert d["a"] == 1
-        assert d[42] == "answer"
-        d["new"] = 7
         # Act
+        d["new"] = 7
         # Assert
         assert d.new == 7
 
-    def test_item_access_a_not_in_d(self):
+    def test_item_del_removes_string_key(self):
         # Arrange
-        # Arrange
-        # Act
         d = DotDict({"a": 1, 42: "answer"})
-        # Assert
-        assert d["a"] == 1
-        assert d[42] == "answer"
-        d["new"] = 7
-        assert d.new == 7
-        del d["a"]
         # Act
+        del d["a"]
         # Assert
         assert "a" not in d
 
@@ -611,17 +596,11 @@ class TestDotDictReprAndEq:
         # Assert
         assert plain["open"] == 2
 
-    def test_to_dict_skips_private_keys_secret_in_plain_all(self):
-        # Arrange
+    def test_to_dict_include_private_true_keeps_private_key(self):
         # Arrange
         d = DotDict({"_secret": 1, "open": 2})
         # Act
-        plain = d.to_dict()
-        # Assert
-        assert "_secret" not in plain
-        assert plain["open"] == 2
         plain_all = d.to_dict(include_private=True)
-        # Act
         # Assert
         assert "_secret" in plain_all
 
@@ -674,16 +653,12 @@ class TestDotDictReprAndEq:
         # Assert
         assert c == d
 
-    def test_copy_d_a_equals_n_1(self):
-        # Arrange
+    def test_copy_isolates_mutations_from_original(self):
         # Arrange
         d = DotDict({"a": 1})
-        # Act
         c = d.copy()
-        # Assert
-        assert c == d
-        c["a"] = 99
         # Act
+        c["a"] = 99
         # Assert
         assert d.a == 1
 
