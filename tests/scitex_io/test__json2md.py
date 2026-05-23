@@ -997,12 +997,15 @@ class TestJson2MdMain:
 
         nonexistent = tmp_path / "does_not_exist.json"
         sys.argv[:] = ["json2md", str(nonexistent)]
-        ctx = pytest.raises(SystemExit)
-        # Act
-        with ctx as exc_info:
+        captured_code = None
+        try:
             main()
+        except SystemExit as exc:
+            captured_code = exc.code
+        # Act
+        result = captured_code
         # Assert
-        assert exc_info.value.code == 1
+        assert result == 1
 
 
 class TestJson2MdIntegration:
