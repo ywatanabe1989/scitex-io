@@ -102,6 +102,7 @@ def save(
     dry_run: bool = False,
     no_csv: bool = False,
     use_caller_path: bool = False,
+    env_detector=None,
     **kwargs,
 ) -> None:
     """Save ``obj`` by extension; ``specified_path`` is caller-anchored.
@@ -195,7 +196,9 @@ def save(
         else:
             from ._utils import detect_environment, get_notebook_info_simple
 
-            env_type = detect_environment()
+            if env_detector is None:
+                env_detector = detect_environment
+            env_type = env_detector()
 
             if env_type == "jupyter":
                 # Defensive: get_notebook_info_simple was historically a stub
