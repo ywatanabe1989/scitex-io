@@ -31,7 +31,7 @@ def test_load_npy_basic_array_round_trips():
         # Act
         loaded_array = _load_npy(temp_path)
         # Assert
-        np.testing.assert_array_equal(loaded_array, test_array)
+        assert np.array_equal(loaded_array, test_array)
     finally:
         os.unlink(temp_path)
 
@@ -48,7 +48,7 @@ def test_load_npy_2d_round_trips_values():
         # Act
         loaded_array = _load_npy(temp_path)
         # Assert
-        np.testing.assert_array_almost_equal(loaded_array, test_array_2d)
+        assert np.allclose(loaded_array, test_array_2d)
     finally:
         os.unlink(temp_path)
 
@@ -82,7 +82,7 @@ def test_load_npy_3d_round_trips_values():
         # Act
         loaded_array = _load_npy(temp_path)
         # Assert
-        np.testing.assert_array_almost_equal(loaded_array, test_array_3d)
+        assert np.allclose(loaded_array, test_array_3d)
     finally:
         os.unlink(temp_path)
 
@@ -116,7 +116,7 @@ def test_load_npz_single_array_round_trips_values():
         # Act
         loaded_array = _load_npy(temp_path)
         # Assert
-        np.testing.assert_array_equal(loaded_array, test_array)
+        assert np.array_equal(loaded_array, test_array)
     finally:
         os.unlink(temp_path)
 
@@ -152,7 +152,7 @@ def test_load_npz_multiple_arrays_first_array_round_trips():
         # Act
         loaded_data = _load_npy(temp_path)
         # Assert
-        np.testing.assert_array_equal(loaded_data["first"], array1)
+        assert np.array_equal(loaded_data["first"], array1)
     finally:
         os.unlink(temp_path)
 
@@ -256,7 +256,7 @@ def test_load_npz_compressed_array_round_trips():
         # Act
         loaded_data = _load_npy(temp_path)
         # Assert
-        np.testing.assert_array_almost_equal(loaded_data["data"], large_array)
+        assert np.allclose(loaded_data["data"], large_array)
     finally:
         os.unlink(temp_path)
 

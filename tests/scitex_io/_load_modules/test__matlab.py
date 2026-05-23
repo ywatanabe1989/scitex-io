@@ -71,9 +71,7 @@ def test_basic_matlab_loading_round_trips_double_array(basic_mat_path):
     # Act
     loaded_data = _load_matlab(path)
     # Assert
-    np.testing.assert_array_almost_equal(
-        loaded_data["double_array"], data["double_array"]
-    )
+    assert np.allclose(loaded_data["double_array"], data["double_array"])
 
 
 def test_basic_matlab_loading_round_trips_integer_scalar(basic_mat_path):
@@ -207,7 +205,7 @@ def test_large_file_handling_round_trips_matrix_values():
         # Act
         loaded_data = _load_matlab(path)
         # Assert
-        np.testing.assert_array_equal(
+        assert np.array_equal(
             loaded_data["large_matrix"][:5, :5], data["large_matrix"][:5, :5]
         )
     finally:
@@ -225,7 +223,7 @@ def test_different_matlab_versions_round_trip(version):
         # Act
         loaded_data = _load_matlab(path)
         # Assert
-        np.testing.assert_array_equal(
+        assert np.array_equal(
             loaded_data["version_test"].flatten(), test_data["version_test"]
         )
     finally:
@@ -248,9 +246,11 @@ def test_error_handling_nonexistent_file_message_contains_filename():
     from scitex_io._load_modules._matlab import _load_matlab
 
     # Act
-    with pytest.raises(ValueError) as exc_info:
+    try:
         _load_matlab("nonexistent_file.mat")
-    error_message = str(exc_info.value)
+        error_message = ""
+    except ValueError as exc:
+        error_message = str(exc)
     # Assert
     assert "Error loading file nonexistent_file.mat" in error_message
 
@@ -264,10 +264,13 @@ def test_corrupted_file_raises_valueerror_with_loading_message():
         temp_path = f.name
     try:
         # Act
-        with pytest.raises(ValueError) as exc_info:
+        try:
             _load_matlab(temp_path)
+            error_message = ""
+        except ValueError as exc:
+            error_message = str(exc)
         # Assert
-        assert "Error loading file" in str(exc_info.value)
+        assert "Error loading file" in error_message
     finally:
         os.unlink(temp_path)
 
@@ -375,10 +378,8 @@ def test_edge_cases_inf_value_preserved():
 
 def test_integration_with_main_load_function_contains_test_key():
     # Arrange
-    try:
-        import scitex_io
-    except ImportError:
-        pytest.skip("SciTeX not available for integration testing")
+    import scitex_io  # noqa: F401 — established by importorskip at module top
+
     test_data = {"integration_test": np.array([1, 2, 3, 4, 5])}
     path = _save_mat(test_data)
     try:
