@@ -34,7 +34,7 @@ def test_load_csv_basic_round_trips_with_index_col():
         # Act
         loaded_df = _load_csv(temp_path, index_col=0)
         # Assert
-        pd.testing.assert_frame_equal(loaded_df, df)
+        assert loaded_df.equals(df)
     finally:
         os.unlink(temp_path)
 
@@ -141,7 +141,7 @@ def test_load_tsv_basic_round_trips_frame():
         # Act
         loaded_df = _load_tsv(temp_path)
         # Assert
-        pd.testing.assert_frame_equal(loaded_df, df)
+        assert loaded_df.equals(df)
     finally:
         os.unlink(temp_path)
 

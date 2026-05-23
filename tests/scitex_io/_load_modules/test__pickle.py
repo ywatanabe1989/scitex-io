@@ -196,7 +196,7 @@ def test_load_pickle_numpy_1d_array_round_trips():
         # Act
         loaded_data = _load_pickle(temp_path)
         # Assert
-        np.testing.assert_array_equal(loaded_data["array_1d"], numpy_data["array_1d"])
+        assert np.array_equal(loaded_data["array_1d"], numpy_data["array_1d"])
     finally:
         os.unlink(temp_path)
 

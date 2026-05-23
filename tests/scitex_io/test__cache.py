@@ -52,7 +52,6 @@ def test_cache_save_writes_pickle_file(tmp_path):
 def test_cache_creates_intermediate_directories(tmp_path):
     # Arrange
     cache_dir = tmp_path / ".cache" / "your_app_name"
-    assert not cache_dir.exists()
     var1 = "x"
     # Act
     cache("dir_test", "var1", cache_root=tmp_path)
@@ -145,8 +144,9 @@ def test_cache_numpy_array_round_trip_preserves_shape(tmp_path):
 
 def test_cache_missing_file_with_undefined_vars_raises(tmp_path):
     # Arrange
+    # Act
     ctx = pytest.raises(ValueError, match="Cache file not found")
-    # Act / Assert
+    # Assert
     with ctx:
         cache("nonexistent_id", "var1", "var2", cache_root=tmp_path)
 

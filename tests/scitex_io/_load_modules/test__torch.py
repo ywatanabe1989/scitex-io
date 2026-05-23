@@ -275,12 +275,11 @@ def test_load_torch_multiple_objects_round_trips_config():
         os.unlink(temp_path)
 
 
+@pytest.mark.skipif(not torch.cuda.is_available(), reason="CUDA not available")
 def test_load_torch_cuda_tensor_to_cpu_returns_cpu_device():
     # Arrange
     from scitex_io._load_modules._torch import _load_torch
 
-    if not torch.cuda.is_available():
-        pytest.skip("CUDA not available")
     cuda_tensor = torch.randn(5, 5).cuda()
     with tempfile.NamedTemporaryFile(suffix=".pth", delete=False) as f:
         torch.save(cuda_tensor, f.name)
