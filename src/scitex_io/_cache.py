@@ -4,10 +4,27 @@
 # ./src/scitex/io/_cache.py
 
 
-import os
+import os as _os
 import pickle
 import sys
 from pathlib import Path
+
+
+def _default_cache_dir() -> Path:
+    """Canonical cache directory for scitex-io.
+
+    Returns ``$SCITEX_DIR/io/runtime/cache/`` (defaulting to
+    ``~/.scitex/io/runtime/cache/``), creating it on first use.
+    Follows the scitex local-state-directories convention — see
+    scitex-dev skills/general ``01_ecosystem/06_local-state-directories.md`` §4c.
+    """
+    scitex_dir = _os.environ.get(
+        "SCITEX_DIR",
+        _os.path.join(_os.path.expanduser("~"), ".scitex"),
+    )
+    d = Path(scitex_dir) / "io" / "runtime" / "cache"
+    d.mkdir(parents=True, exist_ok=True)
+    return d
 
 
 def cache(id, *args, cache_root=None):
@@ -25,6 +42,10 @@ def cache(id, *args, cache_root=None):
         A unique identifier for the cache file.
     *args : str
         Variable names to be cached or loaded.
+    cache_root : Path or None, optional
+        Explicit cache directory. Defaults to ``$SCITEX_DIR/io/runtime/cache/``
+        (falls back to ``~/.scitex/io/runtime/cache/``), honouring the canonical
+        scitex local-state convention.
 
     Returns:
     --------
@@ -55,9 +76,10 @@ def cache(id, *args, cache_root=None):
     >>> var1, var2, var3 = scitex.io.cache("my_id", "var1", "var2", "var3")
     >>> print(var1, var2, var3)
     """
-    if cache_root is None:
-        cache_root = Path.home()
-    cache_dir = Path(cache_root) / ".cache" / "your_app_name"
+    if cache_root is not None:
+        cache_dir = Path(cache_root)
+    else:
+        cache_dir = _default_cache_dir()
     cache_dir.mkdir(parents=True, exist_ok=True)
     cache_file = cache_dir / f"{id}.pkl"
 
@@ -85,8 +107,8 @@ def cache(id, *args, cache_root=None):
 
 # Usage example
 if __name__ == "__main__":
-    import scitex
     import numpy as np
+    import scitex
 
     # Variables to cache
     var1 = "x"
