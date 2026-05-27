@@ -11,7 +11,7 @@ Functionalities
 - `register_saver(".ext")` / `register_loader(".ext")` — plugin hooks
   for user-defined formats; dispatch lookup follows the same registry.
 - `load_configs()` — collect every `<project-root>/config/*.yaml` into
-  a single `DotDict` with UPPER_CASE normalisation + DEBUG_ overrides.
+  a single ``DotDict`` with ``UPPER_CASE`` normalisation + ``DEBUG_`` overrides.
 - `glob` / `parse_glob` — natural-sorted globbing with `{placeholder}`
   parsing; `cache` / `reload` / `flush` — load-cache management.
 

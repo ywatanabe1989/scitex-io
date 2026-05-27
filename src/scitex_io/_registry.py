@@ -123,8 +123,8 @@ def list_formats() -> Dict[str, Dict[str, List[str]]]:
     Returns
     -------
     dict
-        ``{"save": {"builtin": [...], "user": [...]},
-          "load": {"builtin": [...], "user": [...]}}``
+        A dict with keys ``"save"`` and ``"load"``, each containing
+        ``"builtin"`` and ``"user"`` format lists.
     """
     return {
         "save": {

@@ -28,37 +28,28 @@ def _default_cache_dir() -> Path:
 
 
 def cache(id, *args, cache_root=None):
-    """
-    Store or fetch data using a pickle file.
+    """Store or fetch data using a pickle file.
 
-    This function provides a simple caching mechanism for storing and retrieving
-    Python objects. It uses pickle to serialize the data and stores it in a file
-    with a unique identifier. If the data is already cached, it can be retrieved
-    without recomputation.
+    This function provides a simple caching mechanism for storing and
+    retrieving Python objects. It uses pickle to serialize the data
+    and stores it in a file with a unique identifier. If the data is
+    already cached, it can be retrieved without recomputation.
 
-    Parameters:
-    -----------
-    id : str
-        A unique identifier for the cache file.
-    *args : str
-        Variable names to be cached or loaded.
-    cache_root : Path or None, optional
-        Explicit cache directory. Defaults to ``$SCITEX_DIR/io/runtime/cache/``
-        (falls back to ``~/.scitex/io/runtime/cache/``), honouring the canonical
-        scitex local-state convention.
+    :param id: A unique identifier for the cache file.
+    :type id: str
+    :param \\*args: Variable names to be cached or loaded.
+    :type \\*args: str
+    :param cache_root: Explicit cache directory. Defaults to
+        ``$SCITEX_DIR/io/runtime/cache/`` (``~/.scitex/io/runtime/cache/``
+        fallback), honouring the canonical scitex local-state convention.
+    :type cache_root: Path or None, optional
+    :returns: A tuple of cached values corresponding to the input variable names.
+    :rtype: tuple
+    :raises ValueError: If the cache file is not found and not all variables
+        are defined.
 
-    Returns:
-    --------
-    tuple
-        A tuple of cached values corresponding to the input variable names.
-
-    Raises:
+    Example
     -------
-    ValueError
-        If the cache file is not found and not all variables are defined.
-
-    Example:
-    --------
     >>> import scitex
     >>> import numpy as np
     >>>
