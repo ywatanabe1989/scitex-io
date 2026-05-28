@@ -21,7 +21,7 @@ from ._utils import (
 )
 
 if TYPE_CHECKING:
-    from scitex.io.bundle import FTS
+    from scitex_io.bundle import Bundle as FTS
 
 
 # Column role to header mapping

@@ -30,7 +30,7 @@ from typing import TYPE_CHECKING, Optional
 from .._validator import ValidationResult, validate_latex
 
 if TYPE_CHECKING:
-    from scitex.io.bundle import FTS
+    from scitex_io.bundle import Bundle as FTS
 
 
 # HTML template with CodeMirror editor

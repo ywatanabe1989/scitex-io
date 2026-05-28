@@ -30,7 +30,6 @@ CROSS_PACKAGE_IMPORTS = [
     "scitex_stats._utils._normalizers",
     "scitex_stats._dataclasses",
     "scitex_stats.io",
-    "scitex.io.bundle",
 ]
 # ===== END AUTO-GENERATED =====
 

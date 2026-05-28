@@ -22,7 +22,7 @@ from ._table_exporter import (
 from ._validator import LaTeXError, ValidationResult, validate_latex
 
 if TYPE_CHECKING:
-    from scitex.io.bundle import FTS
+    from scitex_io.bundle import Bundle as FTS
 
 
 @dataclass

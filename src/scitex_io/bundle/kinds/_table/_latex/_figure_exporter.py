@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING, Optional
 from ._utils import escape_latex_minimal, sanitize_label
 
 if TYPE_CHECKING:
-    from scitex.io.bundle import FTS
+    from scitex_io.bundle import Bundle as FTS
 
 
 @dataclass
