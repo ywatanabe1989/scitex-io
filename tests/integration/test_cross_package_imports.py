@@ -31,7 +31,6 @@ CROSS_PACKAGE_IMPORTS = [
     "scitex_stats._dataclasses",
     "scitex_stats.io",
     "scitex.io.bundle",
-    "scitex.io._metadata",
 ]
 # ===== END AUTO-GENERATED =====
 

@@ -951,7 +951,7 @@ def _generate_figure_geometry_cache(dir_path: Path, spec: Dict, basename: str) -
 
 def _embed_metadata_in_export(file_path: Path, spec: Dict[str, Any], fmt: str) -> None:
     """Embed bundle spec metadata into exported image files."""
-    from scitex.io._metadata import embed_metadata
+    from scitex_io import embed_metadata
 
     embed_data = {
         "scitex_bundle": True,
