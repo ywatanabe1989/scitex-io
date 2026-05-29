@@ -15,7 +15,7 @@ import tempfile
 import pytest
 
 import scitex_io
-from scitex_io._hooks import (
+from scitex_io._observers import (
     _post_load_hooks,
     _post_save_hooks,
     register_post_load_hook,

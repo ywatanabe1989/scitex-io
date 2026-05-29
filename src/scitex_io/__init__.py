@@ -93,8 +93,8 @@ _LAZY_ATTRS: dict[str, str] = {
     "DotDict": "._utils",
     # Observer hook registry (R6 — observers self-register here;
     # scitex_io itself never names them). See _hooks.py.
-    "register_post_save_hook": "._hooks",
-    "register_post_load_hook": "._hooks",
+    "register_post_save_hook": "._observers",
+    "register_post_load_hook": "._observers",
 }
 
 # Optional public names that may not be importable. Resolve once, lazily.

@@ -44,7 +44,7 @@ def load(
     # recurse through load() and fire per-file. See _hooks.
     is_glob = isinstance(lpath, str) and ("*" in lpath or "?" in lpath or "[" in lpath)
     if not is_glob:
-        from .._hooks import fire_post_load
+        from .._observers import fire_post_load
 
         fire_post_load(Path(lpath), result)
     return result
