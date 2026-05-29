@@ -15,8 +15,11 @@ import uuid
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, Optional, Union
 
-from ._children import ValidationError, embed_child, load_embedded_children
 from scitex_io.bundle._dataclasses import DataInfo, SizeMM, Spec
+from scitex_io.bundle._storage import Storage, get_storage
+from scitex_io.bundle._validation import ValidationResult
+
+from ._children import ValidationError, embed_child, load_embedded_children
 from ._loader import load_bundle_components
 from ._saver import (
     compute_canonical_hash,
@@ -24,10 +27,23 @@ from ._saver import (
     save_bundle_components,
     save_render_outputs,
 )
-from scitex_io.bundle._storage import Storage, get_storage
-from scitex_io.bundle._validation import ValidationResult
 from .kinds._plot import Encoding, Theme
-from scitex_stats._dataclasses import Stats
+
+# scitex_stats is an optional ecosystem provider; without it, the stats
+# bundle kind is not available but every other kind still works.
+try:
+    from scitex_stats._dataclasses import Stats  # type: ignore[import-not-found]
+except ImportError:  # noqa: PERF203
+
+    class Stats:  # type: ignore[no-redef]
+        """Stub used when scitex_stats is not installed."""
+
+        @classmethod
+        def from_dict(cls, _data):
+            raise ImportError(
+                "scitex_stats is not installed; install it to use stats bundles"
+            )
+
 
 if TYPE_CHECKING:
     from matplotlib.figure import Figure as MplFigure
