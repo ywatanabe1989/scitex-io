@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Tests for scitex_io._compress_hdf5.compress_hdf5.
+"""Tests for scitex_io.utils._compress_hdf5.compress_hdf5.
 
 Each test builds a small .h5 file, re-compresses it with gzip, and
 asserts one specific aspect of the result. h5py is an optional
@@ -13,7 +13,7 @@ import pytest
 h5py = pytest.importorskip("h5py")
 
 from scitex_io import compress_hdf5 as compress_hdf5_public
-from scitex_io._compress_hdf5 import compress_hdf5
+from scitex_io.utils._compress_hdf5 import compress_hdf5
 
 
 def _write_sample_h5(path):

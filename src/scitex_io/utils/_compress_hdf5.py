@@ -3,10 +3,11 @@
 """Re-compress an existing HDF5 file with gzip.
 
 Migrated from the scitex umbrella (``scitex.utils._compress_hdf5``). Lives
-here because HDF5 (re)compression is an I/O concern. ``h5py`` is an optional
-``[scientific]`` dependency, so it is imported lazily inside the function —
-``import scitex_io`` and even ``from scitex_io import compress_hdf5`` stay
-cheap and h5py-free until the function is actually called.
+under ``scitex_io.utils`` alongside the other HDF5 helpers because HDF5
+(re)compression is an I/O concern. ``h5py`` is an optional ``[scientific]``
+dependency, so it is imported lazily inside the function — importing this
+module (and ``scitex_io.utils``) stays cheap and h5py-free until the
+function is actually called.
 """
 
 from __future__ import annotations
