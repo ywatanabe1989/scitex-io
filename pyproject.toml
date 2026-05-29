@@ -139,6 +139,11 @@ Documentation = "https://scitex-io.readthedocs.io/"
 Repository = "https://github.com/ywatanabe1989/scitex-io.git"
 Issues = "https://github.com/ywatanabe1989/scitex-io/issues"
 
+[tool.hatch.metadata]
+# Allow the scitex-stats git+https direct ref in [dev] extras until
+# the PyPI 0.2.22+ release includes the .stats.zip bundle support.
+allow-direct-references = true
+
 [tool.hatch.build.targets.wheel]
 packages = ["src/scitex_io"]
 
