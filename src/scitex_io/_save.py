@@ -162,6 +162,13 @@ def save(
         Path to saved file on success, ``None``/``False`` on error.
     """
     try:
+        # ``track`` is a scitex-io / observer concept, NOT a format-handler
+        # argument. Pop it before any dispatch so it never reaches the
+        # per-format handlers (_save_yaml/_save_pickle take no extra
+        # kwargs and would raise on an unexpected ``track=``). It is handed
+        # back to the post-save hook below so clew can gate tracking on it.
+        track = kwargs.pop("track", True)
+
         if isinstance(specified_path, Path):
             specified_path = str(specified_path)
 
@@ -314,7 +321,9 @@ def save(
         # names them. Hooks never raise (best-effort fan-out).
         from ._observers import fire_post_save
 
-        fire_post_save(saved_path, obj, kwargs)
+        # Re-attach ``track`` so observers (clew) can honour it. It was
+        # popped above to keep it out of the format handlers.
+        fire_post_save(saved_path, obj, {**kwargs, "track": track})
         return saved_path
 
     except Exception as e:
