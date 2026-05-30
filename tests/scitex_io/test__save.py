@@ -522,3 +522,45 @@ def test_never_creates_legacy_name_path_out(
     sio.save(np.array([1.0]), "x.npy", env_detector=_env("jupyter"))
     # Assert
     assert not (cwd_tmp / "name").exists()
+
+
+# ===========================================================================
+# Regression — ``track=`` must NOT leak to format handlers (pkl/yaml take
+# no extra kwargs). Unblocks stx.session teardown (CONFIG.pkl/yaml saves).
+# ===========================================================================
+
+
+def test_save_pickle_with_track_false_does_not_raise(cwd_tmp):
+    # Arrange
+    target = cwd_tmp / "cfg_track.pkl"
+    # Act
+    sio.save({"a": 1}, str(target), track=False, env_detector=_env("script"))
+    # Assert
+    assert target.is_file()
+
+
+def test_save_yaml_with_track_false_does_not_raise(cwd_tmp):
+    # Arrange
+    target = cwd_tmp / "cfg_track.yaml"
+    # Act
+    sio.save({"a": 1}, str(target), track=False, env_detector=_env("script"))
+    # Assert
+    assert target.is_file()
+
+
+def test_save_pickle_with_track_true_default_still_works(cwd_tmp):
+    # Arrange
+    target = cwd_tmp / "cfg_default.pkl"
+    # Act
+    sio.save({"a": 1}, str(target), track=True, env_detector=_env("script"))
+    # Assert
+    assert target.is_file()
+
+
+def test_save_pickle_without_track_arg_still_works(cwd_tmp):
+    # Arrange
+    target = cwd_tmp / "cfg_no_track.pkl"
+    # Act
+    sio.save({"a": 1}, str(target), env_detector=_env("script"))
+    # Assert
+    assert target.is_file()
