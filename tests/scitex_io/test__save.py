@@ -183,29 +183,34 @@ def test_abs_path_with_subdirs_creates_them(cwd_tmp):
 
 def test_abs_path_makedirs_false_returns_false_on_missing_parent(cwd_tmp):
     # Arrange
+    import pytest
     target = cwd_tmp / "missing-parent" / "data.npy"
-    # Act
-    result = sio.save(
-        np.array([1.0]),
-        str(target),
-        makedirs=False,
-        env_detector=_env("script"),
-    )
-    # Assert
-    assert result is False
+    # Act / Assert — makedirs=False with a missing parent now raises
+    # (fail-loud-fail-early policy, 2026-06-01). Previously this branch
+    # returned a `False` sentinel which let callers think the save had
+    # succeeded.
+    with pytest.raises(Exception):
+        sio.save(
+            np.array([1.0]),
+            str(target),
+            makedirs=False,
+            env_detector=_env("script"),
+        )
 
 
 def test_abs_path_makedirs_false_does_not_create_target(cwd_tmp):
-    # Arrange
+    # Even though save() now raises on failure (fail-loud policy,
+    # 2026-06-01), the no-half-written-file invariant must still hold:
+    # the target path must not appear on disk after the raise.
+    import pytest
     target = cwd_tmp / "missing-parent" / "data.npy"
-    # Act
-    sio.save(
-        np.array([1.0]),
-        str(target),
-        makedirs=False,
-        env_detector=_env("script"),
-    )
-    # Assert
+    with pytest.raises(Exception):
+        sio.save(
+            np.array([1.0]),
+            str(target),
+            makedirs=False,
+            env_detector=_env("script"),
+        )
     assert not target.exists()
 
 

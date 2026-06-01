@@ -79,16 +79,13 @@ class TestFStringPath:
         import scitex_io as sio
 
         # An f-expression with a non-identifier placeholder. The function
-        # raises ValueError internally and the outer try/except returns
-        # False (the function's error envelope).
+        # raises ValueError internally and the outer try/except re-raises
+        # it (fail-loud-fail-early policy, 2026-06-01) instead of
+        # swallowing the failure with a `False` sentinel.
+        import pytest
         path = f'f"{tmp_path}/run_{{1invalid}}.json"'
-        # Act
-        # Act
-        result = sio.save({"x": 1}, path, verbose=False)
-        # Bad path → outer try/except returns False.
-        # Assert
-        # Assert
-        assert result is False
+        with pytest.raises(Exception):
+            sio.save({"x": 1}, path, verbose=False)
 
 
 # ---------------------------------------------------------------------------
@@ -211,19 +208,21 @@ class TestSymlinkTo:
 
 
 class TestUnknownExtension:
-    def test_no_handler_returns_false(self, tmp_path):
-        # Arrange
-        # Arrange
+    def test_no_handler_raises(self, tmp_path):
+        # `.totally-fake` has no registered handler. save() must raise
+        # (fail-loud-fail-early policy, 2026-06-01) so the caller can
+        # see the failure at the call site rather than receiving a
+        # falsy sentinel and continuing as if the file had been written.
+        # The actual exception type is whatever the unknown-handler
+        # code path emits today (ValueError); pytest.raises catches
+        # the base Exception so the test stays robust across future
+        # refactors of the missing-handler error type.
+        import pytest
         import scitex_io as sio
 
-        # `.totally-fake` has no registered handler. save() catches the
-        # ValueError and returns False.
-        # Act
-        # Act
         out = str(tmp_path / "data.totally-fake")
-        # Assert
-        # Assert
-        assert sio.save({"x": 1}, out, verbose=False) is False
+        with pytest.raises(Exception):
+            sio.save({"x": 1}, out, verbose=False)
 
 
 # ---------------------------------------------------------------------------
