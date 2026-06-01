@@ -327,14 +327,30 @@ def save(
         return saved_path
 
     except Exception as e:
+        # Fail loud, fail early. Previously this branch logged the error
+        # and returned False, which let callers proceed as though the
+        # file had been written — downstream code then exploded much
+        # later (or, worse, kept running with stale/missing data and
+        # silently produced wrong results).
+        #
+        # Concrete real-world incident (paper-scitex-clew TRANSLATION
+        # _TEMPLATE rollout, 2026-06-01): on a WSL2 Ubuntu 22.04
+        # minimal container without libglib2 installed, every
+        # scitex_io.save() call raised
+        # `libgthread-2.0.so.0: cannot open shared object file` deep in
+        # an optional handler import. The old `return False` swallowed
+        # the ImportError, the agent's stage 1 logged "saved metrics.csv
+        # with 8 rows", and stage 2 then crashed with FileNotFoundError
+        # — three stages later than the actual fault. With the raise
+        # below the ImportError surfaces at the save call site, with
+        # the spath / specified_path debug trail intact.
         logger.error(
-            f"Error occurred while saving: {str(e)}\n"
-            f"Debug: Initial script_path = {inspect.stack()[1].filename}\n"
-            f"Debug: Final spath = {spath}\n"
-            f"Debug: specified_path type = {type(specified_path)}\n"
-            f"Debug: specified_path = {specified_path}"
+            f"scitex_io.save failed for {specified_path!r}: {e}\n"
+            f"  Initial script_path = {inspect.stack()[1].filename}\n"
+            f"  Final spath = {spath}\n"
+            f"  specified_path type = {type(specified_path)}"
         )
-        return False
+        raise
 
 
 def _symlink(spath, spath_cwd, symlink_from_cwd, verbose):

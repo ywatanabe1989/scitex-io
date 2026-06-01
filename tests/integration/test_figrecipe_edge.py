@@ -337,8 +337,9 @@ def saved_figrecipe_only_object(figrecipe_absent, tmp_path):
 
     The object mimics a figrecipe RecordingFigure (it carries ``save_recipe``
     and ``savefig``) but has no working backend, so the save must fail. The
-    contract is that ``save`` degrades gracefully rather than letting a raw
-    exception escape to the caller.
+    contract is that ``save`` fails loudly (raises) rather than letting the
+    caller continue with a falsy sentinel as if everything had worked.
+    (Fail-loud-fail-early policy, 2026-06-01.)
     """
 
     class FakeRecordingFigure:
@@ -348,30 +349,32 @@ def saved_figrecipe_only_object(figrecipe_absent, tmp_path):
             raise RuntimeError("figrecipe backend unavailable")
 
     spath = str(tmp_path / "fake.png")
-    result = figrecipe_absent.save(FakeRecordingFigure(), spath, verbose=False)
+    exc: Exception | None = None
+    try:
+        figrecipe_absent.save(FakeRecordingFigure(), spath, verbose=False)
+    except Exception as e:  # noqa: BLE001 — fixture captures whatever raised
+        exc = e
 
     class _Out:
         def __init__(self):
-            self.result = result
+            self.exc = exc
             self.png = tmp_path / "fake.png"
 
     return _Out()
 
 
-def test_figrecipe_only_object_returns_false_sentinel(
-    saved_figrecipe_only_object,
-):
-    """save() degrades to its documented ``False`` sentinel (no opaque crash)."""
+def test_figrecipe_only_object_raises(saved_figrecipe_only_object):
+    """save() raises when its underlying recorder has no working backend."""
     # Arrange
     out = saved_figrecipe_only_object
     # Act
-    result = out.result
-    # Assert
-    assert result is False
+    captured = out.exc
+    # Assert — must have raised (fail-loud-fail-early policy)
+    assert captured is not None
 
 
 def test_figrecipe_only_object_writes_no_file(saved_figrecipe_only_object):
-    """A failed degraded save leaves no half-written image behind."""
+    """A failed save leaves no half-written image behind."""
     # Arrange
     out = saved_figrecipe_only_object
     # Act
