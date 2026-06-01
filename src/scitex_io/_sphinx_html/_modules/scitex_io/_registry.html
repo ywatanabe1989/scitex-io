@@ -211,6 +211,21 @@
 <span class="sd">handlers (higher priority). Users and upstream packages (e.g., scitex with</span>
 <span class="sd">.pltz/.figz/.statsz) register custom handlers via the same API.</span>
 
+<span class="sd">Per-extension lazy resolution</span>
+<span class="sd">-----------------------------</span>
+<span class="sd">Built-in handlers may be registered as a ``(module_path, attr_name)`` tuple</span>
+<span class="sd">instead of an already-imported callable. The first ``get_saver`` /</span>
+<span class="sd">``get_loader`` lookup for that extension calls</span>
+<span class="sd">:func:`importlib.import_module` on the named module, fetches the attribute,</span>
+<span class="sd">and memoises the resolved callable in place — so subsequent lookups are an</span>
+<span class="sd">ordinary dict get. A failed lazy import emits an ``ImportWarning`` (once</span>
+<span class="sd">per extension) and the entry is replaced with ``None`` so we don&#39;t retry on</span>
+<span class="sd">every call.</span>
+
+<span class="sd">This keeps ``import scitex_io`` cheap: importing a JSON-only save never</span>
+<span class="sd">pulls PIL, pymupdf, pyarrow, h5py, scipy, plotly, etc. Each format module</span>
+<span class="sd">is loaded only when its extension is actually used.</span>
+
 <span class="sd">Example</span>
 <span class="sd">-------</span>
 <span class="sd">&gt;&gt;&gt; from scitex_io import register_saver, register_loader, save, load</span>
@@ -230,11 +245,21 @@
 <span class="sd">&#39;hello&#39;</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">importlib</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">_importlib</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">_warnings</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="c1"># Entries in the builtin registries may be either an already-resolved</span>
+<span class="c1"># callable or a ``(module_path, attr_name)`` tuple that the registry</span>
+<span class="c1"># resolves on first lookup (and memoises in place).</span>
+<span class="n">_LazySpec</span> <span class="o">=</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span>
+<span class="n">_BuiltinEntry</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">Callable</span><span class="p">,</span> <span class="n">_LazySpec</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>
 
 <span class="c1"># Two-tier registries</span>
-<span class="n">_builtin_savers</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
-<span class="n">_builtin_loaders</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="n">_builtin_savers</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">_BuiltinEntry</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="n">_builtin_loaders</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">_BuiltinEntry</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
 <span class="n">_user_savers</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
 <span class="n">_user_loaders</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
 
@@ -245,6 +270,62 @@
     <span class="k">if</span> <span class="n">ext</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">ext</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">):</span>
         <span class="n">ext</span> <span class="o">=</span> <span class="s2">&quot;.&quot;</span> <span class="o">+</span> <span class="n">ext</span>
     <span class="k">return</span> <span class="n">ext</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_is_lazy_spec</span><span class="p">(</span><span class="n">entry</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return True when ``entry`` is a ``(module_path, attr_name)`` lazy spec.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="nb">isinstance</span><span class="p">(</span><span class="n">entry</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)</span>
+        <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span>
+        <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">entry</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">str</span><span class="p">)</span>
+        <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">entry</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="nb">str</span><span class="p">)</span>
+    <span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_resolve_lazy</span><span class="p">(</span>
+    <span class="n">registry</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">_BuiltinEntry</span><span class="p">],</span>
+    <span class="n">ext</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">kind</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Resolve a lazy registry entry and memoise the result.</span>
+
+<span class="sd">    On import failure the entry is replaced with ``None`` (so we don&#39;t</span>
+<span class="sd">    re-try every call) and an ``ImportWarning`` is emitted once.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">entry</span> <span class="o">=</span> <span class="n">registry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">ext</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">entry</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">_is_lazy_spec</span><span class="p">(</span><span class="n">entry</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">entry</span>  <span class="c1"># already resolved</span>
+    <span class="n">module_path</span><span class="p">,</span> <span class="n">attr_name</span> <span class="o">=</span> <span class="n">entry</span>  <span class="c1"># type: ignore[misc]</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">module</span> <span class="o">=</span> <span class="n">_importlib</span><span class="o">.</span><span class="n">import_module</span><span class="p">(</span><span class="n">module_path</span><span class="p">)</span>
+        <span class="n">fn</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">attr_name</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">fn</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;module </span><span class="si">{</span><span class="n">module_path</span><span class="si">!r}</span><span class="s2"> has no attribute </span><span class="si">{</span><span class="n">attr_name</span><span class="si">!r}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>  <span class="c1"># ImportError or missing attribute</span>
+        <span class="n">registry</span><span class="p">[</span><span class="n">ext</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">_warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;scitex_io: </span><span class="si">{</span><span class="n">kind</span><span class="si">}</span><span class="s2"> for &#39;</span><span class="si">{</span><span class="n">ext</span><span class="si">}</span><span class="s2">&#39; not registered &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;(missing optional dependency: </span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">,</span>
+            <span class="ne">ImportWarning</span><span class="p">,</span>
+            <span class="n">stacklevel</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="n">registry</span><span class="p">[</span><span class="n">ext</span><span class="p">]</span> <span class="o">=</span> <span class="n">fn</span>  <span class="c1"># memoise the resolved callable</span>
+    <span class="k">return</span> <span class="n">fn</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_register_builtin_lazy</span><span class="p">(</span>
+    <span class="n">registry</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">_BuiltinEntry</span><span class="p">],</span>
+    <span class="n">ext</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">module_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">attr_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Register a builtin handler as a lazy ``(module_path, attr_name)`` spec.&quot;&quot;&quot;</span>
+    <span class="n">registry</span><span class="p">[</span><span class="n">_normalize_ext</span><span class="p">(</span><span class="n">ext</span><span class="p">)]</span> <span class="o">=</span> <span class="p">(</span><span class="n">module_path</span><span class="p">,</span> <span class="n">attr_name</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="register_saver">
@@ -319,18 +400,32 @@
 <div class="viewcode-block" id="get_saver">
 <a class="viewcode-back" href="../../api/scitex_io.html#scitex_io.get_saver">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_saver</span><span class="p">(</span><span class="n">ext</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Look up a save handler. User overrides take priority.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Look up a save handler. User overrides take priority.</span>
+
+<span class="sd">    Lazy builtin specs (``(module_path, attr_name)`` tuples) are resolved</span>
+<span class="sd">    on first access and memoised in place.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">ext</span> <span class="o">=</span> <span class="n">_normalize_ext</span><span class="p">(</span><span class="n">ext</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">_user_savers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">ext</span><span class="p">)</span> <span class="ow">or</span> <span class="n">_builtin_savers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">ext</span><span class="p">)</span></div>
+    <span class="n">fn</span> <span class="o">=</span> <span class="n">_user_savers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">ext</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">fn</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">fn</span>
+    <span class="k">return</span> <span class="n">_resolve_lazy</span><span class="p">(</span><span class="n">_builtin_savers</span><span class="p">,</span> <span class="n">ext</span><span class="p">,</span> <span class="s2">&quot;saver&quot;</span><span class="p">)</span></div>
 
 
 
 <div class="viewcode-block" id="get_loader">
 <a class="viewcode-back" href="../../api/scitex_io.html#scitex_io.get_loader">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_loader</span><span class="p">(</span><span class="n">ext</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Look up a load handler. User overrides take priority.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Look up a load handler. User overrides take priority.</span>
+
+<span class="sd">    Lazy builtin specs (``(module_path, attr_name)`` tuples) are resolved</span>
+<span class="sd">    on first access and memoised in place.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">ext</span> <span class="o">=</span> <span class="n">_normalize_ext</span><span class="p">(</span><span class="n">ext</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">_user_loaders</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">ext</span><span class="p">)</span> <span class="ow">or</span> <span class="n">_builtin_loaders</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">ext</span><span class="p">)</span></div>
+    <span class="n">fn</span> <span class="o">=</span> <span class="n">_user_loaders</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">ext</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">fn</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">fn</span>
+    <span class="k">return</span> <span class="n">_resolve_lazy</span><span class="p">(</span><span class="n">_builtin_loaders</span><span class="p">,</span> <span class="n">ext</span><span class="p">,</span> <span class="s2">&quot;loader&quot;</span><span class="p">)</span></div>
 
 
 
@@ -344,6 +439,11 @@
 <span class="sd">    dict</span>
 <span class="sd">        A dict with keys ``&quot;save&quot;`` and ``&quot;load&quot;``, each containing</span>
 <span class="sd">        ``&quot;builtin&quot;`` and ``&quot;user&quot;`` format lists.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Builtin entries are listed regardless of whether they have been</span>
+<span class="sd">    lazy-resolved yet — registration is what counts.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="p">{</span>
         <span class="s2">&quot;save&quot;</span><span class="p">:</span> <span class="p">{</span>

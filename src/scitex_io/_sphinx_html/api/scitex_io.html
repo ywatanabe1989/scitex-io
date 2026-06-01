@@ -298,6 +298,8 @@ User registrations always override built-ins.</p></li>
 <dt class="sig sig-object py" id="scitex_io.get_saver">
 <span class="sig-prename descclassname"><span class="pre">scitex_io.</span></span><span class="sig-name descname"><span class="pre">get_saver</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ext</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/scitex_io/_registry.html#get_saver"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scitex_io.get_saver" title="Link to this definition"></a></dt>
 <dd><p>Look up a save handler. User overrides take priority.</p>
+<p>Lazy builtin specs (<code class="docutils literal notranslate"><span class="pre">(module_path,</span> <span class="pre">attr_name)</span></code> tuples) are resolved
+on first access and memoised in place.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code></a>]</span></p>
@@ -309,6 +311,8 @@ User registrations always override built-ins.</p></li>
 <dt class="sig sig-object py" id="scitex_io.get_loader">
 <span class="sig-prename descclassname"><span class="pre">scitex_io.</span></span><span class="sig-name descname"><span class="pre">get_loader</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ext</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/scitex_io/_registry.html#get_loader"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#scitex_io.get_loader" title="Link to this definition"></a></dt>
 <dd><p>Look up a load handler. User overrides take priority.</p>
+<p>Lazy builtin specs (<code class="docutils literal notranslate"><span class="pre">(module_path,</span> <span class="pre">attr_name)</span></code> tuples) are resolved
+on first access and memoised in place.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code></a>]</span></p>
@@ -329,6 +333,11 @@ User registrations always override built-ins.</p></li>
 <dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)">dict</a></p>
 </dd>
 </dl>
+<div class="admonition-notes admonition">
+<p class="admonition-title">Notes</p>
+<p>Builtin entries are listed regardless of whether they have been
+lazy-resolved yet — registration is what counts.</p>
+</div>
 </dd></dl>
 
 <dl class="py function">
@@ -1315,6 +1324,8 @@ User registrations always override built-ins.</p></li>
 <dt class="sig sig-object py">
 <span class="sig-prename descclassname"><span class="pre">scitex_io.</span></span><span class="sig-name descname"><span class="pre">get_saver</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ext</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/scitex_io/_registry.html#get_saver"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Look up a save handler. User overrides take priority.</p>
+<p>Lazy builtin specs (<code class="docutils literal notranslate"><span class="pre">(module_path,</span> <span class="pre">attr_name)</span></code> tuples) are resolved
+on first access and memoised in place.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code></a>]</span></p>
@@ -1326,6 +1337,8 @@ User registrations always override built-ins.</p></li>
 <dt class="sig sig-object py">
 <span class="sig-prename descclassname"><span class="pre">scitex_io.</span></span><span class="sig-name descname"><span class="pre">get_loader</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ext</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/scitex_io/_registry.html#get_loader"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Look up a load handler. User overrides take priority.</p>
+<p>Lazy builtin specs (<code class="docutils literal notranslate"><span class="pre">(module_path,</span> <span class="pre">attr_name)</span></code> tuples) are resolved
+on first access and memoised in place.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code></a>]</span></p>
@@ -1346,6 +1359,11 @@ User registrations always override built-ins.</p></li>
 <dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)">dict</a></p>
 </dd>
 </dl>
+<div class="admonition-notes admonition">
+<p class="admonition-title">Notes</p>
+<p>Builtin entries are listed regardless of whether they have been
+lazy-resolved yet — registration is what counts.</p>
+</div>
 </dd></dl>
 
 <dl class="py function">
