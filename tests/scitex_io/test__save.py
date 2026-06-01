@@ -181,14 +181,14 @@ def test_abs_path_with_subdirs_creates_them(cwd_tmp):
     assert target.is_file()
 
 
-def test_abs_path_makedirs_false_returns_false_on_missing_parent(cwd_tmp):
-    # Arrange
-    import pytest
-    target = cwd_tmp / "missing-parent" / "data.npy"
-    # Act / Assert — makedirs=False with a missing parent now raises
+def test_abs_path_makedirs_false_raises_on_missing_parent(cwd_tmp):
+    # Arrange — makedirs=False with a missing parent now raises
     # (fail-loud-fail-early policy, 2026-06-01). Previously this branch
     # returned a `False` sentinel which let callers think the save had
     # succeeded.
+    import pytest
+    target = cwd_tmp / "missing-parent" / "data.npy"
+    # Act / Assert — single behavioural assertion (the raise)
     with pytest.raises(Exception):
         sio.save(
             np.array([1.0]),
@@ -199,9 +199,11 @@ def test_abs_path_makedirs_false_returns_false_on_missing_parent(cwd_tmp):
 
 
 def test_abs_path_makedirs_false_does_not_create_target(cwd_tmp):
-    # Even though save() now raises on failure (fail-loud policy,
-    # 2026-06-01), the no-half-written-file invariant must still hold:
-    # the target path must not appear on disk after the raise.
+    # Arrange — even though save() now raises on failure (fail-loud
+    # policy, 2026-06-01), the no-half-written-file invariant must
+    # still hold: the target path must not appear on disk after the
+    # raise. This test owns that invariant; the sibling test owns the
+    # raise itself.
     import pytest
     target = cwd_tmp / "missing-parent" / "data.npy"
     with pytest.raises(Exception):
@@ -211,7 +213,10 @@ def test_abs_path_makedirs_false_does_not_create_target(cwd_tmp):
             makedirs=False,
             env_detector=_env("script"),
         )
-    assert not target.exists()
+    # Act
+    target_exists = target.exists()
+    # Assert — single behavioural assertion (no half-write)
+    assert not target_exists
 
 
 # ===========================================================================

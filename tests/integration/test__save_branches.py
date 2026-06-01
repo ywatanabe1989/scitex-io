@@ -74,16 +74,15 @@ class TestPathlibInput:
 
 class TestFStringPath:
     def test_f_string_rejects_invalid_variable_name(self, tmp_path):
-        # Arrange
-        # Arrange
-        import scitex_io as sio
-
-        # An f-expression with a non-identifier placeholder. The function
-        # raises ValueError internally and the outer try/except re-raises
-        # it (fail-loud-fail-early policy, 2026-06-01) instead of
-        # swallowing the failure with a `False` sentinel.
+        # Arrange — an f-expression with a non-identifier placeholder;
+        # the function raises ValueError internally and the outer
+        # try/except re-raises it (fail-loud-fail-early policy,
+        # 2026-06-01) instead of swallowing the failure with a `False`
+        # sentinel.
         import pytest
+        import scitex_io as sio
         path = f'f"{tmp_path}/run_{{1invalid}}.json"'
+        # Act / Assert — single behavioural assertion (the raise)
         with pytest.raises(Exception):
             sio.save({"x": 1}, path, verbose=False)
 
@@ -209,18 +208,17 @@ class TestSymlinkTo:
 
 class TestUnknownExtension:
     def test_no_handler_raises(self, tmp_path):
-        # `.totally-fake` has no registered handler. save() must raise
-        # (fail-loud-fail-early policy, 2026-06-01) so the caller can
-        # see the failure at the call site rather than receiving a
-        # falsy sentinel and continuing as if the file had been written.
-        # The actual exception type is whatever the unknown-handler
-        # code path emits today (ValueError); pytest.raises catches
-        # the base Exception so the test stays robust across future
-        # refactors of the missing-handler error type.
+        # Arrange — `.totally-fake` has no registered handler. save()
+        # must raise (fail-loud-fail-early policy, 2026-06-01) so the
+        # caller sees the failure at the call site rather than
+        # receiving a falsy sentinel and continuing as if the file had
+        # been written. The actual exception type is whatever the
+        # unknown-handler code path emits today (ValueError);
+        # ``Exception`` keeps the test robust across future refactors.
         import pytest
         import scitex_io as sio
-
         out = str(tmp_path / "data.totally-fake")
+        # Act / Assert — single behavioural assertion (the raise)
         with pytest.raises(Exception):
             sio.save({"x": 1}, out, verbose=False)
 

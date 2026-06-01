@@ -365,10 +365,12 @@ def saved_figrecipe_only_object(figrecipe_absent, tmp_path):
 
 def test_figrecipe_only_object_raises(saved_figrecipe_only_object):
     """save() raises when its underlying recorder has no working backend."""
-    # Arrange / Act
+    # Arrange
     out = saved_figrecipe_only_object
+    # Act
+    captured = out.exc
     # Assert — must have raised (fail-loud-fail-early policy)
-    assert out.exc is not None
+    assert captured is not None
 
 
 def test_figrecipe_only_object_writes_no_file(saved_figrecipe_only_object):
