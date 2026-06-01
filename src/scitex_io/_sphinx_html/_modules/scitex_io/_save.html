@@ -534,14 +534,30 @@
         <span class="k">return</span> <span class="n">saved_path</span>
 
     <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="c1"># Fail loud, fail early. Previously this branch logged the error</span>
+        <span class="c1"># and returned False, which let callers proceed as though the</span>
+        <span class="c1"># file had been written — downstream code then exploded much</span>
+        <span class="c1"># later (or, worse, kept running with stale/missing data and</span>
+        <span class="c1"># silently produced wrong results).</span>
+        <span class="c1">#</span>
+        <span class="c1"># Concrete real-world incident (paper-scitex-clew TRANSLATION</span>
+        <span class="c1"># _TEMPLATE rollout, 2026-06-01): on a WSL2 Ubuntu 22.04</span>
+        <span class="c1"># minimal container without libglib2 installed, every</span>
+        <span class="c1"># scitex_io.save() call raised</span>
+        <span class="c1"># `libgthread-2.0.so.0: cannot open shared object file` deep in</span>
+        <span class="c1"># an optional handler import. The old `return False` swallowed</span>
+        <span class="c1"># the ImportError, the agent&#39;s stage 1 logged &quot;saved metrics.csv</span>
+        <span class="c1"># with 8 rows&quot;, and stage 2 then crashed with FileNotFoundError</span>
+        <span class="c1"># — three stages later than the actual fault. With the raise</span>
+        <span class="c1"># below the ImportError surfaces at the save call site, with</span>
+        <span class="c1"># the spath / specified_path debug trail intact.</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Error occurred while saving: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;Debug: Initial script_path = </span><span class="si">{</span><span class="n">inspect</span><span class="o">.</span><span class="n">stack</span><span class="p">()[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">filename</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;Debug: Final spath = </span><span class="si">{</span><span class="n">spath</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;Debug: specified_path type = </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">specified_path</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;Debug: specified_path = </span><span class="si">{</span><span class="n">specified_path</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;scitex_io.save failed for </span><span class="si">{</span><span class="n">specified_path</span><span class="si">!r}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;  Initial script_path = </span><span class="si">{</span><span class="n">inspect</span><span class="o">.</span><span class="n">stack</span><span class="p">()[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">filename</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;  Final spath = </span><span class="si">{</span><span class="n">spath</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;  specified_path type = </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">specified_path</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="p">)</span>
-        <span class="k">return</span> <span class="kc">False</span></div>
+        <span class="k">raise</span></div>
 
 
 
