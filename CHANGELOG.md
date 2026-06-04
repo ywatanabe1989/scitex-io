@@ -7,6 +7,11 @@ versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.2.21] — 2026-06-04
+
+### Fixed
+- **`scitex_io.save(symlink_from_cwd=True)` no longer self-loops on repeat invocation (#55, #56).** Two consecutive `save(obj, "./x.csv", symlink_from_cwd=True)` calls from the same cwd produced a `./x.csv -> x.csv` self-loop symlink, and a third call then tripped `OSError [Errno 40]` inside `clean()`. Root cause was twofold: (a) `spath_cwd = clean(spath_cwd)` called `Path.resolve()`, which on call 2 silently followed call 1's symlink and rebound the cwd anchor onto the routed target file — so the next rm deleted the just-written artefact; (b) `_symlink()` received the un-normalised `spath` (containing `./` from `os.path.join(sdir, "./x.csv")`), and `ln -sfr` collapsed the relative target to the symlink's own basename, producing the self-loop. Fix: switch `spath_cwd` to `os.path.normpath` (anchor stays at the literal cwd location), pre-emptively `unlink` any pre-existing broken/self-loop symlink, and pass `spath_final` (cleaned) into `_symlink()` with a defence-in-depth self-loop guard. Regression test pins double-save + third-save round-trip and stale-self-loop cleanup.
+
 ## [0.2.20] — 2026-06-01
 
 ### Changed
