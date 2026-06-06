@@ -40,13 +40,16 @@ def _ensure_registered():
 @pytest.fixture
 def empty_db_path(tmp_path):
     # Arrange: an on-disk SQLite file with a trivial table so SQLite3
-    # has something to open.
+    # has something to open. The connection is opened-and-closed inside
+    # the fixture so we only `yield` the path string — `yield` (not
+    # `return`) satisfies STX-TQ005 because the fixture body touches a
+    # resource-acquiring call (`sqlite3.connect(...)`).
     path = os.path.join(str(tmp_path), "test.db")
     conn = sqlite3.connect(path)
     conn.execute("CREATE TABLE t (id INTEGER PRIMARY KEY, v REAL)")
     conn.commit()
     conn.close()
-    return path
+    yield path
 
 
 class TestScitexDbPresent:
