@@ -470,9 +470,21 @@ env var.</p></li>
 <dd class="field-odd"><p><a class="reference internal" href="#scitex_io.DotDict" title="scitex_io.DotDict">DotDict</a></p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – If two keys inside one mapping fold to the same UPPER form
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – If two keys inside one mapping fold to the same UPPER form
     (a case collision). Raised at load time, naming the file, the
-    mapping path, and both offending keys.</p>
+    mapping path, and both offending keys.</p></li>
+<li><p><strong>ConfigLoadError</strong> – If reading or processing any YAML file under <code class="docutils literal notranslate"><span class="pre">config_dir</span></code>
+    fails for any reason other than a case collision (malformed
+    YAML, missing required file under <code class="docutils literal notranslate"><span class="pre">categories/</span></code>, an
+    <code class="docutils literal notranslate"><span class="pre">apply_debug_values</span></code> walker crash on a malformed mapping,
+    …). The message names the offending file path; the original
+    exception is chained as <code class="docutils literal notranslate"><span class="pre">__cause__</span></code> so the traceback shows
+    the root error. Replaces the prior swallow-and-return-empty-
+    <code class="docutils literal notranslate"><span class="pre">DotDict</span></code> behaviour, which made every config bug surface as
+    a baffling <code class="docutils literal notranslate"><span class="pre">'DotDict'</span> <span class="pre">object</span> <span class="pre">has</span> <span class="pre">no</span> <span class="pre">attribute</span> <span class="pre">'X'</span></code> three
+    frames away from the actual failure.</p></li>
+</ul>
 </dd>
 </dl>
 <div class="admonition-examples admonition">
@@ -1105,9 +1117,21 @@ env var.</p></li>
 <dd class="field-odd"><p><a class="reference internal" href="#scitex_io.DotDict" title="scitex_io.DotDict">DotDict</a></p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – If two keys inside one mapping fold to the same UPPER form
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – If two keys inside one mapping fold to the same UPPER form
     (a case collision). Raised at load time, naming the file, the
-    mapping path, and both offending keys.</p>
+    mapping path, and both offending keys.</p></li>
+<li><p><strong>ConfigLoadError</strong> – If reading or processing any YAML file under <code class="docutils literal notranslate"><span class="pre">config_dir</span></code>
+    fails for any reason other than a case collision (malformed
+    YAML, missing required file under <code class="docutils literal notranslate"><span class="pre">categories/</span></code>, an
+    <code class="docutils literal notranslate"><span class="pre">apply_debug_values</span></code> walker crash on a malformed mapping,
+    …). The message names the offending file path; the original
+    exception is chained as <code class="docutils literal notranslate"><span class="pre">__cause__</span></code> so the traceback shows
+    the root error. Replaces the prior swallow-and-return-empty-
+    <code class="docutils literal notranslate"><span class="pre">DotDict</span></code> behaviour, which made every config bug surface as
+    a baffling <code class="docutils literal notranslate"><span class="pre">'DotDict'</span> <span class="pre">object</span> <span class="pre">has</span> <span class="pre">no</span> <span class="pre">attribute</span> <span class="pre">'X'</span></code> three
+    frames away from the actual failure.</p></li>
+</ul>
 </dd>
 </dl>
 <div class="admonition-examples admonition">
