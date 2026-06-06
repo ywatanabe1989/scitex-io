@@ -75,6 +75,16 @@ optuna = [
 figrecipe = [
     "figrecipe>=0.28",
 ]
+# Optional synergy: when scitex-db is installed, scitex_io.load("foo.db")
+# dispatches to scitex_db.SQLite3 (the full wrapper with mixins:
+# get_rows -> DataFrame, load_array / save_array, etc.). Absent
+# scitex-db, the `.db` extension stays unregistered and stx.io.load
+# raises a clear "No load handler … install scitex-io[db]" error
+# rather than silently returning a raw sqlite3.Connection. See
+# _optional_providers._register_scitex_db.
+db = [
+    "scitex-db>=0.1.11",
+]
 dev = [
     "pytest>=7.0",
     "pytest-cov",
@@ -107,6 +117,7 @@ dev = [
     "optuna",             # tested via _load_modules/_optuna + _save_modules/_optuna_study
     "figrecipe>=0.28",    # optional synergy: .fig.zip/.plt.zip bundle dispatch
     "scitex-stats>=0.2.22",  # optional synergy: .stats.zip + Stats schema (scitex_stats._dataclasses.Stats, published in 0.2.22)
+    "scitex-db>=0.1.11",   # optional synergy: .db dispatch via SQLite3 wrapper
 ]
 docs = [
     "sphinx>=7.0",
@@ -119,6 +130,7 @@ all = [
     "scitex-io[mcp]",
     "scitex-io[scientific]",
     "scitex-io[figrecipe]",
+    "scitex-io[db]",
 ]
 
 [project.scripts]
