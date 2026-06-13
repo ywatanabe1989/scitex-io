@@ -676,3 +676,179 @@ def test_stale_self_loop_symlink_at_cwd_anchor_is_cleaned(cwd_tmp):
     link_target = os.readlink(bad_link)
     # Assert
     assert link_target != "x.csv"
+
+
+# ====================================================================== #
+# Operator-dogfood 2026-06-13 path-routing regression suite               #
+# ====================================================================== #
+# scitex.io.save inside @stx.session saved to ./output/ instead of
+# scripts/dataset/tmp_out/. Root causes: (a) detect_environment returned
+# only 'jupyter'/'python', leaving the `elif env_type == "script":`
+# branch dead → silent <cwd>/output fallback; (b) the script-branch's
+# stack-walk used scitex_io's parent dir to detect "scitex frames" via
+# filesystem prefix → missed scitex_dev wrapper frames in split installs,
+# writing into `scitex_dev/_core/decorators_out/`. Fix lands in this same
+# commit; these tests pin the contract end-to-end with real subprocess +
+# tmp_path (no mocks, per operator).
+
+import subprocess as _subproc
+import sys as _sys_module
+import textwrap as _textwrap
+import os as _os_module
+from pathlib import Path as _Path
+
+
+def _run_subprocess_script(
+    tmp_path,
+    script_body: str,
+    env: dict | None = None,
+) -> _subproc.CompletedProcess:
+    """Write ``script_body`` to ``tmp_path/tmp_save_routing.py`` and run it.
+
+    Returns the CompletedProcess so callers inspect stdout / stderr /
+    returncode. Subprocess cwd is ``tmp_path`` so any accidental
+    ``cwd/output/`` regression is sandboxed.
+    """
+    script = tmp_path / "tmp_save_routing.py"
+    script.write_text(_textwrap.dedent(script_body))
+    proc_env = dict(_os_module.environ)
+    if env:
+        proc_env.update(env)
+    return _subproc.run(
+        [_sys_module.executable, str(script)],
+        capture_output=True,
+        text=True,
+        cwd=str(tmp_path),
+        env=proc_env,
+    )
+
+
+class TestSaveRoutesScriptEnvToScriptOutDirectoryEndToEnd:
+    """A real .py subprocess calling ``stx.io.save`` lands in ``<script>_out/``."""
+
+    def test_save_in_script_context_writes_under_script_out_directory(self, tmp_path):
+        # Arrange
+        script_body = """
+            import scitex_io
+            scitex_io.save("hello", "./test_save_output.txt")
+        """
+        # Act
+        result = _run_subprocess_script(tmp_path, script_body)
+        # Assert — canonical layout is <script_stem>_out/<relpath>.
+        expected = tmp_path / "tmp_save_routing_out" / "test_save_output.txt"
+        emitted = (result.returncode, expected.is_file())
+        assert emitted == (0, True), (
+            f"script-context save must land in <script>_out/; "
+            f"got returncode={result.returncode}, file-exists={expected.is_file()}; "
+            f"expected={expected}; "
+            f"stdout={result.stdout!r}; stderr={result.stderr!r}"
+        )
+
+    def test_save_must_not_land_in_legacy_cwd_output_directory(self, tmp_path):
+        # Arrange — pin that the silent <cwd>/output/ fallback is GONE.
+        script_body = """
+            import scitex_io
+            scitex_io.save("hello", "./test_save_output.txt")
+        """
+        # Act
+        _run_subprocess_script(tmp_path, script_body)
+        # Assert — legacy ./output/ MUST NOT exist.
+        legacy = tmp_path / "output"
+        assert not legacy.exists(), (
+            f"script-context save must NOT regress to legacy ./output/; "
+            f"found {legacy}/ with contents: "
+            f"{list(legacy.iterdir()) if legacy.exists() else '-'}"
+        )
+
+
+class TestSaveRoutesInteractiveEnvToScitexDirCacheEndToEnd:
+    """A bare-REPL save lands in ``$SCITEX_DIR/io/runtime/cache/``."""
+
+    def test_python_c_save_writes_to_scitex_dir_cache(self, tmp_path):
+        # Arrange — fake SCITEX_DIR so we can locate the result.
+        scitex_dir = tmp_path / "fake_scitex_dir"
+        env = {"SCITEX_DIR": str(scitex_dir)}
+        oneliner = (
+            "import scitex_io; "
+            "scitex_io.save('hello', 'interactive_save.txt')"
+        )
+        # Act
+        result = _subproc.run(
+            [_sys_module.executable, "-c", oneliner],
+            capture_output=True,
+            text=True,
+            env={**_os_module.environ, **env},
+            cwd=str(tmp_path),
+        )
+        # Assert — file MUST be inside $SCITEX_DIR/io/runtime/cache/.
+        expected = scitex_dir / "io" / "runtime" / "cache" / "interactive_save.txt"
+        emitted = (result.returncode, expected.is_file())
+        assert emitted == (0, True), (
+            f"interactive-context save must land in $SCITEX_DIR/io/runtime/cache/; "
+            f"got returncode={result.returncode}, file-exists={expected.is_file()}; "
+            f"expected={expected}; "
+            f"stdout={result.stdout!r}; stderr={result.stderr!r}"
+        )
+
+
+class TestSaveFailsLoudOnUnknownEnvTypeEndToEnd:
+    """An ``env_detector`` returning anything outside the vocabulary raises."""
+
+    def test_unknown_env_type_raises_valueerror_with_diagnostic(self, tmp_path):
+        # Arrange — pass an env_detector that returns garbage.
+        script_body = """
+            import sys
+            import scitex_io
+            try:
+                scitex_io.save(
+                    "hello",
+                    "./should_not_create.txt",
+                    env_detector=lambda: "totally_bogus_env",
+                )
+            except ValueError as e:
+                print("RAISED:", str(e)[:120])
+                sys.exit(0)
+            else:
+                print("DID NOT RAISE")
+                sys.exit(2)
+        """
+        # Act
+        result = _run_subprocess_script(tmp_path, script_body)
+        # Assert — ValueError raised + documented vocabulary mentioned.
+        emitted = (
+            result.returncode,
+            "RAISED:" in result.stdout,
+            "totally_bogus_env" in result.stdout,
+            "jupyter" in result.stdout,
+        )
+        assert emitted == (0, True, True, True), (
+            f"unknown env_type must raise ValueError with documented vocabulary; "
+            f"got {emitted}; stdout={result.stdout!r}; stderr={result.stderr!r}"
+        )
+
+    def test_unknown_env_type_does_not_create_silent_cwd_output_fallback(self, tmp_path):
+        # Arrange — same as above; verify NO file lands anywhere.
+        script_body = """
+            import scitex_io
+            try:
+                scitex_io.save(
+                    "hello",
+                    "./should_not_create.txt",
+                    env_detector=lambda: "totally_bogus_env",
+                )
+            except ValueError:
+                pass
+        """
+        # Act
+        _run_subprocess_script(tmp_path, script_body)
+        # Assert — no legacy cwd/output/, no script_out, no plain file.
+        bad_paths = [
+            tmp_path / "output" / "should_not_create.txt",
+            tmp_path / "tmp_save_routing_out" / "should_not_create.txt",
+            tmp_path / "should_not_create.txt",
+        ]
+        existing = [p for p in bad_paths if p.exists()]
+        assert existing == [], (
+            f"fail-loud raise must NOT silently write anywhere; "
+            f"found writes at: {existing}"
+        )
