@@ -809,16 +809,21 @@ class TestParse:
 
 
 class TestEnvironmentDetect:
-    def test_python_env_detect_environment_python(self):
-        # In a plain pytest run, no IPython kernel → detect_environment
-        # should return "python".
+    def test_python_env_detect_environment_returns_script(self):
+        # In a plain pytest run, no IPython kernel + __main__ has a
+        # __file__ (the pytest entry-point) → detect_environment now
+        # returns "script" (operator directive 2026-06-13: closed
+        # vocabulary jupyter/ipython/script/interactive; old "python"
+        # return value retired with the silent <cwd>/output bug it
+        # enabled).
         # Arrange
         # Act
+        result = detect_environment()
         # Assert
-        # Arrange
-        # Act
-        # Assert
-        assert detect_environment() == "python"
+        assert result == "script", (
+            f"detect_environment() must return 'script' under pytest "
+            f"(closed vocab post 2026-06-13); got {result!r}"
+        )
 
     def test_notebook_path_explicit_env_var_name_equals_demo_ipynb(
         self, tmp_path, env_save_restore
