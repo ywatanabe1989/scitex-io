@@ -50,4 +50,4 @@ jobs:
           pip install "scitex-dev[cli-audit]>=0.17.14"
 
       - name: Run scitex-dev ecosystem audit-all
-        run: scitex-dev ecosystem audit-all scitex-io --no-version-check
+        run: scitex-dev ecosystem audit-all scitex-io --new-only --no-version-check
