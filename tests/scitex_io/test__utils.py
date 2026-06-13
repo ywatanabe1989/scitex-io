@@ -809,16 +809,21 @@ class TestParse:
 
 
 class TestEnvironmentDetect:
-    def test_python_env_detect_environment_python(self):
-        # In a plain pytest run, no IPython kernel → detect_environment
-        # should return "python".
+    def test_python_env_detect_environment_returns_script(self):
+        # In a plain pytest run, no IPython kernel + __main__ has a
+        # __file__ (the pytest entry-point) → detect_environment now
+        # returns "script" (operator directive 2026-06-13: closed
+        # vocabulary jupyter/ipython/script/interactive; old "python"
+        # return value retired with the silent <cwd>/output bug it
+        # enabled).
         # Arrange
         # Act
+        result = detect_environment()
         # Assert
-        # Arrange
-        # Act
-        # Assert
-        assert detect_environment() == "python"
+        assert result == "script", (
+            f"detect_environment() must return 'script' under pytest "
+            f"(closed vocab post 2026-06-13); got {result!r}"
+        )
 
     def test_notebook_path_explicit_env_var_name_equals_demo_ipynb(
         self, tmp_path, env_save_restore
@@ -893,3 +898,61 @@ class TestEnvironmentDetect:
         result = get_notebook_info_simple()
         # Assert
         assert result == (None, None)
+
+
+# ====================================================================== #
+# detect_environment — operator-dogfood 2026-06-13 vocabulary contract    #
+# ====================================================================== #
+# Previously detect_environment returned only 'jupyter' or 'python'.
+# Per operator's directive the vocabulary is now the closed set
+# (jupyter, ipython, script, interactive). Pin the script + interactive
+# return values via real subprocess (no mocks).
+
+
+import subprocess as _subproc_dt
+import sys as _sys_dt
+
+
+class TestDetectEnvironmentReturnsClosedVocabulary:
+    """The closed vocabulary contract is end-to-end verifiable."""
+
+    def test_returns_script_when_run_as_a_dot_py_subprocess(self, tmp_path):
+        # Arrange
+        script = tmp_path / "tmp_detect.py"
+        script.write_text(
+            "from scitex_io._utils import detect_environment\n"
+            "print(detect_environment())\n"
+        )
+        # Act
+        result = _subproc_dt.run(
+            [_sys_dt.executable, str(script)],
+            capture_output=True,
+            text=True,
+            cwd=str(tmp_path),
+        )
+        # Assert
+        emitted = (result.returncode, result.stdout.strip())
+        assert emitted == (0, "script"), (
+            f"detect_environment() in a .py subprocess must return 'script'; "
+            f"got {emitted}; stderr={result.stderr!r}"
+        )
+
+    def test_returns_interactive_when_run_via_python_c_one_liner(self):
+        # Arrange — bare `python -c "..."` has no __main__.__file__.
+        # Act
+        result = _subproc_dt.run(
+            [
+                _sys_dt.executable,
+                "-c",
+                "from scitex_io._utils import detect_environment; "
+                "print(detect_environment())",
+            ],
+            capture_output=True,
+            text=True,
+        )
+        # Assert
+        emitted = (result.returncode, result.stdout.strip())
+        assert emitted == (0, "interactive"), (
+            f"detect_environment() under `python -c` must return 'interactive'; "
+            f"got {emitted}; stderr={result.stderr!r}"
+        )
