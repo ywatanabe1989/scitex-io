@@ -101,7 +101,7 @@ def save(
     symlink_to: Union[str, Path] = None,
     dry_run: bool = False,
     no_csv: bool = False,
-    use_caller_path: bool = False,
+    use_caller_path: bool = True,
     env_detector=None,
     **kwargs,
 ) -> None:
@@ -229,16 +229,36 @@ def save(
                 spath = _os.path.join(sdir, specified_path)
 
             elif env_type == "script":
+                # use_caller_path defaults to True so a save under
+                # `@stx.session` (or any other scitex wrapper) walks past
+                # the scitex frames in inspect.stack() to the real user
+                # script. Direct (unwrapped) callers also work: no scitex
+                # frames are present so the walk falls through to
+                # frame[1] = the user script.
+                #
+                # We detect scitex frames by MODULE NAME (any
+                # ``scitex_*`` package), NOT by directory prefix —
+                # because scitex_io and scitex_dev may live in different
+                # site-packages locations (PYTHONPATH overlay, editable
+                # install of one but not the other, etc.) and a parent-
+                # path comparison would silently miss the wrapper frame.
+                # 2026-06-13 operator dogfood: a script saved via
+                # ``stx.io.save`` landed inside
+                # ``scitex_dev/_core/decorators_out/`` because the
+                # parent-path scan didn't match scitex_dev's path → the
+                # walker treated the wrapper frame as the user script.
                 if use_caller_path:
                     script_path = None
-                    scitex_src_path = _os.path.join(
-                        _os.path.dirname(__file__), "..", ".."
-                    )
-                    scitex_src_path = _os.path.abspath(scitex_src_path)
                     for frame_info in inspect.stack()[1:]:
-                        frame_path = _os.path.abspath(frame_info.filename)
-                        if not frame_path.startswith(scitex_src_path):
-                            script_path = frame_path
+                        mod_name = (
+                            frame_info.frame.f_globals.get("__name__", "") or ""
+                        )
+                        if not (
+                            mod_name == "scitex"
+                            or mod_name.startswith("scitex.")
+                            or mod_name.startswith("scitex_")
+                        ):
+                            script_path = _os.path.abspath(frame_info.filename)
                             break
                     if script_path is None:
                         script_path = inspect.stack()[1].filename
@@ -248,29 +268,44 @@ def save(
                 sdir = clean_path(_os.path.splitext(script_path)[0] + "_out")
                 spath = _os.path.join(sdir, specified_path)
 
-            else:
-                script_path = inspect.stack()[1].filename
-                if (
-                    ("ipython" in script_path)
-                    or ("<stdin>" in script_path)
-                    or env_type in ["ipython", "interactive"]
-                ):
-                    # Interactive sessions (IPython / REPL / `python -i`)
-                    # have no script to anchor _out/ to, so route writes
-                    # into the canonical scitex local-state cache:
-                    #   $SCITEX_DIR/io/runtime/cache/  (default ~/.scitex)
-                    # See scitex-dev skills/general/
-                    #   01_ecosystem_06_local-state-directories.md
-                    _scitex_dir = _os.environ.get(
-                        "SCITEX_DIR",
-                        _os.path.join(_os.path.expanduser("~"), ".scitex"),
-                    )
-                    sdir = _os.path.join(_scitex_dir, "io", "runtime", "cache")
-                    _os.makedirs(sdir, exist_ok=True)
-                    script_path = sdir
-                else:
-                    sdir = _os.path.join(_os.getcwd(), "output")
+            elif env_type in ("ipython", "interactive"):
+                # Interactive sessions (IPython terminal REPL / bare
+                # `python` / `python -i` / `python -c`) have no script
+                # path to anchor `_out/` to, so route writes into the
+                # canonical scitex local-state cache:
+                #   $SCITEX_DIR/io/runtime/cache/  (default ~/.scitex)
+                # See scitex-dev skills/general/
+                #   01_ecosystem_06_local-state-directories.md
+                _scitex_dir = _os.environ.get(
+                    "SCITEX_DIR",
+                    _os.path.join(_os.path.expanduser("~"), ".scitex"),
+                )
+                sdir = _os.path.join(_scitex_dir, "io", "runtime", "cache")
+                _os.makedirs(sdir, exist_ok=True)
                 spath = _os.path.join(sdir, specified_path)
+
+            else:
+                # Fail fast, fail loud: NO silent `<cwd>/output/` fallback.
+                # An unrecognised env_type means detect_environment() (or
+                # a caller-supplied env_detector) returned something
+                # outside the documented vocabulary; guessing an output
+                # path here is exactly the quiet-wrong-place bug this
+                # branch used to cause. Operator directive 2026-06-13:
+                # "no else pattern accepted" — raise with a clear
+                # diagnostic + the documented vocabulary so the caller
+                # can fix detect_environment / their env_detector
+                # contract.
+                raise ValueError(
+                    "scitex.io.save: unrecognised execution environment "
+                    f"{env_type!r}. Expected one of "
+                    "'jupyter' (Jupyter kernel), "
+                    "'ipython' (IPython terminal REPL), "
+                    "'script' (a `.py` run), or "
+                    "'interactive' (bare `python` / `-i` / `-c`). "
+                    "See scitex_io._utils.detect_environment for the "
+                    "canonical contract. Refusing to guess an output "
+                    "directory."
+                )
 
         spath_final = clean(spath)
         ########################################

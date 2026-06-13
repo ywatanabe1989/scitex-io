@@ -25,6 +25,7 @@ import pytest
 import yaml
 
 from scitex_io import load_configs
+from scitex_io._loading._load_configs import ConfigLoadError
 from scitex_io._utils import DotDict
 
 
@@ -470,6 +471,75 @@ class TestDebugPromotion:
         # Assert
         assert "DEBUG_param -> param" in capsys.readouterr().out
 
+    def test_debug_mode_preserves_int_key_in_nested_mapping(
+        self, config_dir, ci_env_unset
+    ):
+        """Regression: nested mappings with int keys must not crash the
+        debug-promotion pass.
+
+        ``apply_debug_values`` iterates ``config.items()`` and calls
+        ``key.startswith(...)`` on each key. YAML lets a mapping carry
+        non-string keys (a literal ``-1:`` or ``1:`` becomes an int);
+        the prior implementation would raise
+        ``AttributeError: 'int' object has no attribute 'startswith'``
+        as soon as the recursion reached such a mapping with
+        ``IS_DEBUG=True``. The outer ``try`` in ``load_configs`` swallows
+        that as ``Error loading configs: ...`` and returns an empty
+        ``DotDict``, surfacing in user code as a baffling
+        ``'DotDict' object has no attribute 'X'`` (where ``X`` is the
+        filename stem the user expected).
+
+        With the guard in place we keep every key — including the int
+        ones — and the surrounding ``DEBUG_<KEY>`` promotion still works
+        on sibling string keys. This test asserts the int-keyed entry
+        survives the load; the sibling debug-promotion behaviour is
+        covered separately by
+        ``test_debug_mode_still_promotes_sibling_string_key_alongside_int_keys``.
+        """
+        # Arrange
+        _write_configs(
+            config_dir,
+            {
+                "seizure": {
+                    "INT2STR": {-1: "interictal", 1: "seizure", 2: "sle"},
+                    "param": "normal_value",
+                    "DEBUG_param": "debug_value",
+                },
+            },
+        )
+        # Act
+        result = load_configs(IS_DEBUG=True, config_dir=config_dir)
+        # Assert — the int key survived the load.
+        assert result.SEIZURE.INT2STR[1] == "seizure"
+
+    def test_debug_mode_still_promotes_sibling_string_key_alongside_int_keys(
+        self, config_dir, ci_env_unset
+    ):
+        """The int-key guard must not regress the ``DEBUG_<KEY>``
+        promotion on sibling string keys.
+
+        Companion to
+        ``test_debug_mode_preserves_int_key_in_nested_mapping``: when an
+        int-keyed nested mapping and a string ``DEBUG_<KEY>`` live under
+        the same parent, the int key is left alone *and* the debug
+        promotion still fires.
+        """
+        # Arrange
+        _write_configs(
+            config_dir,
+            {
+                "seizure": {
+                    "INT2STR": {-1: "interictal", 1: "seizure", 2: "sle"},
+                    "param": "normal_value",
+                    "DEBUG_param": "debug_value",
+                },
+            },
+        )
+        # Act
+        result = load_configs(IS_DEBUG=True, config_dir=config_dir)
+        # Assert — the sibling DEBUG_param promoted PARAM as expected.
+        assert result.SEIZURE.PARAM == "debug_value"
+
 
 class TestEdgeCases:
     def test_empty_file_returns_empty_dotdict(self, config_dir, ci_env_unset):
@@ -482,17 +552,94 @@ class TestEdgeCases:
         # Assert
         assert isinstance(result, DotDict) and len(result) == 0
 
-    def test_malformed_yaml_returns_empty_and_prints(
-        self, config_dir, ci_env_unset, capsys
+
+class TestFailLoudOnLoadErrors:
+    """``load_configs`` raises :class:`ConfigLoadError` instead of
+    silently returning an empty ``DotDict`` when a YAML fails to load
+    or process.
+
+    The historical swallow turned every config bug — a malformed YAML,
+    an int-keyed mapping crashing ``apply_debug_values``, a missing
+    required file — into an empty ``DotDict({})``. Downstream code
+    accessing ``CONFIG.PAC`` (or any expected stem) then crashed with
+    a cryptic ``'DotDict' object has no attribute 'PAC'`` three frames
+    away from the actual root error, which was only printed to stderr
+    (often invisible in CI logs or pytest captures). These tests pin
+    the fail-loud contract.
+    """
+
+    def test_malformed_yaml_raises_config_load_error(
+        self, config_dir, ci_env_unset
     ):
-        # Arrange — invalid YAML triggers the generic resilience path.
+        # Arrange — invalid YAML used to be swallowed and return empty.
+        os.makedirs(config_dir, exist_ok=True)
+        broken_path = os.path.join(config_dir, "broken.yaml")
+        with open(broken_path, "w") as f:
+            f.write("key: [unclosed\n")
+        # Act
+        ctx = pytest.raises(ConfigLoadError)
+        # Assert
+        with ctx:
+            load_configs(config_dir=config_dir)
+
+    def test_malformed_yaml_error_names_offending_file(
+        self, config_dir, ci_env_unset
+    ):
+        # Arrange
+        os.makedirs(config_dir, exist_ok=True)
+        broken_path = os.path.join(config_dir, "broken.yaml")
+        with open(broken_path, "w") as f:
+            f.write("key: [unclosed\n")
+        # Act — error message must name the path that failed so the
+        # user knows WHICH file is bad without grepping stderr.
+        ctx = pytest.raises(ConfigLoadError, match=r"broken\.yaml")
+        # Assert
+        with ctx:
+            load_configs(config_dir=config_dir)
+
+    def test_malformed_yaml_error_chains_original_exception(
+        self, config_dir, ci_env_unset
+    ):
+        # Arrange
+        os.makedirs(config_dir, exist_ok=True)
+        broken_path = os.path.join(config_dir, "broken.yaml")
+        with open(broken_path, "w") as f:
+            f.write("key: [unclosed\n")
+        # Act — capture the chained __cause__ from the raised
+        # ``ConfigLoadError`` so we can pin that the original
+        # exception is preserved in the traceback (rather than
+        # discarded by ``from None`` or by a re-raise that drops the
+        # cause). A single assertion satisfies STX-TQ007.
+        cause = None
+        try:
+            load_configs(config_dir=config_dir)
+        except ConfigLoadError as e:
+            cause = e.__cause__
+        # Assert
+        assert cause is not None
+
+    def test_no_swallow_returns_empty_dotdict_for_malformed_yaml(
+        self, config_dir, ci_env_unset
+    ):
+        """Pin: the prior behaviour (return empty DotDict instead of
+        raise) is gone. If a future regression restores the swallow,
+        this test will catch it because ``ConfigLoadError`` will no
+        longer be raised."""
+        # Arrange
         os.makedirs(config_dir, exist_ok=True)
         with open(os.path.join(config_dir, "broken.yaml"), "w") as f:
             f.write("key: [unclosed\n")
-        # Act
-        result = load_configs(config_dir=config_dir)
+        # Act — assert that we DID raise (no silent empty result).
+        raised = False
+        try:
+            load_configs(config_dir=config_dir)
+        except ConfigLoadError:
+            raised = True
         # Assert
-        assert isinstance(result, DotDict) and len(result) == 0
+        assert raised, (
+            "load_configs must fail loud on malformed YAML, not swallow "
+            "and return DotDict({})."
+        )
 
 
 class TestRealFilesystemRoundTrip:
