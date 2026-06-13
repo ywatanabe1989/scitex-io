@@ -305,7 +305,7 @@
     <span class="n">symlink_to</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">dry_run</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">no_csv</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-    <span class="n">use_caller_path</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">use_caller_path</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">env_detector</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -433,16 +433,36 @@
                 <span class="n">spath</span> <span class="o">=</span> <span class="n">_os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">sdir</span><span class="p">,</span> <span class="n">specified_path</span><span class="p">)</span>
 
             <span class="k">elif</span> <span class="n">env_type</span> <span class="o">==</span> <span class="s2">&quot;script&quot;</span><span class="p">:</span>
+                <span class="c1"># use_caller_path defaults to True so a save under</span>
+                <span class="c1"># `@stx.session` (or any other scitex wrapper) walks past</span>
+                <span class="c1"># the scitex frames in inspect.stack() to the real user</span>
+                <span class="c1"># script. Direct (unwrapped) callers also work: no scitex</span>
+                <span class="c1"># frames are present so the walk falls through to</span>
+                <span class="c1"># frame[1] = the user script.</span>
+                <span class="c1">#</span>
+                <span class="c1"># We detect scitex frames by MODULE NAME (any</span>
+                <span class="c1"># ``scitex_*`` package), NOT by directory prefix —</span>
+                <span class="c1"># because scitex_io and scitex_dev may live in different</span>
+                <span class="c1"># site-packages locations (PYTHONPATH overlay, editable</span>
+                <span class="c1"># install of one but not the other, etc.) and a parent-</span>
+                <span class="c1"># path comparison would silently miss the wrapper frame.</span>
+                <span class="c1"># 2026-06-13 operator dogfood: a script saved via</span>
+                <span class="c1"># ``stx.io.save`` landed inside</span>
+                <span class="c1"># ``scitex_dev/_core/decorators_out/`` because the</span>
+                <span class="c1"># parent-path scan didn&#39;t match scitex_dev&#39;s path → the</span>
+                <span class="c1"># walker treated the wrapper frame as the user script.</span>
                 <span class="k">if</span> <span class="n">use_caller_path</span><span class="p">:</span>
                     <span class="n">script_path</span> <span class="o">=</span> <span class="kc">None</span>
-                    <span class="n">scitex_src_path</span> <span class="o">=</span> <span class="n">_os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
-                        <span class="n">_os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">),</span> <span class="s2">&quot;..&quot;</span><span class="p">,</span> <span class="s2">&quot;..&quot;</span>
-                    <span class="p">)</span>
-                    <span class="n">scitex_src_path</span> <span class="o">=</span> <span class="n">_os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">scitex_src_path</span><span class="p">)</span>
                     <span class="k">for</span> <span class="n">frame_info</span> <span class="ow">in</span> <span class="n">inspect</span><span class="o">.</span><span class="n">stack</span><span class="p">()[</span><span class="mi">1</span><span class="p">:]:</span>
-                        <span class="n">frame_path</span> <span class="o">=</span> <span class="n">_os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">frame_info</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span>
-                        <span class="k">if</span> <span class="ow">not</span> <span class="n">frame_path</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">scitex_src_path</span><span class="p">):</span>
-                            <span class="n">script_path</span> <span class="o">=</span> <span class="n">frame_path</span>
+                        <span class="n">mod_name</span> <span class="o">=</span> <span class="p">(</span>
+                            <span class="n">frame_info</span><span class="o">.</span><span class="n">frame</span><span class="o">.</span><span class="n">f_globals</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;__name__&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">&quot;&quot;</span>
+                        <span class="p">)</span>
+                        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span>
+                            <span class="n">mod_name</span> <span class="o">==</span> <span class="s2">&quot;scitex&quot;</span>
+                            <span class="ow">or</span> <span class="n">mod_name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;scitex.&quot;</span><span class="p">)</span>
+                            <span class="ow">or</span> <span class="n">mod_name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;scitex_&quot;</span><span class="p">)</span>
+                        <span class="p">):</span>
+                            <span class="n">script_path</span> <span class="o">=</span> <span class="n">_os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">frame_info</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span>
                             <span class="k">break</span>
                     <span class="k">if</span> <span class="n">script_path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                         <span class="n">script_path</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">stack</span><span class="p">()[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">filename</span>
@@ -452,29 +472,44 @@
                 <span class="n">sdir</span> <span class="o">=</span> <span class="n">clean_path</span><span class="p">(</span><span class="n">_os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">script_path</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;_out&quot;</span><span class="p">)</span>
                 <span class="n">spath</span> <span class="o">=</span> <span class="n">_os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">sdir</span><span class="p">,</span> <span class="n">specified_path</span><span class="p">)</span>
 
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">script_path</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">stack</span><span class="p">()[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">filename</span>
-                <span class="k">if</span> <span class="p">(</span>
-                    <span class="p">(</span><span class="s2">&quot;ipython&quot;</span> <span class="ow">in</span> <span class="n">script_path</span><span class="p">)</span>
-                    <span class="ow">or</span> <span class="p">(</span><span class="s2">&quot;&lt;stdin&gt;&quot;</span> <span class="ow">in</span> <span class="n">script_path</span><span class="p">)</span>
-                    <span class="ow">or</span> <span class="n">env_type</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;ipython&quot;</span><span class="p">,</span> <span class="s2">&quot;interactive&quot;</span><span class="p">]</span>
-                <span class="p">):</span>
-                    <span class="c1"># Interactive sessions (IPython / REPL / `python -i`)</span>
-                    <span class="c1"># have no script to anchor _out/ to, so route writes</span>
-                    <span class="c1"># into the canonical scitex local-state cache:</span>
-                    <span class="c1">#   $SCITEX_DIR/io/runtime/cache/  (default ~/.scitex)</span>
-                    <span class="c1"># See scitex-dev skills/general/</span>
-                    <span class="c1">#   01_ecosystem_06_local-state-directories.md</span>
-                    <span class="n">_scitex_dir</span> <span class="o">=</span> <span class="n">_os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
-                        <span class="s2">&quot;SCITEX_DIR&quot;</span><span class="p">,</span>
-                        <span class="n">_os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">_os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="s2">&quot;~&quot;</span><span class="p">),</span> <span class="s2">&quot;.scitex&quot;</span><span class="p">),</span>
-                    <span class="p">)</span>
-                    <span class="n">sdir</span> <span class="o">=</span> <span class="n">_os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">_scitex_dir</span><span class="p">,</span> <span class="s2">&quot;io&quot;</span><span class="p">,</span> <span class="s2">&quot;runtime&quot;</span><span class="p">,</span> <span class="s2">&quot;cache&quot;</span><span class="p">)</span>
-                    <span class="n">_os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">sdir</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-                    <span class="n">script_path</span> <span class="o">=</span> <span class="n">sdir</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">sdir</span> <span class="o">=</span> <span class="n">_os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">_os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">(),</span> <span class="s2">&quot;output&quot;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">env_type</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;ipython&quot;</span><span class="p">,</span> <span class="s2">&quot;interactive&quot;</span><span class="p">):</span>
+                <span class="c1"># Interactive sessions (IPython terminal REPL / bare</span>
+                <span class="c1"># `python` / `python -i` / `python -c`) have no script</span>
+                <span class="c1"># path to anchor `_out/` to, so route writes into the</span>
+                <span class="c1"># canonical scitex local-state cache:</span>
+                <span class="c1">#   $SCITEX_DIR/io/runtime/cache/  (default ~/.scitex)</span>
+                <span class="c1"># See scitex-dev skills/general/</span>
+                <span class="c1">#   01_ecosystem_06_local-state-directories.md</span>
+                <span class="n">_scitex_dir</span> <span class="o">=</span> <span class="n">_os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+                    <span class="s2">&quot;SCITEX_DIR&quot;</span><span class="p">,</span>
+                    <span class="n">_os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">_os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="s2">&quot;~&quot;</span><span class="p">),</span> <span class="s2">&quot;.scitex&quot;</span><span class="p">),</span>
+                <span class="p">)</span>
+                <span class="n">sdir</span> <span class="o">=</span> <span class="n">_os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">_scitex_dir</span><span class="p">,</span> <span class="s2">&quot;io&quot;</span><span class="p">,</span> <span class="s2">&quot;runtime&quot;</span><span class="p">,</span> <span class="s2">&quot;cache&quot;</span><span class="p">)</span>
+                <span class="n">_os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">sdir</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
                 <span class="n">spath</span> <span class="o">=</span> <span class="n">_os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">sdir</span><span class="p">,</span> <span class="n">specified_path</span><span class="p">)</span>
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Fail fast, fail loud: NO silent `&lt;cwd&gt;/output/` fallback.</span>
+                <span class="c1"># An unrecognised env_type means detect_environment() (or</span>
+                <span class="c1"># a caller-supplied env_detector) returned something</span>
+                <span class="c1"># outside the documented vocabulary; guessing an output</span>
+                <span class="c1"># path here is exactly the quiet-wrong-place bug this</span>
+                <span class="c1"># branch used to cause. Operator directive 2026-06-13:</span>
+                <span class="c1"># &quot;no else pattern accepted&quot; — raise with a clear</span>
+                <span class="c1"># diagnostic + the documented vocabulary so the caller</span>
+                <span class="c1"># can fix detect_environment / their env_detector</span>
+                <span class="c1"># contract.</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;scitex.io.save: unrecognised execution environment &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">env_type</span><span class="si">!r}</span><span class="s2">. Expected one of &quot;</span>
+                    <span class="s2">&quot;&#39;jupyter&#39; (Jupyter kernel), &quot;</span>
+                    <span class="s2">&quot;&#39;ipython&#39; (IPython terminal REPL), &quot;</span>
+                    <span class="s2">&quot;&#39;script&#39; (a `.py` run), or &quot;</span>
+                    <span class="s2">&quot;&#39;interactive&#39; (bare `python` / `-i` / `-c`). &quot;</span>
+                    <span class="s2">&quot;See scitex_io._utils.detect_environment for the &quot;</span>
+                    <span class="s2">&quot;canonical contract. Refusing to guess an output &quot;</span>
+                    <span class="s2">&quot;directory.&quot;</span>
+                <span class="p">)</span>
 
         <span class="n">spath_final</span> <span class="o">=</span> <span class="n">clean</span><span class="p">(</span><span class="n">spath</span><span class="p">)</span>
         <span class="c1">########################################</span>

@@ -551,12 +551,46 @@
 
 <span class="c1"># Environment detection</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">detect_environment</span><span class="p">():</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Detect execution environment.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Detect the execution environment.</span>
+
+<span class="sd">    Returns exactly one of a fixed, documented vocabulary — callers</span>
+<span class="sd">    (see ``scitex_io._save.save``) route on these strings, and an</span>
+<span class="sd">    unrecognised value is a fail-fast error there, never a silent</span>
+<span class="sd">    fallback:</span>
+
+<span class="sd">    - ``&quot;jupyter&quot;``     : Jupyter kernel (IPython ``ZMQInteractiveShell``)</span>
+<span class="sd">    - ``&quot;ipython&quot;``     : IPython *terminal* REPL (``TerminalInteractiveShell``)</span>
+<span class="sd">    - ``&quot;script&quot;``      : a real ``.py`` run (``__main__`` has a ``__file__``)</span>
+<span class="sd">    - ``&quot;interactive&quot;`` : bare ``python`` REPL / ``python -i`` / ``-c``</span>
+
+<span class="sd">    Detection order: IPython shell class first (jupyter vs ipython),</span>
+<span class="sd">    then whether ``__main__`` has a ``__file__`` (script vs bare REPL).</span>
+
+<span class="sd">    Operator directive 2026-06-13: the previous implementation returned</span>
+<span class="sd">    only ``&quot;jupyter&quot;`` or ``&quot;python&quot;`` — ``&quot;python&quot;`` was ambiguous (real</span>
+<span class="sd">    script vs REPL) and ``&quot;script&quot;`` was never returned, leaving</span>
+<span class="sd">    ``_save.py``&#39;s ``elif env_type == &quot;script&quot;`` branch as dead code and</span>
+<span class="sd">    routing every script save to ``&lt;cwd&gt;/output/`` via a silent</span>
+<span class="sd">    fallback. That fallback is removed in this same release; the</span>
+<span class="sd">    detector now returns the precise string the consumer expects.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">sys</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">_sys</span>
+
     <span class="k">try</span><span class="p">:</span>
-        <span class="n">get_ipython</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
-        <span class="k">return</span> <span class="s2">&quot;jupyter&quot;</span>
+        <span class="n">_shell</span> <span class="o">=</span> <span class="n">get_ipython</span><span class="p">()</span>  <span class="c1"># type: ignore[name-defined]</span>
     <span class="k">except</span> <span class="ne">NameError</span><span class="p">:</span>
-        <span class="k">return</span> <span class="s2">&quot;python&quot;</span>
+        <span class="n">_shell</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">if</span> <span class="n">_shell</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">_shell</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;ZMQInteractiveShell&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;jupyter&quot;</span>
+        <span class="c1"># Any other IPython shell (terminal REPL, embedded shell, etc.).</span>
+        <span class="k">return</span> <span class="s2">&quot;ipython&quot;</span>
+
+    <span class="n">_main</span> <span class="o">=</span> <span class="n">_sys</span><span class="o">.</span><span class="n">modules</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;__main__&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">_main</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">_main</span><span class="p">,</span> <span class="s2">&quot;__file__&quot;</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;script&quot;</span>
+    <span class="k">return</span> <span class="s2">&quot;interactive&quot;</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">get_notebook_info_simple</span><span class="p">():</span>
